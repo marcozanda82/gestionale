@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Infortunistica Stradale)</title>
+    <title>Gestionale Incarichi CTU (Semaforo Pagamenti)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,6 +26,11 @@
             --date-completed-color: #28a745; /* Verde */
             --date-overdue-color: #dc3545; /* Rosso */
             --date-due-soon-color: #ffc107; /* Giallo */
+
+            /* Colori Semaforo Pagamenti */
+            --payment-due-soon-color: #ffc107; /* Arancione per fondo spese in scadenza */
+            --payment-overdue-color: #dc3545; /* Rosso per fondo spese scaduto o saldo non pagato */
+            --payment-paid-color: #28a745; /* Verde per pagato */
         }
 
         body {
@@ -202,9 +207,6 @@
         .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
         .stato-da-iniziare { color: var(--info-color); }
 
-        .payment-status-paid { color: var(--success-color); font-weight: bold; }
-        .payment-status-unpaid { color: var(--danger-color); font-weight: bold; }
-
         .action-button {
             background: none;
             border: none;
@@ -355,6 +357,30 @@
             width: 18px;
             height: 18px;
             cursor: pointer;
+        }
+
+        /* Payment Amount Highlighting */
+        .payment-amount-paid {
+            color: var(--payment-paid-color);
+            font-weight: bold;
+        }
+        .payment-amount-fund-due-soon {
+            color: var(--payment-due-soon-color);
+            font-weight: bold;
+        }
+        .payment-amount-fund-overdue,
+        .payment-amount-balance-unpaid {
+            color: var(--payment-overdue-color);
+            font-weight: bold;
+        }
+        /* Generic "non pagato" per tutti i tipi per il riepilogo nella tabella */
+        .payment-status-unpaid-summary {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        .payment-status-paid-summary {
+            color: var(--success-color);
+            font-weight: bold;
         }
 
 
@@ -719,10 +745,34 @@
             return 'date-normal';
         }
 
-        // Funzione per calcolare i totali dei pagamenti
-        function calcolaTotaliPagamenti(pagamenti) {
+        // Funzione per ottenere la classe CSS per l'importo di un pagamento
+        function getPaymentAmountClass(payment, inizioOperazioniDate, inizioOperazioniDone) {
+            if (payment.stato === 'Pagato') {
+                return 'payment-amount-paid';
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (payment.tipo === 'Fondo Spese') {
+                const inizioOp = inizioOperazioniDate ? new Date(inizioOperazioniDate) : null;
+
+                if (inizioOp && !inizioOperazioniDone && inizioOp < today) { // Operazioni iniziate o passate, fondo spese non pagato
+                    return 'payment-amount-fund-overdue'; // Rosso
+                }
+                // Non ci sono specifiche per un fondo spese "vicino", quindi il default è rosso se non pagato e operazioni non iniziate
+                return 'payment-amount-fund-due-soon'; // Arancione se non pagato e operazioni non iniziate
+            } else if (payment.tipo === 'Saldo') {
+                return 'payment-amount-balance-unpaid'; // Rosso se saldo non pagato
+            }
+            return ''; // Nessuna classe speciale per altri tipi non pagati
+        }
+
+        // Funzione per calcolare i totali dei pagamenti e le classi di stato
+        function calcolaTotaliPagamenti(pagamenti, inizioOperazioniDate, inizioOperazioniDone) {
             let totaleIncassato = 0;
             let totaleRichiesto = 0;
+            let saldoResiduoClass = ''; // Classe per il saldo residuo
 
             if (pagamenti && pagamenti.length > 0) {
                 pagamenti.forEach(p => {
@@ -734,8 +784,21 @@
                 });
             }
             const saldoResiduo = totaleRichiesto - totaleIncassato;
-            return { totaleIncassato, totaleRichiesto, saldoResiduo };
+
+            // Determina la classe per il Saldo Residuo in base ai pagamenti di "Saldo"
+            const saldoPayments = pagamenti.filter(p => p.tipo === 'Saldo');
+            const allSaldoPaid = saldoPayments.length > 0 && saldoPayments.every(p => p.stato === 'Pagato');
+            const anySaldoUnpaid = saldoPayments.some(p => p.stato === 'Non Pagato');
+
+            if (allSaldoPaid) {
+                saldoResiduoClass = 'payment-status-paid-summary'; // Verde
+            } else if (anySaldoUnpaid) {
+                saldoResiduoClass = 'payment-status-unpaid-summary'; // Rosso
+            }
+            
+            return { totaleIncassato, totaleRichiesto, saldoResiduo, saldoResiduoClass };
         }
+
 
         // Funzione per renderizzare le tabelle
         function renderTables() {
@@ -775,7 +838,10 @@
             newRow.dataset.id = incarico.id;
 
             const statoGenerale = getStatoIncarico(incarico);
-            const { totaleIncassato, totaleRichiesto, saldoResiduo } = calcolaTotaliPagamenti(incarico.pagamenti);
+            const inizioOperazioniDate = incarico['data-inizio-operazioni']?.value;
+            const inizioOperazioniDone = incarico['data-inizio-operazioni']?.done;
+
+            const { totaleIncassato, totaleRichiesto, saldoResiduo, saldoResiduoClass } = calcolaTotaliPagamenti(incarico.pagamenti, inizioOperazioniDate, inizioOperazioniDone);
 
             newRow.innerHTML = `
                 <td data-label="ID:">${incarico.id}</td>
@@ -786,8 +852,8 @@
                 <td data-label="Conf. Incarico:" class="${getDateClass(incarico['data-conferimento']?.value, incarico['data-conferimento']?.done)}">
                     ${incarico['data-conferimento']?.value || ''}
                 </td>
-                <td data-label="Inizio Op.:" class="${getDateClass(incarico['data-inizio-operazioni']?.value, incarico['data-inizio-operazioni']?.done)}">
-                    ${incarico['data-inizio-operazioni']?.value || ''}
+                <td data-label="Inizio Op.:" class="${getDateClass(inizioOperazioniDate, inizioOperazioniDone)}">
+                    ${inizioOperazioniDate || ''}
                 </td>
                 <td data-label="Invio Bozza:" class="${getDateClass(incarico['data-invio-bozza']?.value, incarico['data-invio-bozza']?.done)}">
                     ${incarico['data-invio-bozza']?.value || ''}
@@ -798,9 +864,13 @@
                 <td data-label="Deposito Finale:" class="${getDateClass(incarico['data-deposito']?.value, incarico['data-deposito']?.done)}">
                     ${incarico['data-deposito']?.value || ''}
                 </td>
-                <td data-label="Tot. Incassato:">${totaleIncassato.toFixed(2)} €</td>
+                <td data-label="Tot. Incassato:">
+                    <span class="${totaleIncassato > 0 ? 'payment-amount-paid' : ''}">${totaleIncassato.toFixed(2)} €</span>
+                </td>
                 <td data-label="Tot. Richiesto:">${totaleRichiesto.toFixed(2)} €</td>
-                <td data-label="Saldo Residuo:">${saldoResiduo.toFixed(2)} €</td>
+                <td data-label="Saldo Residuo:">
+                    <span class="${saldoResiduoClass}">${saldoResiduo.toFixed(2)} €</span>
+                </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
                 <td data-label="Azioni:">
                     <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
@@ -852,7 +922,8 @@
                 // Popola i campi descrizione (checkboxes)
                 descCheckboxes.forEach(checkboxInfo => {
                     const checkbox = document.getElementById(checkboxInfo.id);
-                    checkbox.checked = incaricoToEdit.descrizione.includes(checkboxInfo.value);
+                    // Assicurati che incaricoToEdit.descrizione sia un array per includes()
+                    checkbox.checked = Array.isArray(incaricoToEdit.descrizione) && incaricoToEdit.descrizione.includes(checkboxInfo.value);
                 });
 
                 document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'];
