@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Semaforo Pagamenti)</title>
+    <title>Gestionale Incarichi CTU (Semaforo Pagamenti) - Fix Layout Date</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -181,7 +181,7 @@
             border: 1px solid var(--border-color);
             padding: 15px;
             text-align: left;
-            vertical-align: middle;
+            vertical-align: middle; /* Ensure vertical alignment */
             font-size: 0.9em;
             color: var(--text-dark);
         }
@@ -307,34 +307,44 @@
             cursor: pointer;
             flex-shrink: 0;
         }
+        
         /* Semaforo Date */
+        /* Changed from inline-block to flex for better vertical alignment in table cells */
+        .date-cell-content {
+            display: flex; /* Use flexbox for date content */
+            align-items: center;
+            justify-content: center; /* Center horizontally */
+            width: 100%; /* Take full width of cell */
+            height: 100%; /* Take full height of cell */
+            box-sizing: border-box; /* Include padding/border in width */
+            padding: 5px 8px; /* Padding for the color background */
+            border-radius: 4px; /* Rounded corners for color */
+            font-weight: bold;
+            text-align: center; /* Center text within the flex item */
+        }
         .date-completed {
             background-color: var(--date-completed-color);
             color: var(--text-light);
-            font-weight: bold;
-            padding: 5px 8px;
-            border-radius: 4px;
-            display: inline-block;
         }
         .date-overdue {
             background-color: var(--date-overdue-color);
             color: var(--text-light);
-            font-weight: bold;
-            padding: 5px 8px;
-            border-radius: 4px;
-            display: inline-block;
         }
         .date-due-soon {
             background-color: var(--date-due-soon-color);
             color: var(--text-dark);
-            font-weight: bold;
-            padding: 5px 8px;
-            border-radius: 4px;
-            display: inline-block;
         }
-        .date-normal {
-            /* No specific background, default text color */
+        .date-normal .date-cell-content { /* Ensure normal dates also get the flex styling */
+            background-color: transparent;
+            color: var(--text-dark);
+            font-weight: normal;
         }
+        /* Ensure specific td styles don't override the date cell content */
+        td.date-cell-normal .date-cell-content {
+             background-color: transparent;
+             color: var(--text-dark);
+        }
+
 
         /* Checkbox Group for Description */
         .checkbox-group {
@@ -434,7 +444,7 @@
             /* Specific column labels for mobile (Updated for "Parti") */
             td:nth-of-type(1):before { content: "ID:"; }
             td:nth-of-type(2):before { content: "Descrizione:"; }
-            td:nth-of-type(3):before { content: "Parti:"; } /* New label */
+            td:nth-of-type(3):before { content: "Parti:"; }
             td:nth-of-type(4):before { content: "Tipo:"; }
             td:nth-of-type(5):before { content: "Giudice:"; }
             td:nth-of-type(6):before { content: "Rif. Proc.:"; }
@@ -477,6 +487,10 @@
             }
             .checkbox-group {
                 align-items: flex-start;
+            }
+            /* Ensure date content in table cells is aligned for mobile */
+            td .date-cell-content {
+                justify-content: flex-end; /* Align right on mobile */
             }
         }
     </style>
@@ -732,7 +746,7 @@
 
         // Funzione per determinare la classe CSS per una data specifica
         function getDateClass(dateStr, isDone) {
-            if (!dateStr) return 'date-normal';
+            if (!dateStr) return ''; // Ritorna stringa vuota per non applicare classi di sfondo
 
             if (isDone) return 'date-completed';
 
@@ -749,7 +763,7 @@
             if (date <= sevenDaysFromNow) {
                 return 'date-due-soon';
             }
-            return 'date-normal';
+            return 'date-normal'; // Ritorna una classe "normale" senza sfondo colorato
         }
 
         // Funzione per ottenere la classe CSS per l'importo di un pagamento (NON USATA PER LA TABELLA DI RIEPILOGO)
@@ -852,24 +866,25 @@
             newRow.innerHTML = `
                 <td data-label="ID:">${incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
-                <td data-label="Parti:">${incarico.parti || ''}</td> <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
+                <td data-label="Parti:">${incarico.parti || ''}</td>
+                <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Conf. Incarico:" class="${getDateClass(incarico['data-conferimento']?.value, incarico['data-conferimento']?.done)}">
+                <td data-label="Conf. Incarico:"><span class="date-cell-content ${getDateClass(incarico['data-conferimento']?.value, incarico['data-conferimento']?.done)}">
                     ${incarico['data-conferimento']?.value || ''}
-                </td>
-                <td data-label="Inizio Op.:" class="${getDateClass(inizioOperazioniDate, inizioOperazioniDone)}">
+                </span></td>
+                <td data-label="Inizio Op.:"><span class="date-cell-content ${getDateClass(inizioOperazioniDate, inizioOperazioniDone)}">
                     ${inizioOperazioniDate || ''}
-                </td>
-                <td data-label="Invio Bozza:" class="${getDateClass(incarico['data-invio-bozza']?.value, incarico['data-invio-bozza']?.done)}">
+                </span></td>
+                <td data-label="Invio Bozza:"><span class="date-cell-content ${getDateClass(incarico['data-invio-bozza']?.value, incarico['data-invio-bozza']?.done)}">
                     ${incarico['data-invio-bozza']?.value || ''}
-                </td>
-                <td data-label="Ricez. Oss.:" class="${getDateClass(incarico['data-ricezione-osservazioni']?.value, incarico['data-ricezione-osservazioni']?.done)}">
+                </span></td>
+                <td data-label="Ricez. Oss.:"><span class="date-cell-content ${getDateClass(incarico['data-ricezione-osservazioni']?.value, incarico['data-ricezione-osservazioni']?.done)}">
                     ${incarico['data-ricezione-osservazioni']?.value || ''}
-                </td>
-                <td data-label="Deposito Finale:" class="${getDateClass(incarico['data-deposito']?.value, incarico['data-deposito']?.done)}">
+                </span></td>
+                <td data-label="Deposito Finale:"><span class="date-cell-content ${getDateClass(incarico['data-deposito']?.value, incarico['data-deposito']?.done)}">
                     ${incarico['data-deposito']?.value || ''}
-                </td>
+                </span></td>
                 <td data-label="Tot. Incassato:">
                     <span class="${totaleIncassato > 0 ? 'payment-amount-paid' : ''}">${totaleIncassato.toFixed(2)} €</span>
                 </td>
@@ -935,7 +950,7 @@
                 document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'];
                 document.getElementById('giudice').value = incaricoToEdit.giudice;
                 document.getElementById('rif-procedura').value = incaricoToEdit['rif-procedura'];
-                document.getElementById('parti').value = incaricoToEdit.parti || ''; // Popola il campo Parti
+                document.getElementById('parti').value = incaricoToEdit.parti || '';
                 document.getElementById('note').value = incaricoToEdit.note;
 
                 // Popola i campi data e le checkbox
@@ -1004,7 +1019,7 @@
                 'tipo-incarico': document.getElementById('tipo-incarico').value,
                 giudice: document.getElementById('giudice').value,
                 'rif-procedura': document.getElementById('rif-procedura').value,
-                parti: document.getElementById('parti').value, // Aggiungi il valore del campo Parti
+                parti: document.getElementById('parti').value,
                 note: document.getElementById('note').value,
                 pagamenti: currentPayments,
                 'data-conferimento': dateData['data-conferimento'],
