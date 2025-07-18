@@ -431,22 +431,23 @@
                 font-weight: bold;
                 color: var(--primary-dark);
             }
-            /* Specific column labels for mobile */
+            /* Specific column labels for mobile (Updated for "Parti") */
             td:nth-of-type(1):before { content: "ID:"; }
             td:nth-of-type(2):before { content: "Descrizione:"; }
-            td:nth-of-type(3):before { content: "Tipo:"; }
-            td:nth-of-type(4):before { content: "Giudice:"; }
-            td:nth-of-type(5):before { content: "Rif. Proc.:"; }
-            td:nth-of-type(6):before { content: "Conf. Inc.:"; }
-            td:nth-of-type(7):before { content: "Inizio Op.:"; }
-            td:nth-of-type(8):before { content: "Invio Bozza:"; }
-            td:nth-of-type(9):before { content: "Ricez. Oss.:"; }
-            td:nth-of-type(10):before { content: "Deposito:"; }
-            td:nth-of-type(11):before { content: "Tot. Incassato:"; }
-            td:nth-of-type(12):before { content: "Tot. Richiesto:"; }
-            td:nth-of-type(13):before { content: "Saldo Residuo:"; }
-            td:nth-of-type(14):before { content: "Stato:"; }
-            td:nth-of-type(15):before { content: "Azioni:"; }
+            td:nth-of-type(3):before { content: "Parti:"; } /* New label */
+            td:nth-of-type(4):before { content: "Tipo:"; }
+            td:nth-of-type(5):before { content: "Giudice:"; }
+            td:nth-of-type(6):before { content: "Rif. Proc.:"; }
+            td:nth-of-type(7):before { content: "Conf. Inc.:"; }
+            td:nth-of-type(8):before { content: "Inizio Op.:"; }
+            td:nth-of-type(9):before { content: "Invio Bozza:"; }
+            td:nth-of-type(10):before { content: "Ricez. Oss.:"; }
+            td:nth-of-type(11):before { content: "Deposito:"; }
+            td:nth-of-type(12):before { content: "Tot. Incassato:"; }
+            td:nth-of-type(13):before { content: "Tot. Richiesto:"; }
+            td:nth-of-type(14):before { content: "Saldo Residuo:"; }
+            td:nth-of-type(15):before { content: "Stato:"; }
+            td:nth-of-type(16):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
             .payment-item {
@@ -530,6 +531,10 @@
                         <label for="rif-procedura">Riferimento Procedura:</label>
                         <input type="text" id="rif-procedura" name="rif-procedura">
                     </div>
+                    <div class="form-group">
+                        <label for="parti">Parti (es. Attore vs Convenuto):</label>
+                        <input type="text" id="parti" name="parti">
+                    </div>
                     
                     <div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
@@ -596,6 +601,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
+                        <th>Parti</th>
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
@@ -624,6 +630,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
+                        <th>Parti</th>
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
@@ -745,7 +752,7 @@
             return 'date-normal';
         }
 
-        // Funzione per ottenere la classe CSS per l'importo di un pagamento
+        // Funzione per ottenere la classe CSS per l'importo di un pagamento (NON USATA PER LA TABELLA DI RIEPILOGO)
         function getPaymentAmountClass(payment, inizioOperazioniDate, inizioOperazioniDone) {
             if (payment.stato === 'Pagato') {
                 return 'payment-amount-paid';
@@ -760,8 +767,7 @@
                 if (inizioOp && !inizioOperazioniDone && inizioOp < today) { // Operazioni iniziate o passate, fondo spese non pagato
                     return 'payment-amount-fund-overdue'; // Rosso
                 }
-                // Non ci sono specifiche per un fondo spese "vicino", quindi il default è rosso se non pagato e operazioni non iniziate
-                return 'payment-amount-fund-due-soon'; // Arancione se non pagato e operazioni non iniziate
+                return 'payment-amount-fund-due-soon'; // Arancione se non pagato e operazioni non iniziate (o data non specificata)
             } else if (payment.tipo === 'Saldo') {
                 return 'payment-amount-balance-unpaid'; // Rosso se saldo non pagato
             }
@@ -772,7 +778,7 @@
         function calcolaTotaliPagamenti(pagamenti, inizioOperazioniDate, inizioOperazioniDone) {
             let totaleIncassato = 0;
             let totaleRichiesto = 0;
-            let saldoResiduoClass = ''; // Classe per il saldo residuo
+            let saldoResiduoClass = '';
 
             if (pagamenti && pagamenti.length > 0) {
                 pagamenti.forEach(p => {
@@ -791,11 +797,11 @@
             const anySaldoUnpaid = saldoPayments.some(p => p.stato === 'Non Pagato');
 
             if (allSaldoPaid) {
-                saldoResiduoClass = 'payment-status-paid-summary'; // Verde
+                saldoResiduoClass = 'payment-status-paid-summary';
             } else if (anySaldoUnpaid) {
-                saldoResiduoClass = 'payment-status-unpaid-summary'; // Rosso
+                saldoResiduoClass = 'payment-status-unpaid-summary';
             }
-            
+
             return { totaleIncassato, totaleRichiesto, saldoResiduo, saldoResiduoClass };
         }
 
@@ -846,7 +852,7 @@
             newRow.innerHTML = `
                 <td data-label="ID:">${incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
-                <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
+                <td data-label="Parti:">${incarico.parti || ''}</td> <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
                 <td data-label="Conf. Incarico:" class="${getDateClass(incarico['data-conferimento']?.value, incarico['data-conferimento']?.done)}">
@@ -929,6 +935,7 @@
                 document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'];
                 document.getElementById('giudice').value = incaricoToEdit.giudice;
                 document.getElementById('rif-procedura').value = incaricoToEdit['rif-procedura'];
+                document.getElementById('parti').value = incaricoToEdit.parti || ''; // Popola il campo Parti
                 document.getElementById('note').value = incaricoToEdit.note;
 
                 // Popola i campi data e le checkbox
@@ -993,13 +1000,13 @@
             });
 
             let incaricoData = {
-                descrizione: selectedDescriptions, // Ora è un array di stringhe dalle checkbox
+                descrizione: selectedDescriptions,
                 'tipo-incarico': document.getElementById('tipo-incarico').value,
                 giudice: document.getElementById('giudice').value,
                 'rif-procedura': document.getElementById('rif-procedura').value,
+                parti: document.getElementById('parti').value, // Aggiungi il valore del campo Parti
                 note: document.getElementById('note').value,
                 pagamenti: currentPayments,
-                // Inserisci qui le date come raccolte da dateData
                 'data-conferimento': dateData['data-conferimento'],
                 'data-inizio-operazioni': dateData['data-inizio-operazioni'],
                 'data-invio-bozza': dateData['data-invio-bozza'],
@@ -1048,11 +1055,11 @@
 
             salvaIncarichi();
             renderTables();
-            form.reset(); // Resetta tutti i campi
+            form.reset();
             incaricoIdField.value = '';
             submitButton.textContent = 'Aggiungi Incarico';
-            paymentsList.innerHTML = ''; // Pulisci la lista dei pagamenti nel form
-            addPaymentField(); // Aggiungi un campo pagamento vuoto di default per il prossimo incarico
+            paymentsList.innerHTML = '';
+            addPaymentField();
 
             // Resetta le checkbox della descrizione
             descCheckboxes.forEach(checkboxInfo => {
