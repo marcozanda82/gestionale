@@ -505,7 +505,15 @@
 
                 <div class="form-grid">
                     
-<div class="form-group" style="grid-column: 1 / -1;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="string-input">Carica da Stringa (separato da `;`):</label>
+                        <textarea id="string-input" rows="3" placeholder="Incolla qui la stringa (es. Stima,Compatibilità;Civile;Giudice Rossi;...)"></textarea>
+                        <div class="button-group" style="margin-top: 15px; justify-content: flex-start;">
+                            <button type="button" id="load-from-string-btn" class="btn btn-secondary">Carica Dati</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: 1 / -1;">
                         <label>Attività Richieste (Infortunistica Stradale):</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
@@ -527,7 +535,7 @@
                         </div>
                     </div>
                     
-<div class="form-group">
+                    <div class="form-group">
                         <label for="tipo-incarico">Tipo Incarico:</label>
                         <select id="tipo-incarico" name="tipo-incarico">
                             <option value="Civile">Civile</option>
@@ -551,7 +559,7 @@
                     </div>
                     
                     
-<div class="form-group">
+                    <div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
                             <input type="date" id="data-conferimento" name="data-conferimento" required>
@@ -600,14 +608,14 @@
                     </div>
 
                     
-<div class="payments-section-container">
+                    <div class="payments-section-container">
                         <div class="payments-header">
                             <span>Pagamenti</span>
                             <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
                         </div>
                         <div id="payments-list">
                             
-</div>
+                        </div>
                     </div>
                 </div>
 
@@ -637,7 +645,7 @@
                 </thead>
                 <tbody>
                     
-</tbody>
+                </tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
         </div>
@@ -661,7 +669,7 @@
                 </thead>
                 <tbody>
                     
-</tbody>
+                </tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
         </div>
@@ -692,6 +700,8 @@ const firebaseConfig = {
         const incaricoIdField = document.getElementById('incarico-id');
         const addPaymentBtn = document.getElementById('add-payment-btn');
         const paymentsList = document.getElementById('payments-list');
+        const stringInput = document.getElementById('string-input'); // Nuovo campo per la stringa
+        const loadFromStringBtn = document.getElementById('load-from-string-btn'); // Nuovo pulsante
 
         // Checkbox per la descrizione
         const descCheckboxes = [
@@ -1168,13 +1178,115 @@ const firebaseConfig = {
                 if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
                     incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
                 } else {
-                    addPaymentField();
+                    addPaymentField(); // Assicurati che ci sia almeno un campo pagamento
                 }
 
                 submitButton.textContent = 'Salva Modifiche';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
+
+        // *** NUOVA FUNZIONALITÀ: Carica da Stringa ***
+        loadFromStringBtn.addEventListener('click', () => {
+            const inputString = stringInput.value.trim();
+            if (!inputString) {
+                alert("Inserisci una stringa per il caricamento.");
+                return;
+            }
+
+            // Resetta il form prima di caricare nuovi dati
+            resetForm();
+
+            const parts = inputString.split(';');
+
+            // Mappa dei campi e dell'indice nella stringa
+            const fieldMap = {
+                descrizione: 0,
+                'tipo-incarico': 1,
+                giudice: 2,
+                'rif-procedura': 3,
+                parti: 4,
+                'data-conferimento': 5,
+                'data-conferimento-done': 6,
+                'data-inizio-operazioni': 7,
+                'data-inizio-operazioni-done': 8,
+                'data-invio-bozza': 9,
+                'data-invio-bozza-done': 10,
+                'data-ricezione-osservazioni': 11,
+                'data-ricezione-osservazioni-done': 12,
+                'data-deposito': 13,
+                'data-deposito-done': 14,
+                'data-udienza': 15,
+                'data-udienza-done': 16,
+                note: 17
+            };
+
+            // Popola i campi semplici
+            if (parts[fieldMap['tipo-incarico']]) {
+                document.getElementById('tipo-incarico').value = parts[fieldMap['tipo-incarico']];
+            }
+            if (parts[fieldMap.giudice]) {
+                document.getElementById('giudice').value = parts[fieldMap.giudice];
+            }
+            if (parts[fieldMap['rif-procedura']]) {
+                document.getElementById('rif-procedura').value = parts[fieldMap['rif-procedura']];
+            }
+            if (parts[fieldMap.parti]) {
+                document.getElementById('parti').value = parts[fieldMap.parti];
+            }
+            if (parts[fieldMap.note]) {
+                document.getElementById('note').value = parts[fieldMap.note];
+            }
+
+            // Popola le checkbox della descrizione
+            if (parts[fieldMap.descrizione]) {
+                const descriptions = parts[fieldMap.descrizione].split(',');
+                descCheckboxes.forEach(checkboxInfo => {
+                    document.getElementById(checkboxInfo.id).checked = descriptions.includes(checkboxInfo.value);
+                });
+            }
+
+            // Popola i campi data e le relative checkbox "done"
+            dateFields.forEach(field => {
+                const dateIndex = fieldMap[field.id];
+                const doneIndex = fieldMap[field.doneId];
+
+                if (parts[dateIndex]) {
+                    document.getElementById(field.id).value = parts[dateIndex];
+                } else {
+                    document.getElementById(field.id).value = '';
+                }
+
+                if (parts[doneIndex]) {
+                    document.getElementById(field.doneId).checked = (parts[doneIndex].toLowerCase() === 'true');
+                } else {
+                    document.getElementById(field.doneId).checked = false;
+                }
+            });
+
+            // Popola i pagamenti
+            paymentsList.innerHTML = ''; // Rimuovi i campi pagamento esistenti
+            let hasPayments = false;
+            for (let i = fieldMap.note + 1; i < parts.length; i++) {
+                const paymentParts = parts[i].split(',');
+                if (paymentParts.length === 3) {
+                    addPaymentField({
+                        tipo: paymentParts[0].trim(),
+                        stato: paymentParts[1].trim(),
+                        importo: paymentParts[2].trim()
+                    });
+                    hasPayments = true;
+                }
+            }
+            if (!hasPayments) {
+                addPaymentField(); // Se non ci sono pagamenti nella stringa, aggiungi un campo vuoto
+            }
+
+            stringInput.value = ''; // Pulisci l'input della stringa dopo il caricamento
+            alert("Dati caricati sulla maschera!");
+        });
+        // *** FINE NUOVA FUNZIONALITÀ ***
+
 
         // Gestione dell'invio del modulo
         form.addEventListener('submit', async function(event) { // Aggiunto 'async' qui
@@ -1264,30 +1376,31 @@ const firebaseConfig = {
             renderTables(); // Aggiorna l'UI immediatamente
             await syncToFirebase(); // Sincronizza con Firebase in background
 
+            resetForm(); // Pulisci il form dopo il salvataggio
+        });
+
+        // Funzione per resettare il form in modo completo
+        function resetForm() {
             form.reset();
             incaricoIdField.value = '';
             submitButton.textContent = 'Aggiungi Incarico';
             paymentsList.innerHTML = '';
-            addPaymentField();
-
+            addPaymentField(); // Assicura che ci sia almeno un campo pagamento
+            stringInput.value = ''; // Pulisci anche il campo stringa
+            
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
-        });
+
+            dateFields.forEach(field => {
+                document.getElementById(field.id).value = '';
+                document.getElementById(field.doneId).checked = false;
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         // Gestione del pulsante "Nuovo Incarico"
-        resetButton.addEventListener('click', () => {
-            form.reset();
-            incaricoIdField.value = '';
-            submitButton.textContent = 'Aggiungi Incarico';
-            paymentsList.innerHTML = '';
-            addPaymentField();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            descCheckboxes.forEach(checkboxInfo => {
-                document.getElementById(checkboxInfo.id).checked = false;
-            });
-        });
+        resetButton.addEventListener('click', resetForm);
 
         // Event listener per il pulsante "+ Aggiungi Pagamento"
         addPaymentBtn.addEventListener('click', () => addPaymentField());
@@ -1296,12 +1409,12 @@ const firebaseConfig = {
         async function initializeApp() {
             await caricaIncarichi(); // Carica e deduplica iniziale
             setupFirebaseListener(); // Imposta il listener per le modifiche da Firebase
+            if (paymentsList.children.length === 0) {
+                addPaymentField(); // Assicura che ci sia almeno un campo pagamento all'avvio
+            }
         }
         initializeApp(); // Avvia l'app
 
-        if (paymentsList.children.length === 0) {
-            addPaymentField(); // Assicura che ci sia almeno un campo pagamento all'avvio
-        }
     </script>
 
 </body>
