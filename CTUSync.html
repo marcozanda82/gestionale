@@ -505,7 +505,7 @@
 
                 <div class="form-grid">
                     
-<div class="form-group" style="grid-column: 1 / -1;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
                         <label>Attività Richieste (Infortunistica Stradale):</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
@@ -527,7 +527,7 @@
                         </div>
                     </div>
                     
-<div class="form-group">
+                    <div class="form-group">
                         <label for="tipo-incarico">Tipo Incarico:</label>
                         <select id="tipo-incarico" name="tipo-incarico">
                             <option value="Civile">Civile</option>
@@ -551,7 +551,7 @@
                     </div>
                     
                     
-<div class="form-group">
+                    <div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
                             <input type="date" id="data-conferimento" name="data-conferimento" required>
@@ -600,14 +600,14 @@
                     </div>
 
                     
-<div class="payments-section-container">
+                    <div class="payments-section-container">
                         <div class="payments-header">
                             <span>Pagamenti</span>
                             <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
                         </div>
                         <div id="payments-list">
                             
-</div>
+                        </div>
                     </div>
                 </div>
 
@@ -616,6 +616,18 @@
                     <button type="button" id="reset-button" class="btn btn-secondary">Nuovo Incarico</button>
                 </div>
             </form>
+        </div>
+
+        <div class="form-section" style="margin-top: 40px;">
+            <h2>Inserimento Massivo (da AI)</h2>
+            <div class="form-group">
+                <label for="mass-input-string">Incolla stringa incarichi da AI:</label>
+                <textarea id="mass-input-string" rows="8" placeholder="Incolla qui la stringa generata dall'AI nel formato specificato..."></textarea>
+            </div>
+            <div class="button-group" style="justify-content: flex-start;">
+                <button type="button" id="process-string-btn" class="btn btn-primary">Processa Stringa e Aggiungi</button>
+                <button type="button" id="clear-string-input-btn" class="btn btn-secondary">Pulisci Campo</button>
+            </div>
         </div>
 
         <div class="table-section">
@@ -637,7 +649,7 @@
                 </thead>
                 <tbody>
                     
-</tbody>
+                </tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
         </div>
@@ -661,7 +673,7 @@
                 </thead>
                 <tbody>
                     
-</tbody>
+                </tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
         </div>
@@ -693,6 +705,11 @@ const firebaseConfig = {
         const incaricoIdField = document.getElementById('incarico-id');
         const addPaymentBtn = document.getElementById('add-payment-btn');
         const paymentsList = document.getElementById('payments-list');
+
+        // Nuovi elementi per l'inserimento massivo
+        const massInputString = document.getElementById('mass-input-string');
+        const processStringBtn = document.getElementById('process-string-btn');
+        const clearStringInputBtn = document.getElementById('clear-string-input-btn');
 
         // Checkbox per la descrizione
         const descCheckboxes = [
@@ -1177,8 +1194,52 @@ const firebaseConfig = {
             }
         }
 
-        // Gestione dell'invio del modulo
-        form.addEventListener('submit', async function(event) { // Aggiunto 'async' qui
+        // Funzione per aggiungere un singolo incarico (nuovo o modificato)
+        async function addOrUpdateIncarico(incaricoData) {
+            const idInModifica = incaricoData.id; // Se presente, significa modifica
+
+            const statoGenerale = getStatoIncarico(incaricoData);
+            const isCompleted = (statoGenerale.text === 'Completato');
+
+            let incaricoFoundAndRemoved = false;
+
+            // Rimuovi l'incarico esistente da entrambi gli array se presente
+            let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
+            if (idxAttivi !== -1) {
+                incarichiAttivi.splice(idxAttivi, 1);
+                incaricoFoundAndRemoved = true;
+            }
+            
+            let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
+            if (idxArchiviati !== -1) {
+                incarichiArchiviati.splice(idxArchiviati, 1);
+                incaricoFoundAndRemoved = true;
+            }
+
+            if (incaricoFoundAndRemoved) {
+                // Se era una modifica, conserva l'ID originale
+                incaricoData.id = parseInt(idInModifica); 
+            } else {
+                // Se è un nuovo incarico, assegna un nuovo ID unico
+                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
+                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
+                incaricoData.id = maxId + 1;
+            }
+
+            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
+            if (isCompleted) {
+                incarichiArchiviati.push(incaricoData);
+            } else {
+                incarichiAttivi.push(incaricoData);
+            }
+
+            salvaIncarichiLocally(); // Salva immediatamente in localStorage
+            renderTables(); // Aggiorna l'UI immediatamente
+            await syncToFirebase(); // Sincronizza con Firebase in background
+        }
+
+        // Gestione dell'invio del modulo (per l'aggiunta/modifica manuale)
+        form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
             const idInModifica = incaricoIdField.value;
@@ -1226,44 +1287,12 @@ const firebaseConfig = {
                 timestamp: Date.now() // Aggiungi/aggiorna il timestamp
             };
 
-            const statoGenerale = getStatoIncarico(incaricoData);
-            const isCompleted = (statoGenerale.text === 'Completato');
-
-            let incaricoFoundAndRemoved = false;
-
-            // Rimuovi l'incarico esistente da entrambi gli array se presente
-            let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
-            if (idxAttivi !== -1) {
-                incarichiAttivi.splice(idxAttivi, 1);
-                incaricoFoundAndRemoved = true;
-            }
-            
-            let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
-            if (idxArchiviati !== -1) {
-                incarichiArchiviati.splice(idxArchiviati, 1);
-                incaricoFoundAndRemoved = true;
+            // Se stiamo modificando un incarico esistente dal form, assegna l'ID
+            if (idInModifica) {
+                incaricoData.id = idInModifica;
             }
 
-            if (incaricoFoundAndRemoved) {
-                // Se era una modifica, conserva l'ID originale
-                incaricoData.id = parseInt(idInModifica); 
-            } else {
-                // Se è un nuovo incarico, assegna un nuovo ID unico
-                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
-                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
-                incaricoData.id = maxId + 1;
-            }
-
-            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
-            if (isCompleted) {
-                incarichiArchiviati.push(incaricoData);
-            } else {
-                incarichiAttivi.push(incaricoData);
-            }
-
-            salvaIncarichiLocally(); // Salva immediatamente in localStorage
-            renderTables(); // Aggiorna l'UI immediatamente
-            await syncToFirebase(); // Sincronizza con Firebase in background
+            await addOrUpdateIncarico(incaricoData);
 
             form.reset();
             incaricoIdField.value = '';
@@ -1292,6 +1321,104 @@ const firebaseConfig = {
 
         // Event listener per il pulsante "+ Aggiungi Pagamento"
         addPaymentBtn.addEventListener('click', () => addPaymentField());
+
+
+        // --- NUOVE FUNZIONALITÀ PER L'INSERIMENTO DA STRINGA ---
+
+        // Funzione per processare la stringa di input e creare/aggiornare incarichi
+        async function processInputString() {
+            const inputString = massInputString.value.trim();
+            if (!inputString) {
+                alert("Il campo della stringa è vuoto. Incolla i dati.");
+                return;
+            }
+
+            const incaricoStrings = inputString.split('###INCARICO_START###')
+                                               .filter(s => s.trim() !== '')
+                                               .map(s => s.split('###INCARICO_END###')[0].trim());
+
+            if (incaricoStrings.length === 0) {
+                alert("Nessun incarico valido trovato nella stringa. Controlla il formato.");
+                return;
+            }
+
+            for (const incStr of incaricoStrings) {
+                const fields = incStr.split('||').map(f => f.trim()).filter(f => f !== '');
+                let newIncaricoData = {
+                    descrizione: [],
+                    'tipo-incarico': 'Civile', // Default
+                    giudice: '',
+                    'rif-procedura': '',
+                    parti: '',
+                    note: '',
+                    pagamenti: [],
+                    timestamp: Date.now()
+                };
+
+                dateFields.forEach(field => {
+                    newIncaricoData[field.id] = null; // Inizializza tutte le date a null
+                });
+
+                fields.forEach(field => {
+                    const parts = field.split('::').map(p => p.trim());
+                    const key = parts[0];
+                    const value = parts[1];
+
+                    switch (key) {
+                        case 'descrizione':
+                            newIncaricoData.descrizione = value.split(',').map(d => d.trim());
+                            break;
+                        case 'pagamenti':
+                            const paymentsBlock = field.substring(field.indexOf('###PAGAMENTI_START###') + '###PAGAMENTI_START###'.length, field.indexOf('###PAGAMENTI_END###'));
+                            newIncaricoData.pagamenti = paymentsBlock.split('&&').map(p => {
+                                const pParts = p.split('::').map(pp => pp.trim());
+                                return {
+                                    tipo: pParts[0] || 'Fondo Spese',
+                                    stato: pParts[1] || 'Non Pagato',
+                                    importo: parseFloat(pParts[2]) || 0
+                                };
+                            }).filter(p => p.importo > 0); // Filtra pagamenti senza importo
+                            break;
+                        default:
+                            if (key.startsWith('data-') && parts.length === 3) {
+                                // Campo data con valore e done
+                                newIncaricoData[key] = {
+                                    value: value,
+                                    done: parts[2] === 'true'
+                                };
+                            } else {
+                                newIncaricoData[key] = value;
+                            }
+                            break;
+                    }
+                });
+
+                // Aggiungi o aggiorna l'incarico processato
+                // Qui potremmo aggiungere una logica per verificare se l'incarico esiste già basandosi su un campo univoco (es. rif-procedura)
+                // Per ora, lo tratteremo sempre come nuovo o lo aggiorneremo se gli si passa un ID.
+                // Siccome la stringa non include l'ID dell'incarico, saranno tutti nuovi incarichi.
+                // Se volessi l'aggiornamento, la stringa dovrebbe includere un campo 'id::X'
+                // Esempio: newIncaricoData.id = parts.find(p => p.startsWith('id::'))?.split('::')[1] || null;
+
+                // Trova il massimo ID esistente e assegna il prossimo
+                const allCurrentIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+                const maxCurrentId = allCurrentIncarichi.length > 0 ? Math.max(...allCurrentIncarichi.map(i => typeof i.id === 'number' ? i.id : 0)) : 0;
+                newIncaricoData.id = maxCurrentId + 1;
+
+                await addOrUpdateIncarico(newIncaricoData);
+            }
+
+            alert(`Elaborazione completata. Aggiunti ${incaricoStrings.length} incarichi.`);
+            massInputString.value = ''; // Pulisci il campo dopo l'elaborazione
+        }
+
+        processStringBtn.addEventListener('click', processInputString);
+        clearStringInputBtn.addEventListener('click', () => {
+            massInputString.value = '';
+        });
+
+        // --- FINE NUOVE FUNZIONALITÀ ---
+
 
         // Inizializzazione: Carica da localStorage/Firebase e imposta listener
         async function initializeApp() {
