@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Sincronizzato con Firebase)</title>
+    <title>Gestionale Incarichi CTU (Layout Responsive)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
@@ -169,8 +169,15 @@
             transform: translateY(-2px);
         }
 
+        /* Responsive table wrapper for horizontal scroll */
+        .table-responsive {
+            overflow-x: auto; /* Enables horizontal scroll on small screens */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+
         table {
             width: 100%;
+            min-width: 800px; /* Minimum width to prevent excessive squishing */
             border-collapse: collapse;
             margin-top: 25px;
             background-color: var(--text-light);
@@ -184,7 +191,7 @@
             border: 1px solid var(--border-color);
             padding: 15px;
             text-align: left;
-            vertical-align: middle; /* Ensure vertical alignment */
+            vertical-align: middle;
             font-size: 0.9em;
             color: var(--text-dark);
             word-wrap: break-word; /* Allow long text to wrap */
@@ -197,17 +204,16 @@
             white-space: nowrap; /* Prevent wrapping of headers */
         }
 
-        /* Column Width Adjustments */
+        /* Column Width Adjustments (Recalculated for 9 columns + 1 ID) */
         th:nth-child(1), td:nth-child(1) { width: 40px; text-align: center; } /* ID */
-        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Descrizione */
-        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Parti */
-        th:nth-child(4), td:nth-child(4) { width: 80px; } /* Tipo */
-        th:nth-child(5), td:nth-child(5) { width: 100px; } /* Giudice */
-        th:nth-child(6), td:nth-child(6) { width: 8%; } /* Rif. Procedura */
-        th:nth-child(7), td:nth-child(7) { width: 9%; text-align: center; } /* Pagamenti */
+        th:nth-child(2), td:nth-child(2) { width: 17%; } /* Descrizione */
+        th:nth-child(3), td:nth-child(3) { width: 17%; } /* Parti */
+        th:nth-child(4), td:nth-child(4) { width: 8%; } /* Tipo */
+        th:nth-child(5), td:nth-child(5) { width: 10%; } /* Giudice */
+        th:nth-child(6), td:nth-child(6) { width: 9%; } /* Rif. Procedura */
+        th:nth-child(7), td:nth-child(7) { width: 10%; text-align: center; } /* Pagamenti */
         th:nth-child(8), td:nth-child(8) { width: 9%; text-align: center; } /* Stato */
-        th:nth-child(9), td:nth-child(9) { width: 60px; text-align: center; } /* Azioni */
-        th:nth-child(10), td:nth-child(10) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
+        th:nth-child(9), td:nth-child(9) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
         
         tr {
             cursor: pointer; /* Indica che la riga è cliccabile */
@@ -226,25 +232,8 @@
         .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
         .stato-da-iniziare { color: var(--info-color); }
 
-        .action-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.3em;
-            color: var(--primary-color);
-            padding: 0;
-            margin: 0;
-            transition: color 0.2s ease, transform 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-        }
-        .action-button:hover {
-            color: var(--primary-dark);
-            transform: scale(1.1);
-        }
+        /* No more specific action button styling, as the column is removed */
+        /* .action-button {} */
 
         .archivio-section {
             margin-top: 60px;
@@ -405,36 +394,38 @@
             .btn {
                 width: 100%;
             }
+            /* Remove fixed table layout for mobile, allow scrolling */
             table {
                 table-layout: auto;
+                min-width: 0; /* Override minimum width */
             }
+            /* Make table cells behave like blocks for stacking on mobile */
             th, td {
-                width: auto !important;
+                width: auto !important; /* Override fixed widths */
                 display: block;
             }
-            thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
+            thead { /* Hide table header on mobile */
+                display: none;
             }
             tr {
                 border: 1px solid var(--border-color);
                 margin-bottom: 10px;
                 border-radius: 8px;
                 overflow: hidden;
+                display: block; /* Ensure row is a block for stacking */
             }
             td {
                 border: none;
                 border-bottom: 1px solid var(--border-color);
                 position: relative;
-                padding-left: 50%;
+                padding-left: 50%; /* Space for the label */
                 text-align: right;
             }
             td:last-child {
                 border-bottom: none;
             }
             td::before {
-                content: attr(data-label);
+                content: attr(data-label); /* Display the label from data-label attribute */
                 position: absolute;
                 left: 10px;
                 width: calc(50% - 20px);
@@ -444,16 +435,16 @@
                 font-weight: bold;
                 color: var(--primary-dark);
             }
-            /* Specific column labels for mobile (Updated for simplified table) */
+            /* Specific column labels for mobile (Updated due to column removal) */
             td:nth-of-type(1):before { content: "ID:"; }
             td:nth-of-type(2):before { content: "Descrizione:"; }
             td:nth-of-type(3):before { content: "Parti:"; }
             td:nth-of-type(4):before { content: "Tipo:"; }
             td:nth-of-type(5):before { content: "Giudice:"; }
             td:nth-of-type(6):before { content: "Rif. Proc.:"; }
-            td:nth-of-type(7):before { content: "Pagamenti:"; } /* New label */
+            td:nth-of-type(7):before { content: "Pagamenti:"; }
             td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Azioni:"; }
+            td:nth-of-type(9):before { content: "Azioni:"; } /* Still needed if there's an action cell */
             td:nth-of-type(10):before { content: "Prossima Scadenza:"; }
 
 
@@ -620,55 +611,53 @@
 
         <div class="table-section">
             <h2>Incarichi in Lavorazione</h2>
-            <table id="tabella-incarichi-attivi">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Descrizione</th>
-                        <th>Parti</th>
-                        <th>Tipo</th>
-                        <th>Giudice</th>
-                        <th>Rif. Procedura</th>
-                        <th>Pagamenti</th>
-                        <th>Stato</th>
-                        <th>Azioni</th>
-                        <th>Prossima Scadenza</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
+            <div class="table-responsive"> <table id="tabella-incarichi-attivi">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Descrizione</th>
+                            <th>Parti</th>
+                            <th>Tipo</th>
+                            <th>Giudice</th>
+                            <th>Rif. Procedura</th>
+                            <th>Pagamenti</th>
+                            <th>Stato</th>
+                            <th>Prossima Scadenza</th> </tr>
+                    </thead>
+                    <tbody>
+                        
 </tbody>
-            </table>
+                </table>
+            </div>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
         </div>
 
         <div class="archivio-section">
             <h2>Archivio Incarichi Completati</h2>
-            <table id="tabella-incarichi-archiviati">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Descrizione</th>
-                        <th>Parti</th>
-                        <th>Tipo</th>
-                        <th>Giudice</th>
-                        <th>Rif. Procedura</th>
-                        <th>Pagamenti</th>
-                        <th>Stato</th>
-                        <th>Azioni</th>
-                        <th>Prossima Scadenza</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
+            <div class="table-responsive"> <table id="tabella-incarichi-archiviati">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Descrizione</th>
+                            <th>Parti</th>
+                            <th>Tipo</th>
+                            <th>Giudice</th>
+                            <th>Rif. Procedura</th>
+                            <th>Pagamenti</th>
+                            <th>Stato</th>
+                            <th>Prossima Scadenza</th> </tr>
+                    </thead>
+                    <tbody>
+                        
 </tbody>
-            </table>
+                </table>
+            </div>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
         </div>
     </div>
 
     <script>
-        // *** CONFIGURAZIONE FIREBASE - INSERISCI QUI LE TUE CREDENZIALI ***
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDjX0BhHWiWaVl9obEFypAgiA52fc-zR3c",
   authDomain: "mioctuapp.firebaseapp.com",
@@ -746,9 +735,11 @@ const firebaseConfig = {
                 const snapshot = await incarichiCollection.get();
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    // Firebase doc.id è la chiave unica del documento
                     // Assicurati che l'ID del documento Firestore sia il campo 'id' dell'incarico
-                    if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
-                        data.id = parseInt(doc.id) || doc.id; // Tenta di usare doc.id come numerico, altrimenti stringa
+                    data.id = doc.id; // L'ID del documento Firestore è sempre una stringa
+                    if (data.timestamp === undefined || data.timestamp === null) {
+                        data.timestamp = 0; // Se da Firebase non ha timestamp (vecchio dato), mettiamo 0
                     }
                     firebaseIncarichi.push(data);
                 });
@@ -766,21 +757,20 @@ const firebaseConfig = {
                 let currentId = incarico.id;
 
                 // Gestisci ID nulli/non validi assegnando un ID temporaneo per la deduplicazione
-                if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
-                    currentId = `temp_${tempIdCounter--}`;
+                // Firestore doc.id è sempre stringa, ma localStorage potrebbe avere numeri o null
+                if (currentId === null || currentId === undefined || (typeof currentId !== 'string' && isNaN(parseInt(currentId)))) {
+                    currentId = `temp_${tempIdCounter--}`; // ID temporaneo stringa
                     // console.warn(`Incarico con ID non valido/nullo, assegnato ID temporaneo: ${currentId}`, incarico);
-                } else {
-                    currentId = parseInt(currentId);
+                } else if (typeof currentId === 'number') {
+                    currentId = String(currentId); // Normalizza a stringa per ID di documento Firestore
                 }
 
-                // Assicurati che il timestamp esista per il confronto dei duplicati
                 if (incarico.timestamp === undefined || incarico.timestamp === null) {
-                    incarico.timestamp = 0; // Se non ha timestamp, è considerato molto vecchio
+                    incarico.timestamp = 0; 
                 }
 
                 if (uniqueIncarichiMap.has(currentId)) {
                     const existingIncarico = uniqueIncarichiMap.get(currentId);
-                    // Prevale la versione con timestamp più recente
                     if (incarico.timestamp > existingIncarico.timestamp) {
                         uniqueIncarichiMap.set(currentId, incarico);
                     }
@@ -792,20 +782,30 @@ const firebaseConfig = {
             // 4. Ricostruisci gli array e assegna ID numerici definitivi se necessario
             incarichiAttivi = [];
             incarichiArchiviati = [];
-            let maxExistingId = 0; 
+            let maxNumericId = 0; // Trova il massimo ID numerico esistente
 
+            // Primo giro per trovare il max ID tra quelli validi (numerici)
             uniqueIncarichiMap.forEach(incarico => {
-                if (typeof incarico.id === 'number' && incarico.id > maxExistingId) {
-                    maxExistingId = incarico.id;
+                const numericId = parseInt(incarico.id);
+                if (!isNaN(numericId) && numericId > maxNumericId) {
+                    maxNumericId = numericId;
                 }
             });
 
+            // Secondo giro per assegnare nuovi ID e popolare gli array
+            const finalIncarichi = []; // Usiamo un array temporaneo per poi assegnare gli ID definitivi
             uniqueIncarichiMap.forEach(incarico => {
-                if (typeof incarico.id !== 'number' || incarico.id < 1) { 
-                    maxExistingId++;
-                    incarico.id = maxExistingId;
+                // Se l'ID è temporaneo o non numerico (originale), assegna un nuovo ID definitivo
+                if (typeof incarico.id !== 'number' || isNaN(parseInt(incarico.id)) || parseInt(incarico.id) < 1) { 
+                    maxNumericId++;
+                    incarico.id = String(maxNumericId); // Assicurati che l'ID finale sia una stringa per Firestore
+                } else {
+                    incarico.id = String(parseInt(incarico.id)); // Normalizza ID numerici a stringhe
                 }
-
+                finalIncarichi.push(incarico);
+            });
+            
+            finalIncarichi.forEach(incarico => {
                 const statoGenerale = getStatoIncarico(incarico);
                 const isCompleted = (statoGenerale.text === 'Completato');
                 if (isCompleted) {
@@ -814,7 +814,8 @@ const firebaseConfig = {
                     incarichiAttivi.push(incarico);
                 }
             });
-            
+
+
             salvaIncarichiLocally(); // Salva lo stato pulito e con ID validi nel localStorage
             renderTables();
             syncToFirebase(); // Sincronizza lo stato finale a Firebase
@@ -872,8 +873,9 @@ const firebaseConfig = {
                 let latestFirebaseData = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
-                        data.id = parseInt(doc.id) || doc.id; 
+                    data.id = doc.id; // L'ID del documento Firestore è sempre una stringa
+                    if (data.timestamp === undefined || data.timestamp === null) {
+                        data.timestamp = 0; 
                     }
                     latestFirebaseData.push(data);
                 });
@@ -884,10 +886,10 @@ const firebaseConfig = {
                 
                 combinedData.forEach(incarico => {
                     let currentId = incarico.id;
-                    if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
-                        currentId = `temp_${Date.now()}_${Math.random()}`; // ID temporaneo univoco per unici
-                    } else {
-                        currentId = parseInt(currentId);
+                    if (currentId === null || currentId === undefined || (typeof currentId !== 'string' && isNaN(parseInt(currentId)))) {
+                        currentId = `temp_${Date.now()}_${Math.random()}`; 
+                    } else if (typeof currentId === 'number') {
+                        currentId = String(currentId); 
                     }
 
                     if (incarico.timestamp === undefined || incarico.timestamp === null) {
@@ -909,15 +911,18 @@ const firebaseConfig = {
                 incarichiArchiviati = [];
                 let maxIdFromCombined = 0;
                 uniqueIncarichiMap.forEach(incarico => {
-                    if (typeof incarico.id === 'number' && incarico.id > maxIdFromCombined) {
-                        maxIdFromCombined = incarico.id;
+                    const numericId = parseInt(incarico.id);
+                    if (!isNaN(numericId) && numericId > maxIdFromCombined) {
+                        maxIdFromCombined = numericId;
                     }
                 });
 
                 uniqueIncarichiMap.forEach(incarico => {
-                    if (typeof incarico.id !== 'number' || incarico.id < 1) { 
+                    if (typeof incarico.id !== 'number' || isNaN(parseInt(incarico.id)) || parseInt(incarico.id) < 1) { 
                         maxIdFromCombined++;
-                        incarico.id = maxIdFromCombined;
+                        incarico.id = String(maxIdFromCombined);
+                    } else {
+                        incarico.id = String(parseInt(incarico.id)); 
                     }
                     const statoGenerale = getStatoIncarico(incarico);
                     const isCompleted = (statoGenerale.text === 'Completato');
@@ -928,8 +933,8 @@ const firebaseConfig = {
                     }
                 });
 
-                salvaIncarichiLocally(); // Salva lo stato risolto nel localStorage
-                renderTables(); // Aggiorna l'UI
+                salvaIncarichiLocally();
+                renderTables();
                 console.log("Sincronizzazione da Firebase completata. UI aggiornata.");
             }, (error) => {
                 console.error("Errore nel listener Firebase:", error);
@@ -1070,6 +1075,7 @@ const firebaseConfig = {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
             newRow.addEventListener('click', (e) => {
+                // Se l'evento è stato generato da un elemento .action-button (la matita), non propagare il click alla riga
                 if (e.target.closest('.action-button')) {
                     return;
                 }
@@ -1091,13 +1097,12 @@ const firebaseConfig = {
                     ${paymentSummary.text}
                 </span></td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
-                <td data-label="Azioni:">
-                    <button class="action-button" title="Modifica Incarico">✏️</button> 
-                </td>
                 <td data-label="Prossima Scadenza:"><span class="date-cell-content ${prossimaScadenza.class}">
                     ${prossimaScadenza.text}
                 </span></td>
             `;
+            // Ho rimosso la colonna "Azioni" dal thead e dalla riga.
+            // L'event listener sulla riga gestisce il click per la modifica.
         }
 
         // Funzione per aggiungere un set di campi per un pagamento
@@ -1177,7 +1182,7 @@ const firebaseConfig = {
         }
 
         // Gestione dell'invio del modulo
-        form.addEventListener('submit', async function(event) { // Aggiunto 'async' qui
+        form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
             const idInModifica = incaricoIdField.value;
@@ -1222,7 +1227,7 @@ const firebaseConfig = {
                 'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
                 'data-deposito': dateData['data-deposito'],
                 'data-udienza': dateData['data-udienza'],
-                timestamp: Date.now() // Aggiungi/aggiorna il timestamp
+                timestamp: Date.now() 
             };
 
             const statoGenerale = getStatoIncarico(incaricoData);
@@ -1244,24 +1249,21 @@ const firebaseConfig = {
             }
 
             if (incaricoFoundAndRemoved) {
-                // Se era una modifica, conserva l'ID originale
-                incaricoData.id = parseInt(idInModifica); 
+                incaricoData.id = String(parseInt(idInModifica)); // Assicurati che l'ID sia una stringa numerica
             } else {
-                // Se è un nuovo incarico, assegna un nuovo ID unico
                 const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
-                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
-                incaricoData.id = maxId + 1;
+                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' || (typeof i.id === 'string' && !isNaN(parseInt(i.id))) ? parseInt(i.id) : 0)) : 0; 
+                incaricoData.id = String(maxId + 1); // Assicurati che l'ID sia una stringa numerica
             }
 
-            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
             if (isCompleted) {
                 incarichiArchiviati.push(incaricoData);
             } else {
                 incarichiAttivi.push(incaricoData);
             }
 
-            salvaIncarichiLocally(); // Salva immediatamente in localStorage
-            renderTables(); // Aggiorna l'UI immediatamente
+            salvaIncarichiLocally(); 
+            renderTables(); 
             await syncToFirebase(); // Sincronizza con Firebase in background
 
             form.reset();
@@ -1294,13 +1296,13 @@ const firebaseConfig = {
 
         // Inizializzazione: Carica da localStorage/Firebase e imposta listener
         async function initializeApp() {
-            await caricaIncarichi(); // Carica e deduplica iniziale
-            setupFirebaseListener(); // Imposta il listener per le modifiche da Firebase
+            await caricaIncarichi(); 
+            setupFirebaseListener(); 
         }
-        initializeApp(); // Avvia l'app
+        initializeApp();
 
         if (paymentsList.children.length === 0) {
-            addPaymentField(); // Assicura che ci sia almeno un campo pagamento all'avvio
+            addPaymentField();
         }
     </script>
 
