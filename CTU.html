@@ -297,34 +297,31 @@
         }
 
         /* Date Field Specific Styles */
-        /* Ho modificato questi stili per un migliore allineamento e per riempire la cella */
         .date-completed,
         .date-overdue,
         .date-due-soon,
         .date-normal {
-            display: flex; /* Usa flex per riempire la cella e centrare il contenuto */
+            display: flex;
             align-items: center; /* Centra verticalmente il contenuto del riquadro */
             justify-content: center; /* Centra orizzontalmente il contenuto del riquadro */
             padding: 5px 8px;
-            border-radius: 4px; /* Lasciamo il bordo-raggio per l'aspetto "pillola" */
+            border-radius: 4px;
             font-weight: bold;
             width: 100%; /* Riempi l'intera larghezza della cella */
             height: 100%; /* Riempi l'intera altezza della cella */
             box-sizing: border-box; /* Include padding e border nel calcolo di width/height */
-            text-align: center; /* Utile per testo multilinea, anche se con flex center è meno critico */
+            text-align: center;
             margin: 0; /* Rimuovi margini che potrebbero impedire di riempire la cella */
         }
         .date-completed { background-color: var(--date-completed-color); color: var(--text-light); }
         .date-overdue { background-color: var(--date-overdue-color); color: var(--text-light); }
         .date-due-soon { background-color: var(--date-due-soon-color); color: var(--text-dark); }
-        .date-normal { /* Per le date normali, nessun colore di sfondo per la cella intera, solo testo */ color: var(--text-dark); }
+        .date-normal { color: var(--text-dark); }
 
-        /* Rimuovi stili di allineamento dal TD per evitare conflitti, lascialo gestire al div interno */
         td[data-label="Scadenza:"] {
             text-align: initial; /* Reset allineamento testo */
             padding: 0; /* Rimuovi padding dalla cella TD per permettere al div interno di riempire */
         }
-        /* Assicurati che l'intestazione della colonna Scadenza sia centrata, se desiderato */
         th:has( + td[data-label="Scadenza:"]) {
             text-align: center;
         }
@@ -620,7 +617,16 @@
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
         </div>
-    </div>
+
+        <div class="form-section" style="margin-top: 40px;">
+            <h2>Gestione Backup</h2>
+            <div class="button-group" style="justify-content: flex-start;">
+                <button type="button" id="backup-data-btn" class="btn btn-primary">Scarica Backup</button>
+                <input type="file" id="upload-backup-file" accept=".json" style="display: none;">
+                <button type="button" id="upload-backup-btn" class="btn btn-secondary">Carica Backup</button>
+            </div>
+        </div>
+        </div>
 
     <script>
         const form = document.getElementById('form-incarico');
@@ -633,6 +639,12 @@
         const jsonInput = document.getElementById('json-input');
         const loadJsonBtn = document.getElementById('load-json-btn');
         const clearJsonBtn = document.getElementById('clear-json-btn');
+
+        // Pulsanti e input per il backup
+        const backupDataBtn = document.getElementById('backup-data-btn');
+        const uploadBackupBtn = document.getElementById('upload-backup-btn');
+        const uploadBackupFile = document.getElementById('upload-backup-file');
+
 
         const descCheckboxes = [
             { id: 'desc-stima', value: 'Stima' },
@@ -1181,6 +1193,64 @@
         // Event listener per il pulsante "Pulisci JSON"
         clearJsonBtn.addEventListener('click', () => {
             jsonInput.value = '';
+        });
+
+        // --- Funzioni di Backup e Ripristino ---
+
+        // Funzione per eseguire il backup dei dati
+        backupDataBtn.addEventListener('click', () => {
+            const dataToBackup = {
+                incarichiAttivi: incarichiAttivi,
+                incarichiArchiviati: incarichiArchiviati
+            };
+            const jsonString = JSON.stringify(dataToBackup, null, 2); // Formatta JSON con indentazione per leggibilità
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'backup_incarichi_CTU_' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Backup dei dati scaricato con successo!');
+        });
+
+        // Trigger per l'input file quando si clicca il pulsante "Carica Backup"
+        uploadBackupBtn.addEventListener('click', () => {
+            uploadBackupFile.click();
+        });
+
+        // Gestione del caricamento del file di backup
+        uploadBackupFile.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const loadedData = JSON.parse(e.target.result);
+                    if (loadedData.incarichiAttivi && loadedData.incarichiArchiviati) {
+                        if (confirm('Caricando il backup sovrascriverai i dati attuali. Sei sicuro di voler continuare?')) {
+                            incarichiAttivi = loadedData.incarichiAttivi;
+                            incarichiArchiviati = loadedData.incarichiArchiviati;
+                            salvaIncarichi();
+                            renderTables();
+                            alert('Backup caricato e dati ripristinati con successo!');
+                        }
+                    } else {
+                        alert('Il file JSON caricato non sembra essere un backup valido. Assicurati che contenga le chiavi "incarichiAttivi" e "incarichiArchiviati".');
+                    }
+                } catch (error) {
+                    alert('Errore durante la lettura del file di backup. Assicurati che sia un file JSON valido. Errore: ' + error.message);
+                    console.error('Errore caricamento backup:', error);
+                }
+            };
+            reader.readAsText(file);
+            // Resetta l'input file per permettere di caricare lo stesso file più volte
+            event.target.value = '';
         });
 
 
