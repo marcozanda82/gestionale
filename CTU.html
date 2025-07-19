@@ -800,13 +800,33 @@
             tabellaAttiviBody.innerHTML = '';
             tabellaArchiviatiBody.innerHTML = '';
 
-            // Ordina per data di conferimento più recente per gli attivi
+            // Ordina incarichiAttivi per urgenza (scadenza più vicina o già scaduta)
             incarichiAttivi.sort((a, b) => {
-                const dateA = a['data-conferimento']?.value ? new Date(a['data-conferimento'].value) : new Date(0);
-                const dateB = b['data-conferimento']?.value ? new Date(b['data-conferimento'].value) : new Date(0);
-                return dateB - dateA;
+                const scadenzaA = getScadenzaCorrente(a);
+                const scadenzaB = getScadenzaCorrente(b);
+
+                const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01'); // Data molto lontana se non c'è scadenza
+                const dateB = scadenzaB.value ? new Date(scadenzaB.value) : new Date('2999-01-01');
+
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                // Priorità 1: Scadenze passate (più vecchie prima)
+                if (dateA < today && dateB < today) {
+                    return dateA.getTime() - dateB.getTime();
+                }
+                // Priorità 2: Una scaduta e l'altra no (scaduta prima)
+                if (dateA < today && dateB >= today) {
+                    return -1;
+                }
+                if (dateA >= today && dateB < today) {
+                    return 1;
+                }
+                // Priorità 3: Entrambe non scadute (più vicine prima)
+                return dateA.getTime() - dateB.getTime();
             });
-            // Ordina per data di deposito più recente per gli archiviati
+
+            // Gli incarichi archiviati possono rimanere ordinati per data di deposito più recente
             incarichiArchiviati.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
@@ -1066,7 +1086,7 @@
             };
 
             const statoGenerale = getStatoIncarico(incaricoData);
-            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text === 'Udienza Svolta'); 
+            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text.includes('Udienza Svolta')); 
 
             if (idInModifica) {
                 const idxActive = incarichiAttivi.findIndex(i => i.id == idInModifica);
