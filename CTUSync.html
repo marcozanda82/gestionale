@@ -858,16 +858,14 @@
         const noArchivedMessage = document.getElementById('no-archived-incarichi');
 
         // Paginazione - Variabili di stato per la tabella Attivi
-        const itemsPerPage = 10; // Numero di elementi per pagina
-        let lastVisibleActive = null; // Ultimo documento della pagina corrente per gli attivi
-        let firstVisibleActive = null; // Primo documento della pagina corrente per gli attivi
-        let historyActive = [null]; // Stack per tenere traccia dei cursori delle pagine precedenti
+        const itemsPerPage = 10; 
+        let lastVisibleActive = null; 
+        let historyActive = [null]; 
         let currentPageActive = 1;
         let currentActiveDocs = []; // Array per memorizzare i documenti attivi della pagina corrente
 
         // Paginazione - Variabili di stato per la tabella Archiviati
         let lastVisibleArchived = null;
-        let firstVisibleArchived = null;
         let historyArchived = [null];
         let currentPageArchived = 1;
         let currentArchivedDocs = []; // Array per memorizzare i documenti archiviati della pagina corrente
@@ -1004,14 +1002,14 @@
                 data.forEach(incarico => aggiungiRigaTabella(incarico, targetTableBody, tableType));
             }
             
-            // Aggiorna lo stato dei pulsanti di paginazione e le informazioni sulla pagina
             updatePaginationControls(tableType, data.length);
+            
             // Re-inizializza la checkbox "seleziona tutto" e il pulsante di eliminazione
             const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
             if (selectAllCheckbox) selectAllCheckbox.checked = false;
             updateDeleteButtonState(tableType);
 
-            applyTableFilters(tableType); // Applica i filtri dopo il rendering
+            applyTableFilters(tableType); // Applica i filtri dopo il rendering dei dati della pagina
         }
 
         // Funzione per aggiungere una riga alla tabella specificata
@@ -1064,9 +1062,7 @@
             // Aggiungi event listener per la checkbox della riga
             newRow.querySelector('.row-select-checkbox').addEventListener('change', (e) => {
                 updateDeleteButtonState(tableType);
-                const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
-                const allRowsCheckboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody .row-select-checkbox`);
-                selectAllCheckbox.checked = Array.from(allRowsCheckboxes).every(cb => cb.checked);
+                updateSelectAllCheckboxState(tableType); // Aggiorna anche la checkbox "seleziona tutto"
             });
         }
 
@@ -1079,20 +1075,19 @@
                 nextBtn = nextActiveBtn;
                 pageInfo = pageInfoActive;
                 currentPage = currentPageActive;
-                hasMore = currentActiveDocs.length === (itemsPerPage + 1);
+                hasMore = currentActiveDocs.length >= itemsPerPage; // Assume hasMore se abbiamo ricevuto itemsPerPage (o più)
             } else { // archived
                 prevBtn = prevArchivedBtn;
                 nextBtn = nextArchivedBtn;
                 pageInfo = pageInfoArchived;
                 currentPage = currentPageArchived;
-                hasMore = currentArchivedDocs.length === (itemsPerPage + 1);
+                hasMore = currentArchivedDocs.length >= itemsPerPage; 
             }
 
             prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = !hasMore; 
+            nextBtn.disabled = !hasMore; // Disabilita se non ci sono più elementi da caricare
             pageInfo.textContent = `Pagina ${currentPage}`;
         }
-
 
         // Funzione per aggiornare lo stato del pulsante "Elimina Selezionati"
         function updateDeleteButtonState(tableType) {
@@ -1103,14 +1098,33 @@
                 deleteSelectedArchivedBtn.disabled = checkboxes.length === 0;
             }
         }
+        
+        // Funzione per aggiornare lo stato della checkbox "Seleziona Tutto"
+        function updateSelectAllCheckboxState(tableType) {
+            const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
+            if (!selectAllCheckbox) return;
+
+            const visibleCheckboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox`);
+            const checkedVisibleCheckboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox:checked`);
+
+            if (visibleCheckboxes.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedVisibleCheckboxes.length > 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        }
+
 
         // Funzione per eliminare gli incarichi selezionati
         async function deleteSelectedIncarichi(tableType) {
-            const confirmed = confirm("Sei sicuro di voler eliminare le pratiche selezionate? Questa operazione è irreversibile.");
-            if (!confirmed) {
-                return;
-            }
-
             const checkboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody .row-select-checkbox:checked`);
             const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
 
@@ -1119,22 +1133,36 @@
                 return;
             }
 
+            const confirmed = confirm(`Sei sicuro di voler eliminare ${idsToDelete.length} pratiche selezionate? Questa operazione è irreversibile.`);
+            if (!confirmed) {
+                return;
+            }
+
             console.log("Tentativo di eliminare ID:", idsToDelete);
 
             try {
-                const batch = db.batch(); // Usa un batch per eliminazioni multiple
+                const batch = db.batch(); 
                 idsToDelete.forEach(id => {
                     const docRef = incarichiCollection.doc(String(id));
                     batch.delete(docRef);
                 });
                 await batch.commit();
                 alert(`Eliminate ${idsToDelete.length} pratiche con successo.`);
-                // Ricarica la pagina corrente dopo l'eliminazione
+                
+                // Dopo l'eliminazione, ricarica la pagina corrente per mostrare lo stato aggiornato
                 if (tableType === 'active') {
-                    await loadActivePage('reload'); // 'reload' manterrà la pagina corrente se possibile
+                    await loadActivePage('reload'); 
                 } else {
                     await loadArchivedPage('reload');
                 }
+                // Resetta lo stato delle checkbox dopo l'operazione
+                const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                }
+                updateDeleteButtonState(tableType);
+
             } catch (error) {
                 console.error("Errore durante l'eliminazione delle pratiche:", error);
                 alert("Errore durante l'eliminazione delle pratiche. Controlla la console per i dettagli.");
@@ -1151,20 +1179,22 @@
             checkbox.addEventListener('change', (e) => {
                 const tableType = e.target.dataset.table;
                 const isChecked = e.target.checked;
-                document.querySelectorAll(`#tabella-incarichi-${tableType} tbody .row-select-checkbox`).forEach(rowCheckbox => {
+                // Seleziona/deseleziona solo le checkbox delle righe VISIBILI
+                document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox`).forEach(rowCheckbox => {
                     rowCheckbox.checked = isChecked;
                 });
-                updateDeleteButtonState(tableType);
+                updateDeleteButtonState(tableType); // Aggiorna lo stato del pulsante elimina
+                // Setta indeterminate a false quando si clicca su seleziona tutto
+                e.target.indeterminate = false;
             });
         });
 
         // --- FUNZIONALITÀ DI FILTRO PER COLONNA ---
         function applyTableFilters(tableType) {
             const tableBody = document.querySelector(`#tabella-incarichi-${tableType} tbody`);
-            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const rows = Array.from(tableBody.querySelectorAll('tr')); // Tutte le righe sulla pagina attuale
             const filterInputs = document.querySelectorAll(`#tabella-incarichi-${tableType} thead .column-filter`);
 
-            // Raccogli i valori dei filtri
             const filters = {};
             filterInputs.forEach(input => {
                 const column = input.dataset.filterColumn;
@@ -1177,7 +1207,6 @@
             rows.forEach(row => {
                 let showRow = true;
                 for (const column in filters) {
-                    // Usiamo i data-set custom per il filtraggio
                     let cellValue = row.dataset[column] || ''; 
                     if (!cellValue.includes(filters[column])) {
                         showRow = false;
@@ -1187,13 +1216,8 @@
                 row.style.display = showRow ? '' : 'none';
             });
 
-            // Aggiorna lo stato dei pulsanti di selezione dopo il filtro
-            const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
-            if (selectAllCheckbox) {
-                const visibleCheckboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox`);
-                const checkedVisibleCheckboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox:checked`);
-                selectAllCheckbox.checked = (visibleCheckboxes.length > 0 && visibleCheckboxes.length === checkedVisibleCheckboxes.length);
-            }
+            // Dopo aver applicato i filtri, aggiorna lo stato della checkbox "seleziona tutto" e del pulsante elimina
+            updateSelectAllCheckboxState(tableType);
             updateDeleteButtonState(tableType);
         }
 
@@ -1211,29 +1235,21 @@
         // Funzione per caricare gli incarichi paginati da Firestore
         async function fetchIncarichiPaginated(queryBuilder, limitVal, startAfterDoc, direction, historyArray, currentPageVar, isArchived) {
             let query = queryBuilder;
-            let currentCursorDoc = startAfterDoc;
-
-            // Decide l'ordinamento per la paginazione
-            // Per gli archiviati, l'ordinamento è decrescente per data-deposito, poi id
-            // Per gli attivi, l'ordinamento è per timestamp di modifica (più recente prima)
+            
             if (isArchived) {
                 query = query.orderBy('data-deposito.value', 'desc').orderBy('id', 'desc');
             } else {
                 query = query.orderBy('timestamp', 'desc'); 
             }
 
-            if (direction === 'next' && currentCursorDoc) {
-                query = query.startAfter(currentCursorDoc);
+            if (direction === 'next' && startAfterDoc) {
+                query = query.startAfter(startAfterDoc);
             } else if (direction === 'prev' && historyArray.length > 1) {
-                // Per 'prev', dobbiamo invertire l'ordine e usare startAt con il documento precedente nella history
-                // Poi invertire i risultati per la visualizzazione.
                 let prevCursor = historyArray[historyArray.length - 2];
-                if (prevCursor) { // Se esiste un cursore precedente, usalo con startAt
+                if (prevCursor) {
                     query = query.startAt(prevCursor);
-                } else { // Se il cursore precedente è null (prima pagina), non usare startAt
-                    query = queryBuilder; // Ritorna alla query base
                 }
-                // Invertiamo l'ordinamento solo per il recupero dei dati all'indietro
+                // Invertiamo l'ordinamento per il recupero dei dati all'indietro e poi li invertiamo
                 if (isArchived) {
                      query = query.orderBy('data-deposito.value', 'asc').orderBy('id', 'asc');
                 } else {
@@ -1241,16 +1257,15 @@
                 }
             }
             
-            const snapshot = await query.limit(limitVal + 1).get(); // Prendi uno in più per hasMore
+            const snapshot = await query.limit(limitVal + 1).get(); 
             let docs = snapshot.docs;
 
             if (direction === 'prev' && historyArray.length > 1) {
-                // Se siamo tornati indietro, dobbiamo invertire l'ordine dei documenti per la visualizzazione corretta
-                docs.reverse();
+                docs.reverse(); // Inverti per ottenere l'ordine corretto per la visualizzazione
             }
 
             const incarichi = [];
-            docs.slice(0, limitVal).forEach(doc => { // Prendi solo il limite specificato per la pagina
+            docs.slice(0, limitVal).forEach(doc => { 
                 const data = doc.data();
                 if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
                     data.id = parseInt(doc.id) || doc.id; 
@@ -1262,60 +1277,53 @@
                 docs: incarichi,
                 lastVisible: docs.length > 0 ? docs[docs.length - 1] : null,
                 firstVisible: docs.length > 0 ? docs[0] : null,
-                hasMore: docs.length === (limitVal + 1) // true se ci sono più documenti del limite
+                hasMore: docs.length === (limitVal + 1) 
             };
         }
 
         async function loadActivePage(direction = 'first') {
             console.log(`Caricamento pagina attivi: ${direction}`);
-            const collectionRef = incarichiCollection; // Base collection reference
+            const collectionRef = incarichiCollection; 
             let startDoc = null;
 
             if (direction === 'next') {
                 startDoc = lastVisibleActive;
-                historyActive.push(lastVisibleActive); // Salva l'ultimo cursore per il back
+                historyActive.push(lastVisibleActive); 
                 currentPageActive++;
             } else if (direction === 'prev') {
                 if (historyActive.length > 1) {
-                    historyActive.pop(); // Rimuove il cursore della pagina corrente
-                    startDoc = historyActive[historyActive.length - 1]; // Il nuovo startDoc è l'ultimo della pagina precedente
+                    historyActive.pop(); 
+                    startDoc = historyActive[historyActive.length - 1]; 
                 }
                 currentPageActive--;
             } else { // 'first' o 'reload'
-                historyActive = [null]; // Resetta la cronologia
+                historyActive = [null]; 
                 currentPageActive = 1;
             }
 
-            const { docs, lastVisible, firstVisible, hasMore } = await fetchIncarichiPaginated(
+            const { docs, lastVisible, hasMore } = await fetchIncarichiPaginated(
                 collectionRef, itemsPerPage, startDoc, direction, historyActive, currentPageActive, false
             );
             
-            // Filtriamo lato client per lo stato, che è dinamico
             currentActiveDocs = docs.filter(incarico => getStatoIncarico(incarico).text !== 'Completato');
-            // Ordiniamo localmente per prossima scadenza (client-side sort)
             currentActiveDocs.sort((a, b) => {
                 const scadenzaA = getProssimaScadenza(a).date;
                 const scadenzaB = getProssimaScadenza(b).date;
                 return scadenzaA.getTime() - scadenzaB.getTime();
             });
 
-            lastVisibleActive = lastVisible; // Aggiorna l'ultimo documento visibile
-            firstVisibleActive = firstVisible; // Aggiorna il primo documento visibile (per la gestione del "prev" più robusta)
+            lastVisibleActive = lastVisible; 
 
             renderTable(tabellaAttiviBody, currentActiveDocs, noActiveMessage, 'active');
 
             prevActiveBtn.disabled = currentPageActive === 1;
-            // Il pulsante "Successivo" è disabilitato se la query ha restituito meno del limite richiesto
-            // o se non ci sono più documenti attivi dopo il filtraggio.
-            // Per il filtro client-side, è difficile sapere se ci sono "altri attivi" dopo.
-            // Una soluzione più accurata sarebbe un campo indicizzato `isCompleted: boolean` in Firestore.
-            nextActiveBtn.disabled = docs.length <= itemsPerPage; // Se il numero di documenti recuperati è <= itemsPerPage, significa che non ci sono più pagine.
+            nextActiveBtn.disabled = !hasMore; 
             pageInfoActive.textContent = `Pagina ${currentPageActive}`;
         }
 
         async function loadArchivedPage(direction = 'first') {
             console.log(`Caricamento pagina archiviati: ${direction}`);
-            const collectionRef = incarichiCollection.where('data-deposito.done', '==', true); // Filtra già per archiviati su Firebase
+            const collectionRef = incarichiCollection.where('data-deposito.done', '==', true); 
             let startDoc = null;
 
             if (direction === 'next') {
@@ -1328,17 +1336,16 @@
                     startDoc = historyArchived[historyArchived.length - 1];
                 }
                 currentPageArchived--;
-            } else { // 'first' o 'reload'
+            } else { 
                 historyArchived = [null];
                 currentPageArchived = 1;
             }
 
-            const { docs, lastVisible, firstVisible, hasMore } = await fetchIncarichiPaginated(
+            const { docs, lastVisible, hasMore } = await fetchIncarichiPaginated(
                 collectionRef, itemsPerPage, startDoc, direction, historyArchived, currentPageArchived, true
             );
             
             currentArchivedDocs = docs;
-            // Ordiniamo localmente per data-deposito (client-side sort, utile per coerenza)
             currentArchivedDocs.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
@@ -1346,7 +1353,6 @@
             });
 
             lastVisibleArchived = lastVisible;
-            firstVisibleArchived = firstVisible;
 
             renderTable(tabellaArchiviatiBody, currentArchivedDocs, noArchivedMessage, 'archived');
 
@@ -1356,15 +1362,21 @@
         }
 
 
+        // Listener per i pulsanti di paginazione
+        prevActiveBtn.addEventListener('click', () => loadActivePage('prev'));
+        nextActiveBtn.addEventListener('click', () => loadActivePage('next'));
+
+        prevArchivedBtn.addEventListener('click', () => loadArchivedPage('prev'));
+        nextArchivedBtn.addEventListener('click', () => loadArchivedPage('next'));
+
+
         // Inizializzazione: Carica da Firebase e imposta listener
         async function initializeApp() {
-            // Setup del listener generico di Firebase per gestire le modifiche in tempo reale e ri-renderizzare le tabelle
-            // Questo listener ora si limiterà a triggerare un ricaricamento della pagina corrente,
-            // per coerenza con la paginazione lato server.
+            // Listener principale di Firebase per aggiornamenti in tempo reale
             incarichiCollection.onSnapshot(async (snapshot) => {
                 const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
                 if (source === "Local") {
-                    // console.log("Modifica locale, ignorata dal listener per evitare loop di ricarica.");
+                    // Se la modifica è locale, la UI è già aggiornata dall'addOrUpdateIncarico
                     return; 
                 }
                 console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Ricaricamento pagina corrente...");
@@ -1373,6 +1385,7 @@
                 await loadArchivedPage('reload');
             }, (error) => {
                 console.error("Errore nel listener Firebase:", error);
+                alert("Errore di connessione a Firebase. Alcune funzionalità potrebbero non essere aggiornate in tempo reale.");
             });
             
             // Carica la prima pagina di incarichi attivi e archiviati all'avvio
