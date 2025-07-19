@@ -833,55 +833,7 @@
         const incarichiCollection = db.collection('incarichi'); 
         // *** FINE CONFIGURAZIONE FIREBASE ***
 
-
-        const form = document.getElementById('form-incarico');
-        const submitButton = document.getElementById('submit-button');
-        const resetButton = document.getElementById('reset-button');
-        const incaricoIdField = document.getElementById('incarico-id');
-        const addPaymentBtn = document.getElementById('add-payment-btn');
-        const paymentsList = document.getElementById('payments-list');
-
-        const massInputString = document.getElementById('mass-input-string');
-        const processStringBtn = document.getElementById('process-string-btn');
-        const clearStringInputBtn = document.getElementById('clear-string-input-btn');
-
-        const descCheckboxes = [
-            { id: 'desc-stima', value: 'Stima' },
-            { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
-            { id: 'desc-compatibilita', value: 'Compatibilità' },
-            { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
-        ];
-
-        const tabellaAttiviBody = document.querySelector('#tabella-incarichi-attivi tbody');
-        const tabellaArchiviatiBody = document.querySelector('#tabella-incarichi-archiviati tbody');
-        const noActiveMessage = document.getElementById('no-active-incarichi');
-        const noArchivedMessage = document.getElementById('no-archived-incarichi');
-
-        // Paginazione - Variabili di stato per la tabella Attivi
-        const itemsPerPage = 10; 
-        let lastVisibleActive = null; 
-        let historyActive = [null]; 
-        let currentPageActive = 1;
-        let currentActiveDocs = []; // Array per memorizzare i documenti attivi della pagina corrente
-
-        // Paginazione - Variabili di stato per la tabella Archiviati
-        let lastVisibleArchived = null;
-        let historyArchived = [null];
-        let currentPageArchived = 1;
-        let currentArchivedDocs = []; // Array per memorizzare i documenti archiviati della pagina corrente
-
-        // Elementi UI per la paginazione
-        const prevActiveBtn = document.getElementById('prev-active-btn');
-        const nextActiveBtn = document.getElementById('next-active-btn');
-        const pageInfoActive = document.getElementById('page-info-active');
-
-        const prevArchivedBtn = document.getElementById('prev-archived-btn');
-        const nextArchivedBtn = document.getElementById('next-archived-btn');
-        const pageInfoArchived = document.getElementById('page-info-archived');
-
-        // Elementi per l'eliminazione
-        const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
-        const deleteSelectedArchivedBtn = document.getElementById('delete-selected-archived-btn');
+        // *** FUNZIONI DI UTILITÀ (DEFINITE PRIMA DELL'USO) ***
 
         // Mappa dei campi data e relative checkbox (Ord. Cronologico per prossima scadenza)
         const dateFields = [
@@ -991,9 +943,96 @@
             return { text: 'N/D', class: 'date-normal', date: new Date('9999-12-31') }; 
         }
 
+        // Funzione per aggiungere un set di campi per un pagamento
+        function addPaymentField(payment = { tipo: 'Fondo Spese', stato: 'Non Pagato', importo: '' }) {
+            const paymentsList = document.getElementById('payments-list'); // Assicurati che paymentsList sia disponibile
+            const paymentItem = document.createElement('div');
+            paymentItem.className = 'payment-item';
+            paymentItem.innerHTML = `
+                <div class="form-group">
+                    <label>Tipo:</label>
+                    <select class="payment-type">
+                        <option value="Fondo Spese" ${payment.tipo === 'Fondo Spese' ? 'selected' : ''}>Fondo Spese</option>
+                        <option value="Saldo" ${payment.tipo === 'Saldo' ? 'selected' : ''}>Saldo</option>
+                        <option value="Acconto" ${payment.tipo === 'Acconto' ? 'selected' : ''}>Acconto</option>
+                        <option value="Rimborso Spese" ${payment.tipo === 'Rimborso Spese' ? 'selected' : ''}>Rimborso Spese</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stato:</label>
+                    <select class="payment-status">
+                        <option value="Non Pagato" ${payment.stato === 'Non Pagato' ? 'selected' : ''}>Non Pagato</option>
+                        <option value="Pagato" ${payment.stato === 'Pagato' ? 'selected' : ''}>Pagato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Importo (€):</label>
+                    <input type="number" class="payment-amount" step="0.01" min="0" value="${payment.importo}">
+                </div>
+                <button type="button" class="remove-payment-btn" title="Rimuovi Pagamento">&times;</button>
+            `;
+            paymentsList.appendChild(paymentItem);
+
+            paymentItem.querySelector('.remove-payment-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                paymentsList.removeChild(paymentItem);
+            });
+        }
+        // *** FINE FUNZIONI DI UTILITÀ ***
+
+
+        const form = document.getElementById('form-incarico');
+        const submitButton = document.getElementById('submit-button');
+        const resetButton = document.getElementById('reset-button');
+        const incaricoIdField = document.getElementById('incarico-id');
+        const addPaymentBtn = document.getElementById('add-payment-btn');
+        const paymentsList = document.getElementById('payments-list');
+
+        const massInputString = document.getElementById('mass-input-string');
+        const processStringBtn = document.getElementById('process-string-btn');
+        const clearStringInputBtn = document.getElementById('clear-string-input-btn');
+
+        const descCheckboxes = [
+            { id: 'desc-stima', value: 'Stima' },
+            { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
+            { id: 'desc-compatibilita', value: 'Compatibilità' },
+            { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
+        ];
+
+        const tabellaAttiviBody = document.querySelector('#tabella-incarichi-attivi tbody');
+        const tabellaArchiviatiBody = document.querySelector('#tabella-incarichi-archiviati tbody');
+        const noActiveMessage = document.getElementById('no-active-incarichi');
+        const noArchivedMessage = document.getElementById('no-archived-incarichi');
+
+        // Paginazione - Variabili di stato per la tabella Attivi
+        const itemsPerPage = 10; 
+        let lastVisibleActive = null; 
+        let historyActive = [null]; 
+        let currentPageActive = 1;
+        let currentActiveDocs = []; 
+
+        // Paginazione - Variabili di stato per la tabella Archiviati
+        let lastVisibleArchived = null;
+        let historyArchived = [null];
+        let currentPageArchived = 1;
+        let currentArchivedDocs = []; 
+
+        // Elementi UI per la paginazione
+        const prevActiveBtn = document.getElementById('prev-active-btn');
+        const nextActiveBtn = document.getElementById('next-active-btn');
+        const pageInfoActive = document.getElementById('page-info-active');
+
+        const prevArchivedBtn = document.getElementById('prev-archived-btn');
+        const nextArchivedBtn = document.getElementById('next-archived-btn');
+        const pageInfoArchived = document.getElementById('page-info-archived');
+
+        // Elementi per l'eliminazione
+        const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
+        const deleteSelectedArchivedBtn = document.getElementById('delete-selected-archived-btn');
+
         // Funzione per renderizzare le tabelle
         function renderTable(targetTableBody, data, noDataMessageElement, tableType) {
-            targetTableBody.innerHTML = ''; // Pulisce il corpo della tabella
+            targetTableBody.innerHTML = ''; 
 
             if (data.length === 0) {
                 noDataMessageElement.style.display = 'block';
@@ -1004,19 +1043,18 @@
             
             updatePaginationControls(tableType, data.length);
             
-            // Re-inizializza la checkbox "seleziona tutto" e il pulsante di eliminazione
             const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
             if (selectAllCheckbox) selectAllCheckbox.checked = false;
             updateDeleteButtonState(tableType);
 
-            applyTableFilters(tableType); // Applica i filtri dopo il rendering dei dati della pagina
+            // Re-applica i filtri esistenti dopo il rendering
+            applyTableFilters(tableType); 
         }
 
         // Funzione per aggiungere una riga alla tabella specificata
         function aggiungiRigaTabella(incarico, targetTableBody, tableType) {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
-            // Aggiungi un listener solo al click sulla riga per modificare (escludendo checkbox e action buttons)
             newRow.addEventListener('click', (e) => {
                 if (e.target.closest('.action-button') || e.target.type === 'checkbox') {
                     return;
@@ -1028,8 +1066,6 @@
             const paymentSummary = getPaymentStatusSummary(incarico.pagamenti);
             const prossimaScadenza = getProssimaScadenza(incarico);
 
-            // Per i filtri, creiamo campi dati personalizzati con il testo puro
-            // Questo permette ai filtri di funzionare anche su valori complessi o combinati
             newRow.dataset.descrizione = incarico.descrizione.join(', ').toLowerCase();
             newRow.dataset.parti = (incarico.parti || '').toLowerCase();
             newRow.dataset.tipoIncarico = (incarico['tipo-incarico'] || '').toLowerCase();
@@ -1059,10 +1095,9 @@
                 </span></td>
             `;
 
-            // Aggiungi event listener per la checkbox della riga
             newRow.querySelector('.row-select-checkbox').addEventListener('change', (e) => {
                 updateDeleteButtonState(tableType);
-                updateSelectAllCheckboxState(tableType); // Aggiorna anche la checkbox "seleziona tutto"
+                updateSelectAllCheckboxState(tableType); 
             });
         }
 
@@ -1075,7 +1110,7 @@
                 nextBtn = nextActiveBtn;
                 pageInfo = pageInfoActive;
                 currentPage = currentPageActive;
-                hasMore = currentActiveDocs.length >= itemsPerPage; // Assume hasMore se abbiamo ricevuto itemsPerPage (o più)
+                hasMore = currentActiveDocs.length >= itemsPerPage; 
             } else { // archived
                 prevBtn = prevArchivedBtn;
                 nextBtn = nextArchivedBtn;
@@ -1084,18 +1119,18 @@
                 hasMore = currentArchivedDocs.length >= itemsPerPage; 
             }
 
-            prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = !hasMore; // Disabilita se non ci sono più elementi da caricare
-            pageInfo.textContent = `Pagina ${currentPage}`;
+            if (prevBtn) prevBtn.disabled = currentPage === 1;
+            if (nextBtn) nextBtn.disabled = !hasMore; 
+            if (pageInfo) pageInfo.textContent = `Pagina ${currentPage}`;
         }
 
         // Funzione per aggiornare lo stato del pulsante "Elimina Selezionati"
         function updateDeleteButtonState(tableType) {
             const checkboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody .row-select-checkbox:checked`);
             if (tableType === 'active') {
-                deleteSelectedActiveBtn.disabled = checkboxes.length === 0;
+                if (deleteSelectedActiveBtn) deleteSelectedActiveBtn.disabled = checkboxes.length === 0;
             } else {
-                deleteSelectedArchivedBtn.disabled = checkboxes.length === 0;
+                if (deleteSelectedArchivedBtn) deleteSelectedArchivedBtn.disabled = checkboxes.length === 0;
             }
         }
         
@@ -1121,7 +1156,6 @@
                 selectAllCheckbox.indeterminate = false;
             }
         }
-
 
         // Funzione per eliminare gli incarichi selezionati
         async function deleteSelectedIncarichi(tableType) {
@@ -1170,8 +1204,8 @@
         }
 
         // Event Listeners per i pulsanti di eliminazione
-        deleteSelectedActiveBtn.addEventListener('click', () => deleteSelectedIncarichi('active'));
-        deleteSelectedArchivedBtn.addEventListener('click', () => deleteSelectedIncarichi('archived'));
+        if (deleteSelectedActiveBtn) deleteSelectedActiveBtn.addEventListener('click', () => deleteSelectedIncarichi('active'));
+        if (deleteSelectedArchivedBtn) deleteSelectedArchivedBtn.addEventListener('click', () => deleteSelectedIncarichi('archived'));
 
 
         // Event Listener per le checkbox "Seleziona Tutto"
@@ -1183,8 +1217,7 @@
                 document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox`).forEach(rowCheckbox => {
                     rowCheckbox.checked = isChecked;
                 });
-                updateDeleteButtonState(tableType); // Aggiorna lo stato del pulsante elimina
-                // Setta indeterminate a false quando si clicca su seleziona tutto
+                updateDeleteButtonState(tableType); 
                 e.target.indeterminate = false;
             });
         });
@@ -1192,7 +1225,13 @@
         // --- FUNZIONALITÀ DI FILTRO PER COLONNA ---
         function applyTableFilters(tableType) {
             const tableBody = document.querySelector(`#tabella-incarichi-${tableType} tbody`);
-            const rows = Array.from(tableBody.querySelectorAll('tr')); // Tutte le righe sulla pagina attuale
+            // Verifica che tableBody non sia null
+            if (!tableBody) {
+                console.warn(`Impossibile applicare filtri: tbody per ${tableType} non trovato.`);
+                return;
+            }
+
+            const rows = Array.from(tableBody.querySelectorAll('tr')); 
             const filterInputs = document.querySelectorAll(`#tabella-incarichi-${tableType} thead .column-filter`);
 
             const filters = {};
@@ -1216,7 +1255,6 @@
                 row.style.display = showRow ? '' : 'none';
             });
 
-            // Dopo aver applicato i filtri, aggiorna lo stato della checkbox "seleziona tutto" e del pulsante elimina
             updateSelectAllCheckboxState(tableType);
             updateDeleteButtonState(tableType);
         }
@@ -1230,10 +1268,8 @@
         });
 
 
-        // --- FIREBASE LISTENERS E CARICAMENTO INIZIALE ---
-
         // Funzione per caricare gli incarichi paginati da Firestore
-        async function fetchIncarichiPaginated(queryBuilder, limitVal, startAfterDoc, direction, historyArray, currentPageVar, isArchived) {
+        async function fetchIncarichiPaginated(queryBuilder, limitVal, startAfterDoc, direction, historyArray, isArchived) {
             let query = queryBuilder;
             
             if (isArchived) {
@@ -1249,7 +1285,6 @@
                 if (prevCursor) {
                     query = query.startAt(prevCursor);
                 }
-                // Invertiamo l'ordinamento per il recupero dei dati all'indietro e poi li invertiamo
                 if (isArchived) {
                      query = query.orderBy('data-deposito.value', 'asc').orderBy('id', 'asc');
                 } else {
@@ -1261,7 +1296,7 @@
             let docs = snapshot.docs;
 
             if (direction === 'prev' && historyArray.length > 1) {
-                docs.reverse(); // Inverti per ottenere l'ordine corretto per la visualizzazione
+                docs.reverse(); 
             }
 
             const incarichi = [];
@@ -1276,7 +1311,6 @@
             return {
                 docs: incarichi,
                 lastVisible: docs.length > 0 ? docs[docs.length - 1] : null,
-                firstVisible: docs.length > 0 ? docs[0] : null,
                 hasMore: docs.length === (limitVal + 1) 
             };
         }
@@ -1296,13 +1330,13 @@
                     startDoc = historyActive[historyActive.length - 1]; 
                 }
                 currentPageActive--;
-            } else { // 'first' o 'reload'
+            } else { 
                 historyActive = [null]; 
                 currentPageActive = 1;
             }
 
             const { docs, lastVisible, hasMore } = await fetchIncarichiPaginated(
-                collectionRef, itemsPerPage, startDoc, direction, historyActive, currentPageActive, false
+                collectionRef, itemsPerPage, startDoc, direction, historyActive, false
             );
             
             currentActiveDocs = docs.filter(incarico => getStatoIncarico(incarico).text !== 'Completato');
@@ -1316,9 +1350,9 @@
 
             renderTable(tabellaAttiviBody, currentActiveDocs, noActiveMessage, 'active');
 
-            prevActiveBtn.disabled = currentPageActive === 1;
-            nextActiveBtn.disabled = !hasMore; 
-            pageInfoActive.textContent = `Pagina ${currentPageActive}`;
+            if (prevActiveBtn) prevActiveBtn.disabled = currentPageActive === 1;
+            if (nextActiveBtn) nextActiveBtn.disabled = !hasMore; 
+            if (pageInfoActive) pageInfoActive.textContent = `Pagina ${currentPageActive}`;
         }
 
         async function loadArchivedPage(direction = 'first') {
@@ -1342,7 +1376,7 @@
             }
 
             const { docs, lastVisible, hasMore } = await fetchIncarichiPaginated(
-                collectionRef, itemsPerPage, startDoc, direction, historyArchived, currentPageArchived, true
+                collectionRef, itemsPerPage, startDoc, direction, historyArchived, true
             );
             
             currentArchivedDocs = docs;
@@ -1356,33 +1390,313 @@
 
             renderTable(tabellaArchiviatiBody, currentArchivedDocs, noArchivedMessage, 'archived');
 
-            prevArchivedBtn.disabled = currentPageArchived === 1;
-            nextArchivedBtn.disabled = !hasMore;
-            pageInfoArchived.textContent = `Pagina ${currentPageArchived}`;
+            if (prevArchivedBtn) prevArchivedBtn.disabled = currentPageArchived === 1;
+            if (nextArchivedBtn) nextArchivedBtn.disabled = !hasMore;
+            if (pageInfoArchived) pageInfoArchived.textContent = `Pagina ${currentPageArchived}`;
         }
 
 
         // Listener per i pulsanti di paginazione
-        prevActiveBtn.addEventListener('click', () => loadActivePage('prev'));
-        nextActiveBtn.addEventListener('click', () => loadActivePage('next'));
+        if (prevActiveBtn) prevActiveBtn.addEventListener('click', () => loadActivePage('prev'));
+        if (nextActiveBtn) nextActiveBtn.addEventListener('click', () => loadActivePage('next'));
 
-        prevArchivedBtn.addEventListener('click', () => loadArchivedPage('prev'));
-        nextArchivedBtn.addEventListener('click', () => loadArchivedPage('next'));
+        if (prevArchivedBtn) prevArchivedBtn.addEventListener('click', () => loadArchivedPage('prev'));
+        if (nextArchivedBtn) nextArchivedBtn.addEventListener('click', () => loadArchivedPage('next'));
 
 
-        // Inizializzazione: Carica da Firebase e imposta listener
+        // Funzione per popolare il modulo con i dati dell'incarico da modificare
+        async function modificaIncarico(id) {
+            try {
+                const doc = await incarichiCollection.doc(String(id)).get();
+                if (doc.exists) {
+                    const incaricoToEdit = doc.data();
+                    incaricoIdField.value = incaricoToEdit.id;
+                    
+                    descCheckboxes.forEach(checkboxInfo => {
+                        const checkbox = document.getElementById(checkboxInfo.id);
+                        if (checkbox) checkbox.checked = Array.isArray(incaricoToEdit.descrizione) && incaricoToEdit.descrizione.includes(checkboxInfo.value);
+                    });
+
+                    if (document.getElementById('tipo-incarico')) document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'] || '';
+                    if (document.getElementById('giudice')) document.getElementById('giudice').value = incaricoToEdit.giudice || '';
+                    if (document.getElementById('rif-procedura')) document.getElementById('rif-procedura').value = incaricoToEdit['rif-procedura'] || '';
+                    if (document.getElementById('parti')) document.getElementById('parti').value = incaricoToEdit.parti || '';
+                    if (document.getElementById('note')) document.getElementById('note').value = incaricoToEdit.note || '';
+
+                    paymentsList.innerHTML = '';
+                    if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
+                        incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
+                    } else {
+                        addPaymentField();
+                    }
+
+                    dateFields.forEach(field => {
+                        const dateInput = document.getElementById(field.id);
+                        const doneCheckbox = document.getElementById(field.doneId);
+                        if (dateInput && doneCheckbox) {
+                            if (incaricoToEdit[field.id]) {
+                                dateInput.value = incaricoToEdit[field.id].value || '';
+                                doneCheckbox.checked = incaricoToEdit[field.id].done || false;
+                            } else {
+                                dateInput.value = '';
+                                doneCheckbox.checked = false;
+                            }
+                        }
+                    });
+
+                    submitButton.textContent = 'Salva Modifiche';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    console.warn("Incarico non trovato in Firebase per la modifica:", id);
+                }
+            } catch (e) {
+                console.error("Errore durante il recupero dell'incarico per la modifica:", e);
+                alert("Errore durante il caricamento della pratica per la modifica.");
+            }
+        }
+
+
+        // Funzione per aggiungere un singolo incarico (nuovo o modificato) A FIREBASE
+        async function addOrUpdateIncarico(incaricoData) {
+            console.log("Tentativo di aggiungere/aggiornare incarico:", incaricoData);
+            
+            if (!incaricoData.id || isNaN(parseInt(incaricoData.id))) {
+                // Per i nuovi ID, interroghiamo Firestore per il massimo ID esistente
+                try {
+                    const maxIdSnapshot = await incarichiCollection.orderBy('id', 'desc').limit(1).get();
+                    let maxExistingId = 0;
+                    if (!maxIdSnapshot.empty) {
+                        maxExistingId = maxIdSnapshot.docs[0].data().id;
+                    }
+                    incaricoData.id = maxExistingId + 1;
+                    console.log("Assegnato nuovo ID all'incarico:", incaricoData.id);
+                } catch (e) {
+                    console.error("Errore nel recupero del massimo ID per nuovo incarico:", e);
+                    // Fallback se il recupero del max ID fallisce
+                    incaricoData.id = Date.now(); 
+                }
+            } else {
+                incaricoData.id = parseInt(incaricoData.id); 
+            }
+
+            incaricoData.timestamp = Date.now(); 
+
+            try {
+                await incarichiCollection.doc(String(incaricoData.id)).set(incaricoData);
+                console.log(`Incarico ${incaricoData.id} salvato/aggiornato su Firebase.`);
+            } catch (e) {
+                console.error(`Errore durante il salvataggio dell'incarico ${incaricoData.id} su Firebase:`, e);
+                alert("Errore durante il salvataggio della pratica su Firebase.");
+            }
+        }
+
+        // Gestione dell'invio del modulo (per l'aggiunta/modifica manuale)
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const idInModifica = incaricoIdField.value;
+
+            const selectedDescriptions = [];
+            descCheckboxes.forEach(checkboxInfo => {
+                const checkbox = document.getElementById(checkboxInfo.id);
+                if (checkbox && checkbox.checked) {
+                    selectedDescriptions.push(checkboxInfo.value);
+                }
+            });
+
+            const currentPayments = [];
+            document.querySelectorAll('.payment-item').forEach(item => {
+                const type = item.querySelector('.payment-type').value;
+                const status = item.querySelector('.payment-status').value;
+                const amount = item.querySelector('.payment-amount').value;
+                currentPayments.push({ tipo: type, stato: status, importo: amount });
+            });
+
+            const dateData = {};
+            dateFields.forEach(field => {
+                const dateInput = document.getElementById(field.id);
+                const doneCheckbox = document.getElementById(field.doneId);
+                if (dateInput && doneCheckbox) {
+                    if (dateInput.value) {
+                        dateData[field.id] = { value: dateInput.value, done: doneCheckbox.checked };
+                    } else {
+                        dateData[field.id] = null;
+                    }
+                }
+            });
+
+            let incaricoData = {
+                descrizione: selectedDescriptions,
+                'tipo-incarico': document.getElementById('tipo-incarico').value,
+                giudice: document.getElementById('giudice').value,
+                'rif-procedura': document.getElementById('rif-procedura').value,
+                parti: document.getElementById('parti').value,
+                note: document.getElementById('note').value,
+                pagamenti: currentPayments,
+                'data-conferimento': dateData['data-conferimento'],
+                'data-inizio-operazioni': dateData['data-inizio-operazioni'],
+                'data-invio-bozza': dateData['data-invio-bozza'],
+                'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
+                'data-deposito': dateData['data-deposito'],
+                'data-udienza': dateData['data-udienza'],
+            };
+
+            if (idInModifica) {
+                incaricoData.id = idInModifica;
+            }
+
+            await addOrUpdateIncarico(incaricoData);
+
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
+
+            descCheckboxes.forEach(checkboxInfo => {
+                const checkbox = document.getElementById(checkboxInfo.id);
+                if (checkbox) checkbox.checked = false;
+            });
+        });
+
+        // Gestione del pulsante "Nuovo Incarico"
+        resetButton.addEventListener('click', () => {
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            descCheckboxes.forEach(checkboxInfo => {
+                const checkbox = document.getElementById(checkboxInfo.id);
+                if (checkbox) checkbox.checked = false;
+            });
+        });
+
+        // Event listener per il pulsante "+ Aggiungi Pagamento"
+        addPaymentBtn.addEventListener('click', () => addPaymentField());
+
+
+        // --- FUNZIONALITÀ PER L'INSERIMENTO DA STRINGA ---
+
+        async function processInputString() {
+            const inputString = massInputString.value.trim();
+            if (!inputString) {
+                alert("Il campo della stringa è vuoto. Incolla i dati.");
+                return;
+            }
+
+            const incaricoStrings = inputString.split('###INCARICO_START###')
+                                               .filter(s => s.trim() !== '')
+                                               .map(s => s.split('###INCARICO_END###')[0].trim());
+
+            if (incaricoStrings.length === 0) {
+                alert("Nessun incarico valido trovato nella stringa. Controlla il formato.");
+                return;
+            }
+
+            console.log("Incarichi da processare dalla stringa:", incaricoStrings.length);
+
+            for (const incStr of incaricoStrings) {
+                console.log("Processing incarico string:", incStr);
+                const fields = incStr.split('||').map(f => f.trim()).filter(f => f !== '');
+                let newIncaricoData = {
+                    descrizione: [],
+                    'tipo-incarico': 'Civile', 
+                    giudice: '',
+                    'rif-procedura': '',
+                    parti: '',
+                    note: '',
+                    pagamenti: [],
+                    id: null 
+                };
+
+                dateFields.forEach(field => {
+                    newIncaricoData[field.id] = null;
+                });
+
+                fields.forEach(field => {
+                    const parts = field.split('::').map(p => p.trim());
+                    const key = parts[0];
+                    const value = parts[1];
+                    console.log(`Parsing field: ${key} = ${value}`);
+
+                    switch (key) {
+                        case 'descrizione':
+                            newIncaricoData.descrizione = value.split(',').map(d => d.trim());
+                            break;
+                        case 'pagamenti':
+                            const paymentsBlockStart = field.indexOf('###PAGAMENTI_START###');
+                            const paymentsBlockEnd = field.indexOf('###PAGAMENTI_END###');
+
+                            if (paymentsBlockStart !== -1 && paymentsBlockEnd !== -1) {
+                                const paymentsBlock = field.substring(paymentsBlockStart + '###PAGAMENTI_START###'.length, paymentsBlockEnd);
+                                newIncaricoData.pagamenti = paymentsBlock.split('&&').map(p => {
+                                    const pParts = p.split('::').map(pp => pp.trim());
+                                    return {
+                                        tipo: pParts[0] || 'Fondo Spese',
+                                        stato: pParts[1] || 'Non Pagato',
+                                        importo: parseFloat(pParts[2]) || 0
+                                    };
+                                }).filter(p => p.importo > 0 || p.tipo);
+                            }
+                            break;
+                        case 'data-conferimento':
+                        case 'data-inizio-operazioni':
+                        case 'data-invio-bozza':
+                        case 'data-ricezione-osservazioni':
+                        case 'data-deposito':
+                        case 'data-udienza':
+                            if (parts.length === 3) { 
+                                newIncaricoData[key] = {
+                                    value: value,
+                                    done: parts[2] === 'true'
+                                };
+                            } else if (value) { 
+                                newIncaricoData[key] = {
+                                    value: value,
+                                    done: false
+                                };
+                            }
+                            break;
+                        default:
+                            newIncaricoData[key] = value;
+                            break;
+                    }
+                });
+                
+                await addOrUpdateIncarico(newIncaricoData); 
+            }
+
+            alert(`Elaborazione completata. Aggiunti/Aggiornati ${incaricoStrings.length} incarichi.`);
+            massInputString.value = '';
+        }
+
+        processStringBtn.addEventListener('click', processInputString);
+        clearStringInputBtn.addEventListener('click', () => {
+            massInputString.value = '';
+        });
+
+        // --- FINE FUNZIONALITÀ PER L'INSERIMENTO DA STRINGA ---
+
+
+        // --- FIREBASE LISTENERS E CARICAMENTO INIZIALE ---
+
         async function initializeApp() {
             // Listener principale di Firebase per aggiornamenti in tempo reale
             incarichiCollection.onSnapshot(async (snapshot) => {
                 const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
                 if (source === "Local") {
-                    // Se la modifica è locale, la UI è già aggiornata dall'addOrUpdateIncarico
                     return; 
                 }
                 console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Ricaricamento pagina corrente...");
+                
                 // Ricarica la pagina corrente di entrambe le tabelle per riflettere le modifiche esterne
-                await loadActivePage('reload'); 
-                await loadArchivedPage('reload');
+                // Assicurati che le chiamate siano robuste anche se una delle tabelle è vuota
+                if (tabellaAttiviBody) await loadActivePage('reload'); 
+                if (tabellaArchiviatiBody) await loadArchivedPage('reload');
+
             }, (error) => {
                 console.error("Errore nel listener Firebase:", error);
                 alert("Errore di connessione a Firebase. Alcune funzionalità potrebbero non essere aggiornate in tempo reale.");
@@ -1395,7 +1709,7 @@
         initializeApp();
 
         if (paymentsList.children.length === 0) {
-            addPaymentField(); // Assicura che ci sia almeno un campo pagamento all'avvio
+            addPaymentField(); 
         }
     </script>
 
