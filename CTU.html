@@ -418,10 +418,10 @@
             td:nth-of-type(3):before { content: "Tipo:"; }
             td:nth-of-type(4):before { content: "Giudice:"; }
             td:nth-of-type(5):before { content: "Rif. Procedura:"; }
-            td:nth-of-type(6):before { content: "Parti:"; } /* Nuovo */
+            td:nth-of-type(6):before { content: "Parti:"; }
             td:nth-of-type(7):before { content: "Pagamenti:"; }
             td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Scadenza:"; } /* Spostato */
+            td:nth-of-type(9):before { content: "Scadenza:"; } 
             td:nth-of-type(10):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
@@ -545,7 +545,13 @@
                             <input type="checkbox" id="data-deposito-done" name="data-deposito-done" title="Completato">
                         </div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="data-udienza">Data Udienza:</label>
+                        <div class="date-input-group">
+                            <input type="date" id="data-udienza" name="data-udienza">
+                            <input type="checkbox" id="data-udienza-done" name="data-udienza-done" title="Completato">
+                        </div>
+                    </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="note">Note:</label>
                         <textarea id="note" name="note" rows="3"></textarea>
@@ -572,7 +578,7 @@
             <h2>Carica Incarico da JSON</h2>
             <div class="form-group">
                 <label for="json-input">Incolla qui il codice JSON dell'incarico:</label>
-                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}
+                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "data-udienza": {"value": "2025-07-20", "done": false}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}
 '></textarea>
             </div>
             <div class="button-group" style="justify-content: flex-start;">
@@ -591,9 +597,11 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Parti</th> <th style="width: 120px;">Pagamenti</th>
+                        <th>Parti</th>
+                        <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 80px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> <th style="width: 80px;">Azioni</th>
+                        <th style="width: 120px;">Scadenza</th> 
+                        <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -612,9 +620,11 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Parti</th> <th style="width: 120px;">Pagamenti</th>
+                        <th>Parti</th>
+                        <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 80px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> <th style="width: 80px;">Azioni</th>
+                        <th style="width: 120px;">Scadenza</th> 
+                        <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -657,7 +667,8 @@
             { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', priority: 2 },
             { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', priority: 3 },
             { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', priority: 4 },
-            { id: 'data-deposito', doneId: 'data-deposito-done', priority: 5 }
+            { id: 'data-deposito', doneId: 'data-deposito-done', priority: 5 },
+            { id: 'data-udienza', doneId: 'data-udienza-done', priority: 6 } // NUOVA DATA: Data Udienza
         ];
 
         // Funzione per caricare gli incarichi dal localStorage
@@ -688,13 +699,22 @@
             const deposito = incarico['data-deposito'] && incarico['data-deposito'].value ? new Date(incarico['data-deposito'].value) : null;
             const depositoDone = incarico['data-deposito'] && incarico['data-deposito'].done;
 
+            const invioBozza = incarico['data-invio-bozza'] && incarico['data-invio-bozza'].value ? new Date(incarico['data-invio-bozza'].value) : null;
+            const invioBozzaDone = incarico['data-invio-bozza'] && incarico['data-invio-bozza'].done;
+
             if (depositoDone) {
                 return { text: 'Completato', class: 'stato-completato' };
+            }
+            if (invioBozzaDone) { // Se la bozza è stata inviata e il deposito non è completato
+                return { text: 'Bozza Inviata', class: 'stato-in-corso' }; // Considerato in corso dopo l'invio bozza
             }
             if (deposito && deposito < today) {
                 return { text: 'Deposito Scaduto', class: 'stato-in-scadenza' };
             }
-            if (deposito) {
+            if (invioBozza && invioBozza < today && !invioBozzaDone) { // Se la data invio bozza è passata ma non segnata come fatta
+                return { text: 'Invio Bozza Scaduto', class: 'stato-in-scadenza' };
+            }
+            if (deposito || invioBozza) { // Se c'è una data di deposito o invio bozza futura
                 return { text: 'In Corso', class: 'stato-in-corso' };
             }
             if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
@@ -754,11 +774,13 @@
             tabellaAttiviBody.innerHTML = '';
             tabellaArchiviatiBody.innerHTML = '';
 
+            // Ordina per data di conferimento più recente per gli attivi
             incarichiAttivi.sort((a, b) => {
                 const dateA = a['data-conferimento']?.value ? new Date(a['data-conferimento'].value) : new Date(0);
                 const dateB = b['data-conferimento']?.value ? new Date(b['data-conferimento'].value) : new Date(0);
                 return dateB - dateA;
             });
+            // Ordina per data di deposito più recente per gli archiviati
             incarichiArchiviati.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
@@ -781,28 +803,33 @@
             }
         }
 
-        // FUNZIONE: Calcola la scadenza corrente
+        // FUNZIONE: Calcola la scadenza corrente (la prima data non completata secondo priorità)
         function getScadenzaCorrente(incarico) {
             let scadenza = { value: '', class: 'date-normal' };
             
-            // Ordine di priorità: conferimento, operazioni peritali, bozza, osservazioni, deposito
-            // Filtra solo le date con valore e non completate, e ordina per priorità
-            const upcomingDates = dateFields
-                .filter(field => incarico[field.id] && incarico[field.id].value && !incarico[field.id].done)
-                .sort((a, b) => a.priority - b.priority);
+            // Ordina i campi data per priorità (dal più basso al più alto, quindi dal più prioritario all'ultimo)
+            const sortedDateFields = [...dateFields].sort((a, b) => a.priority - b.priority);
 
-            if (upcomingDates.length > 0) {
-                const nextField = upcomingDates[0];
-                scadenza.value = incarico[nextField.id].value;
-                scadenza.class = getDateClass(incarico[nextField.id].value, false);
-            } else if (incarico['data-deposito'] && incarico['data-deposito'].done) {
-                 // Se tutte le date precedenti sono fatte, e il deposito è fatto, non c'è una scadenza attiva, mostra il deposito finale come completato
-                 scadenza.value = incarico['data-deposito'].value;
-                 scadenza.class = getDateClass(incarico['data-deposito'].value, true);
-            } else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
-                // Se non c'è nessuna data non completata, ma l'incarico è stato conferito, mostra la data di conferimento
-                scadenza.value = incarico['data-conferimento'].value;
-                scadenza.class = getDateClass(incarico['data-conferimento'].value, incarico['data-conferimento'].done);
+            for (const field of sortedDateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    scadenza.value = dateInfo.value;
+                    scadenza.class = getDateClass(dateInfo.value, false);
+                    break; // Trova la prima scadenza non completata e ferma
+                }
+            }
+
+            if (scadenza.value === '') {
+                // Se non ci sono scadenze non completate, ma l'incarico è stato completato, mostra la data di deposito
+                if (incarico['data-deposito'] && incarico['data-deposito'].done) {
+                    scadenza.value = incarico['data-deposito'].value;
+                    scadenza.class = getDateClass(incarico['data-deposito'].value, true);
+                } 
+                // Altrimenti, se non ci sono scadenze future e non è completato, e c'è una data di conferimento, mostrala come "completata" (per la colorazione)
+                else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+                    scadenza.value = incarico['data-conferimento'].value;
+                    scadenza.class = getDateClass(incarico['data-conferimento'].value, true); // Stile "completato" se non ci sono altre scadenze attive
+                }
             }
             
             return scadenza;
@@ -824,11 +851,13 @@
                 <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Parti:">${incarico.parti || ''}</td> <td data-label="Pagamenti:" class="${paymentStatus.class}">
+                <td data-label="Parti:">${incarico.parti || ''}</td>
+                <td data-label="Pagamenti:" class="${paymentStatus.class}">
                     ${paymentStatus.text}
                 </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
-                <td data-label="Scadenza:" class="${scadenzaCorrente.class}"> ${scadenzaCorrente.value || ''}
+                <td data-label="Scadenza:" class="${scadenzaCorrente.class}">
+                    ${scadenzaCorrente.value || ''}
                 </td>
                 <td data-label="Azioni:">
                     <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
@@ -885,7 +914,7 @@
             document.getElementById('tipo-incarico').value = incarico['tipo-incarico'] || 'Civile';
             document.getElementById('giudice').value = incarico.giudice || '';
             document.getElementById('rif-procedura').value = incarico['rif-procedura'] || '';
-            document.getElementById('parti').value = incarico.parti || ''; // NUOVO CAMPO
+            document.getElementById('parti').value = incarico.parti || ''; 
             document.getElementById('note').value = incarico.note || '';
 
             // Popola i campi data e le checkbox
@@ -987,7 +1016,7 @@
                 'tipo-incarico': document.getElementById('tipo-incarico').value,
                 giudice: document.getElementById('giudice').value,
                 'rif-procedura': document.getElementById('rif-procedura').value,
-                parti: document.getElementById('parti').value, // SALVA IL NUOVO CAMPO
+                parti: document.getElementById('parti').value, 
                 note: document.getElementById('note').value,
                 pagamenti: currentPayments,
                 
@@ -995,7 +1024,8 @@
                 'data-inizio-operazioni': dateData['data-inizio-operazioni'],
                 'data-invio-bozza': dateData['data-invio-bozza'],
                 'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
-                'data-deposito': dateData['data-deposito']
+                'data-deposito': dateData['data-deposito'],
+                'data-udienza': dateData['data-udienza'] // SALVA LA NUOVA DATA
             };
 
             const statoGenerale = getStatoIncarico(incaricoData);
