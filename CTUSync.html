@@ -737,93 +737,30 @@ const firebaseConfig = {
             { id: 'data-udienza', doneId: 'data-udienza-done', label: 'Udienza' }
         ];
 
-        // Funzione per caricare e sincronizzare gli incarichi
+        // Funzione per caricare e sincronizzare gli incarichi (ORA SOLO DA FIREBASE)
         async function caricaIncarichi() {
-            let loadedAttivi = [];
-            let loadedArchiviati = [];
             let firebaseIncarichi = [];
 
-            // 1. Carica da localStorage
-            try {
-                const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
-                if (attiviSalvati) loadedAttivi = JSON.parse(attiviSalvati);
-            } catch (e) {
-                console.error("Errore nel parsing di incarichiCTU_attivi da localStorage:", e);
-                loadedAttivi = [];
-            }
-            try {
-                const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
-                if (archiviatiSalvati) loadedArchiviati = JSON.parse(archiviatiSalvati);
-            } catch (e) {
-                console.error("Errore nel parsing di incarichiCTU_archiviati da localStorage:", e);
-                loadedArchiviati = [];
-            }
-
-            // 2. Carica da Firebase
             try {
                 const snapshot = await incarichiCollection.get();
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     // Assicurati che l'ID del documento Firestore sia il campo 'id' dell'incarico
                     if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
-                        data.id = parseInt(doc.id) || doc.id; // Tenta di usare doc.id come numerico, altrimenti stringa
+                        // Se l'ID non è valido o manca nel documento Firestore, usa l'ID del documento Firestore stesso
+                        data.id = parseInt(doc.id) || doc.id; 
                     }
                     firebaseIncarichi.push(data);
                 });
             } catch (e) {
                 console.error("Errore nel caricamento da Firebase:", e);
-                // Se Firebase fallisce, prosegui solo con i dati locali
+                // In caso di errore Firebase, gli array rimarranno vuoti.
             }
 
-            // 3. Unisci, deduplica e risolvi conflitti
-            let allIncarichi = [...loadedAttivi, ...loadedArchiviati, ...firebaseIncarichi];
-            const uniqueIncarichiMap = new Map();
-            let tempIdCounter = -1; // Per assegnare ID temporanei negativi
-
-            allIncarichi.forEach(incarico => {
-                let currentId = incarico.id;
-
-                // Gestisci ID nulli/non validi assegnando un ID temporaneo per la deduplicazione
-                if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
-                    currentId = `temp_${tempIdCounter--}`;
-                    // console.warn(`Incarico con ID non valido/nullo, assegnato ID temporaneo: ${currentId}`, incarico);
-                } else {
-                    currentId = parseInt(currentId);
-                }
-
-                // Assicurati che il timestamp esista per il confronto dei duplicati
-                if (incarico.timestamp === undefined || incarico.timestamp === null) {
-                    incarico.timestamp = 0; // Se non ha timestamp, è considerato molto vecchio
-                }
-
-                if (uniqueIncarichiMap.has(currentId)) {
-                    const existingIncarico = uniqueIncarichiMap.get(currentId);
-                    // Prevale la versione con timestamp più recente
-                    if (incarico.timestamp > existingIncarico.timestamp) {
-                        uniqueIncarichiMap.set(currentId, incarico);
-                    }
-                } else {
-                    uniqueIncarichiMap.set(currentId, incarico);
-                }
-            });
-
-            // 4. Ricostruisci gli array e assegna ID numerici definitivi se necessario
+            // Popola gli array attivi e archiviati direttamente dai dati di Firebase
             incarichiAttivi = [];
             incarichiArchiviati = [];
-            let maxExistingId = 0; 
-
-            uniqueIncarichiMap.forEach(incarico => {
-                if (typeof incarico.id === 'number' && incarico.id > maxExistingId) {
-                    maxExistingId = incarico.id;
-                }
-            });
-
-            uniqueIncarichiMap.forEach(incarico => {
-                if (typeof incarico.id !== 'number' || incarico.id < 1) { 
-                    maxExistingId++;
-                    incarico.id = maxExistingId;
-                }
-
+            firebaseIncarichi.forEach(incarico => {
                 const statoGenerale = getStatoIncarico(incarico);
                 const isCompleted = (statoGenerale.text === 'Completato');
                 if (isCompleted) {
@@ -833,60 +770,27 @@ const firebaseConfig = {
                 }
             });
             
-            salvaIncarichiLocally(); // Salva lo stato pulito e con ID validi nel localStorage
             renderTables();
-            syncToFirebase(); // Sincronizza lo stato finale a Firebase
         }
 
-        // Funzione per salvare gli incarichi SOLO nel localStorage
-        function salvaIncarichiLocally() {
-            localStorage.setItem('incarichiCTU_attivi', JSON.stringify(incarichiAttivi));
-            localStorage.setItem('incarichiCTU_archiviati', JSON.stringify(incarichiArchiviati));
-        }
-
-        // Funzione per sincronizzare i dati da localStorage a Firebase
-        async function syncToFirebase() {
-            console.log("Sincronizzazione dati a Firebase...");
-            const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
-
-            // Ottieni tutti i documenti attuali su Firebase per identificare le eliminazioni
-            const firebaseDocsSnapshot = await incarichiCollection.get();
-            const firebaseDocIds = new Set();
-            firebaseDocsSnapshot.forEach(doc => firebaseDocIds.add(doc.id));
-
-            for (const incarico of allIncarichi) {
-                try {
-                    // Imposta il documento usando l'ID dell'incarico come ID del documento Firestore
-                    await incarichiCollection.doc(String(incarico.id)).set(incarico);
-                    firebaseDocIds.delete(String(incarico.id)); // Rimuovi l'ID dai documenti di Firebase che sono ancora presenti localmente
-                } catch (e) {
-                    console.error(`Errore durante il salvataggio dell'incarico ${incarico.id} su Firebase:`, e);
-                }
+        // Funzione per sincronizzare i dati a Firebase (solo write)
+        async function syncToFirebase(incaricoData) {
+            console.log("Sincronizzazione dati a Firebase per incarico:", incaricoData.id);
+            try {
+                // Usa l'ID dell'incarico come ID del documento Firestore
+                await incarichiCollection.doc(String(incaricoData.id)).set(incaricoData);
+                console.log(`Incarico ${incaricoData.id} salvato/aggiornato su Firebase.`);
+            } catch (e) {
+                console.error(`Errore durante il salvataggio dell'incarico ${incaricoData.id} su Firebase:`, e);
             }
-
-            // Elimina i documenti su Firebase che non sono più presenti localmente
-            for (const docId of firebaseDocIds) {
-                try {
-                    await incarichiCollection.doc(docId).delete();
-                    console.log(`Documento Firebase ${docId} eliminato (non più presente localmente).`);
-                } catch (e) {
-                    console.error(`Errore durante l'eliminazione del documento ${docId} da Firebase:`, e);
-                }
-            }
-            console.log("Sincronizzazione completata.");
         }
 
         // Funzione per ascoltare i cambiamenti da Firebase in tempo reale
         function setupFirebaseListener() {
-            incarichiCollection.onSnapshot(async (snapshot) => {
-                const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
-                if (source === "Local") {
-                    // Questa è una modifica che ho fatto io stesso su questo dispositivo, ignorala.
-                    // La mia modifica locale è già gestita dal form.
-                    return; 
-                }
-
-                console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Sincronizzazione in corso...");
+            incarichiCollection.onSnapshot((snapshot) => {
+                // Questa callback viene invocata ogni volta che ci sono modifiche nel database.
+                // Re-popola gli array locali e ri-renderizza le tabelle.
+                console.log("Cambiamenti da Firebase rilevati. Aggiornamento UI in corso...");
                 let latestFirebaseData = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -896,47 +800,9 @@ const firebaseConfig = {
                     latestFirebaseData.push(data);
                 });
 
-                // Unisci i dati locali con quelli di Firebase e risolvi i conflitti
-                let combinedData = [...incarichiAttivi, ...incarichiArchiviati, ...latestFirebaseData];
-                const uniqueIncarichiMap = new Map();
-                
-                combinedData.forEach(incarico => {
-                    let currentId = incarico.id;
-                    if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
-                        currentId = `temp_${Date.now()}_${Math.random()}`; // ID temporaneo univoco per unici
-                    } else {
-                        currentId = parseInt(currentId);
-                    }
-
-                    if (incarico.timestamp === undefined || incarico.timestamp === null) {
-                        incarico.timestamp = 0;
-                    }
-
-                    if (uniqueIncarichiMap.has(currentId)) {
-                        const existingIncarico = uniqueIncarichiMap.get(currentId);
-                        if (incarico.timestamp > existingIncarico.timestamp) {
-                            uniqueIncarichiMap.set(currentId, incarico);
-                        }
-                    } else {
-                        uniqueIncarichiMap.set(currentId, incarico);
-                    }
-                });
-
-                // Ricostruisci gli array Attivi/Archiviati con i dati sincronizzati
                 incarichiAttivi = [];
                 incarichiArchiviati = [];
-                let maxIdFromCombined = 0;
-                uniqueIncarichiMap.forEach(incarico => {
-                    if (typeof incarico.id === 'number' && incarico.id > maxIdFromCombined) {
-                        maxIdFromCombined = incarico.id;
-                    }
-                });
-
-                uniqueIncarichiMap.forEach(incarico => {
-                    if (typeof incarico.id !== 'number' || incarico.id < 1) { 
-                        maxIdFromCombined++;
-                        incarico.id = maxIdFromCombined;
-                    }
+                latestFirebaseData.forEach(incarico => {
                     const statoGenerale = getStatoIncarico(incarico);
                     const isCompleted = (statoGenerale.text === 'Completato');
                     if (isCompleted) {
@@ -946,7 +812,6 @@ const firebaseConfig = {
                     }
                 });
 
-                salvaIncarichiLocally(); // Salva lo stato risolto nel localStorage
                 renderTables(); // Aggiorna l'UI
                 console.log("Sincronizzazione da Firebase completata. UI aggiornata.");
             }, (error) => {
@@ -1194,48 +1059,24 @@ const firebaseConfig = {
             }
         }
 
-        // Funzione per aggiungere un singolo incarico (nuovo o modificato)
+        // Funzione per aggiungere un singolo incarico (nuovo o modificato) A FIREBASE
         async function addOrUpdateIncarico(incaricoData) {
-            const idInModifica = incaricoData.id; // Se presente, significa modifica
-
-            const statoGenerale = getStatoIncarico(incaricoData);
-            const isCompleted = (statoGenerale.text === 'Completato');
-
-            let incaricoFoundAndRemoved = false;
-
-            // Rimuovi l'incarico esistente da entrambi gli array se presente
-            let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
-            if (idxAttivi !== -1) {
-                incarichiAttivi.splice(idxAttivi, 1);
-                incaricoFoundAndRemoved = true;
-            }
+            console.log("Tentativo di aggiungere/aggiornare incarico:", incaricoData);
             
-            let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
-            if (idxArchiviati !== -1) {
-                incarichiArchiviati.splice(idxArchiviati, 1);
-                incaricoFoundAndRemoved = true;
-            }
-
-            if (incaricoFoundAndRemoved) {
-                // Se era una modifica, conserva l'ID originale
-                incaricoData.id = parseInt(idInModifica); 
-            } else {
-                // Se è un nuovo incarico, assegna un nuovo ID unico
-                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
-                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
+            // Determina il prossimo ID disponibile se l'incarico è nuovo (non ha un ID valido)
+            if (!incaricoData.id || isNaN(parseInt(incaricoData.id))) {
+                const allCurrentIncarichi = [...incarichiAttivi, ...incarichiArchiviati]; 
+                const maxId = allCurrentIncarichi.length > 0 ? Math.max(...allCurrentIncarichi.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
                 incaricoData.id = maxId + 1;
-            }
-
-            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
-            if (isCompleted) {
-                incarichiArchiviati.push(incaricoData);
+                console.log("Assegnato nuovo ID all'incarico:", incaricoData.id);
             } else {
-                incarichiAttivi.push(incaricoData);
+                incaricoData.id = parseInt(incaricoData.id); // Assicurati che l'ID sia un numero
             }
 
-            salvaIncarichiLocally(); // Salva immediatamente in localStorage
-            renderTables(); // Aggiorna l'UI immediatamente
-            await syncToFirebase(); // Sincronizza con Firebase in background
+            incaricoData.timestamp = Date.now(); // Aggiorna il timestamp per la risoluzione dei conflitti
+
+            await syncToFirebase(incaricoData); // Salva su Firebase
+            // L'UI verrà aggiornata dal listener di Firebase automaticamente
         }
 
         // Gestione dell'invio del modulo (per l'aggiunta/modifica manuale)
@@ -1333,6 +1174,7 @@ const firebaseConfig = {
                 return;
             }
 
+            // Dividi la stringa in singoli incarichi
             const incaricoStrings = inputString.split('###INCARICO_START###')
                                                .filter(s => s.trim() !== '')
                                                .map(s => s.split('###INCARICO_END###')[0].trim());
@@ -1342,7 +1184,10 @@ const firebaseConfig = {
                 return;
             }
 
+            console.log("Incarichi da processare:", incaricoStrings.length);
+
             for (const incStr of incaricoStrings) {
+                console.log("Processing incarico string:", incStr);
                 const fields = incStr.split('||').map(f => f.trim()).filter(f => f !== '');
                 let newIncaricoData = {
                     descrizione: [],
@@ -1352,63 +1197,71 @@ const firebaseConfig = {
                     parti: '',
                     note: '',
                     pagamenti: [],
-                    timestamp: Date.now()
+                    // ID e timestamp saranno gestiti da addOrUpdateIncarico
                 };
 
+                // Inizializza tutti i campi data a null
                 dateFields.forEach(field => {
-                    newIncaricoData[field.id] = null; // Inizializza tutte le date a null
+                    newIncaricoData[field.id] = null;
                 });
 
                 fields.forEach(field => {
                     const parts = field.split('::').map(p => p.trim());
                     const key = parts[0];
                     const value = parts[1];
+                    console.log(`Parsing field: ${key} = ${value}`);
 
                     switch (key) {
                         case 'descrizione':
                             newIncaricoData.descrizione = value.split(',').map(d => d.trim());
                             break;
                         case 'pagamenti':
-                            const paymentsBlock = field.substring(field.indexOf('###PAGAMENTI_START###') + '###PAGAMENTI_START###'.length, field.indexOf('###PAGAMENTI_END###'));
-                            newIncaricoData.pagamenti = paymentsBlock.split('&&').map(p => {
-                                const pParts = p.split('::').map(pp => pp.trim());
-                                return {
-                                    tipo: pParts[0] || 'Fondo Spese',
-                                    stato: pParts[1] || 'Non Pagato',
-                                    importo: parseFloat(pParts[2]) || 0
-                                };
-                            }).filter(p => p.importo > 0); // Filtra pagamenti senza importo
+                            // Cerca i delimitatori specifici per i pagamenti
+                            const paymentsBlockStart = field.indexOf('###PAGAMENTI_START###');
+                            const paymentsBlockEnd = field.indexOf('###PAGAMENTI_END###');
+
+                            if (paymentsBlockStart !== -1 && paymentsBlockEnd !== -1) {
+                                const paymentsBlock = field.substring(paymentsBlockStart + '###PAGAMENTI_START###'.length, paymentsBlockEnd);
+                                newIncaricoData.pagamenti = paymentsBlock.split('&&').map(p => {
+                                    const pParts = p.split('::').map(pp => pp.trim());
+                                    return {
+                                        tipo: pParts[0] || 'Fondo Spese',
+                                        stato: pParts[1] || 'Non Pagato',
+                                        importo: parseFloat(pParts[2]) || 0
+                                    };
+                                }).filter(p => p.importo > 0 || p.tipo); // Permette pagamenti con tipo anche se importo 0
+                            }
                             break;
-                        default:
-                            if (key.startsWith('data-') && parts.length === 3) {
-                                // Campo data con valore e done
+                        // Gestisci i campi data basandoti sull'ID
+                        case 'data-conferimento':
+                        case 'data-inizio-operazioni':
+                        case 'data-invio-bozza':
+                        case 'data-ricezione-osservazioni':
+                        case 'data-deposito':
+                        case 'data-udienza':
+                            if (parts.length === 3) { // Se è presente anche lo stato 'done'
                                 newIncaricoData[key] = {
                                     value: value,
                                     done: parts[2] === 'true'
                                 };
-                            } else {
-                                newIncaricoData[key] = value;
+                            } else if (value) { // Se è presente solo la data
+                                newIncaricoData[key] = {
+                                    value: value,
+                                    done: false // Di default, non completato
+                                };
                             }
+                            break;
+                        default:
+                            newIncaricoData[key] = value;
                             break;
                     }
                 });
-
-                // Aggiungi o aggiorna l'incarico processato
-                // Qui potremmo aggiungere una logica per verificare se l'incarico esiste già basandosi su un campo univoco (es. rif-procedura)
-                // Per ora, lo tratteremo sempre come nuovo o lo aggiorneremo se gli si passa un ID.
-                // Siccome la stringa non include l'ID dell'incarico, saranno tutti nuovi incarichi.
-                // Se volessi l'aggiornamento, la stringa dovrebbe includere un campo 'id::X'
-                // Esempio: newIncaricoData.id = parts.find(p => p.startsWith('id::'))?.split('::')[1] || null;
-
-                // Trova il massimo ID esistente e assegna il prossimo
-                const allCurrentIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
-                const maxCurrentId = allCurrentIncarichi.length > 0 ? Math.max(...allCurrentIncarichi.map(i => typeof i.id === 'number' ? i.id : 0)) : 0;
-                newIncaricoData.id = maxCurrentId + 1;
-
+                
+                console.log("Incarico parsed from string:", newIncaricoData);
                 await addOrUpdateIncarico(newIncaricoData);
             }
 
-            alert(`Elaborazione completata. Aggiunti ${incaricoStrings.length} incarichi.`);
+            alert(`Elaborazione completata. Aggiunti/Aggiornati ${incaricoStrings.length} incarichi.`);
             massInputString.value = ''; // Pulisci il campo dopo l'elaborazione
         }
 
@@ -1420,10 +1273,10 @@ const firebaseConfig = {
         // --- FINE NUOVE FUNZIONALITÀ ---
 
 
-        // Inizializzazione: Carica da localStorage/Firebase e imposta listener
+        // Inizializzazione: Carica da Firebase e imposta listener
         async function initializeApp() {
-            await caricaIncarichi(); // Carica e deduplica iniziale
-            setupFirebaseListener(); // Imposta il listener per le modifiche da Firebase
+            // Non c'è più bisogno di caricare da localStorage, tutto viene da Firebase.
+            setupFirebaseListener(); // Questo listener caricherà i dati iniziali e manterrà l'UI aggiornata.
         }
         initializeApp(); // Avvia l'app
 
