@@ -418,10 +418,11 @@
             td:nth-of-type(3):before { content: "Tipo:"; }
             td:nth-of-type(4):before { content: "Giudice:"; }
             td:nth-of-type(5):before { content: "Rif. Procedura:"; }
-            td:nth-of-type(6):before { content: "Scadenza:"; }
-            td:nth-of-type(7):before { content: "Pagamenti:"; } /* Modificato */
+            td:nth-of-type(6):before { content: "Parti:"; } /* Nuovo */
+            td:nth-of-type(7):before { content: "Pagamenti:"; }
             td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Azioni:"; }
+            td:nth-of-type(9):before { content: "Scadenza:"; } /* Spostato */
+            td:nth-of-type(10):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
             .payment-item {
@@ -505,7 +506,10 @@
                         <label for="rif-procedura">Riferimento Procedura:</label>
                         <input type="text" id="rif-procedura" name="rif-procedura">
                     </div>
-                    
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="parti">Parti (separate da virgola o a capo):</label>
+                        <textarea id="parti" name="parti" rows="2"></textarea>
+                    </div>
                     <div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
@@ -568,7 +572,7 @@
             <h2>Carica Incarico da JSON</h2>
             <div class="form-group">
                 <label for="json-input">Incolla qui il codice JSON dell'incarico:</label>
-                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "data-conferimento": {"value": "2024-01-15", "done": true}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}
+                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}
 '></textarea>
             </div>
             <div class="button-group" style="justify-content: flex-start;">
@@ -587,9 +591,9 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th style="width: 120px;">Scadenza</th>
-                        <th style="width: 120px;">Pagamenti</th> <th style="width: 80px;">Stato</th>
-                        <th style="width: 80px;">Azioni</th>
+                        <th>Parti</th> <th style="width: 120px;">Pagamenti</th>
+                        <th style="width: 80px;">Stato</th>
+                        <th style="width: 120px;">Scadenza</th> <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -608,9 +612,9 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th style="width: 120px;">Scadenza</th>
-                        <th style="width: 120px;">Pagamenti</th> <th style="width: 80px;">Stato</th>
-                        <th style="width: 80px;">Azioni</th>
+                        <th>Parti</th> <th style="width: 120px;">Pagamenti</th>
+                        <th style="width: 80px;">Stato</th>
+                        <th style="width: 120px;">Scadenza</th> <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -811,8 +815,8 @@
             newRow.dataset.id = incarico.id;
 
             const statoGenerale = getStatoIncarico(incarico);
-            const paymentStatus = getPaymentStatus(incarico.pagamenti); // Ottieni lo stato dei pagamenti
-            const scadenzaCorrente = getScadenzaCorrente(incarico); // Ottieni la scadenza corrente
+            const paymentStatus = getPaymentStatus(incarico.pagamenti);
+            const scadenzaCorrente = getScadenzaCorrente(incarico);
 
             newRow.innerHTML = `
                 <td data-label="ID:">${incarico.id}</td>
@@ -820,13 +824,12 @@
                 <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Scadenza:" class="${scadenzaCorrente.class}">
-                    ${scadenzaCorrente.value || ''}
-                </td>
-                <td data-label="Pagamenti:" class="${paymentStatus.class}">
+                <td data-label="Parti:">${incarico.parti || ''}</td> <td data-label="Pagamenti:" class="${paymentStatus.class}">
                     ${paymentStatus.text}
                 </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
+                <td data-label="Scadenza:" class="${scadenzaCorrente.class}"> ${scadenzaCorrente.value || ''}
+                </td>
                 <td data-label="Azioni:">
                     <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
                     <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
@@ -882,6 +885,7 @@
             document.getElementById('tipo-incarico').value = incarico['tipo-incarico'] || 'Civile';
             document.getElementById('giudice').value = incarico.giudice || '';
             document.getElementById('rif-procedura').value = incarico['rif-procedura'] || '';
+            document.getElementById('parti').value = incarico.parti || ''; // NUOVO CAMPO
             document.getElementById('note').value = incarico.note || '';
 
             // Popola i campi data e le checkbox
@@ -983,6 +987,7 @@
                 'tipo-incarico': document.getElementById('tipo-incarico').value,
                 giudice: document.getElementById('giudice').value,
                 'rif-procedura': document.getElementById('rif-procedura').value,
+                parti: document.getElementById('parti').value, // SALVA IL NUOVO CAMPO
                 note: document.getElementById('note').value,
                 pagamenti: currentPayments,
                 
