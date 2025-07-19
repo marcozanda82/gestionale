@@ -224,6 +224,13 @@
             color: var(--primary-dark);
             transform: scale(1.1);
         }
+        .action-button.delete { /* Nuovo stile per il pulsante elimina */
+            color: var(--danger-color);
+        }
+        .action-button.delete:hover {
+            color: #a71d2a;
+        }
+
 
         .archivio-section {
             margin-top: 60px;
@@ -411,16 +418,12 @@
             td:nth-of-type(3):before { content: "Tipo:"; }
             td:nth-of-type(4):before { content: "Giudice:"; }
             td:nth-of-type(5):before { content: "Rif. Proc.:"; }
-            td:nth-of-type(6):before { content: "Conf. Inc.:"; }
-            td:nth-of-type(7):before { content: "Inizio Op.:"; }
-            td:nth-of-type(8):before { content: "Invio Bozza:"; }
-            td:nth-of-type(9):before { content: "Ricez. Oss.:"; }
-            td:nth-of-type(10):before { content: "Deposito:"; }
-            td:nth-of-type(11):before { content: "Tot. Incassato:"; }
-            td:nth-of-type(12):before { content: "Tot. Richiesto:"; }
-            td:nth-of-type(13):before { content: "Saldo Residuo:"; }
-            td:nth-of-type(14):before { content: "Stato:"; }
-            td:nth-of-type(15):before { content: "Azioni:"; }
+            td:nth-of-type(6):before { content: "Scadenza:"; } /* Modificato */
+            td:nth-of-type(7):before { content: "Tot. Incassato:"; }
+            td:nth-of-type(8):before { content: "Tot. Richiesto:"; }
+            td:nth-of-type(9):before { content: "Saldo Residuo:"; }
+            td:nth-of-type(10):before { content: "Stato:"; }
+            td:nth-of-type(11):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
             .payment-item {
@@ -586,16 +589,11 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Conf. Incarico</th>
-                        <th>Inizio Op.</th>
-                        <th>Invio Bozza</th>
-                        <th>Ricez. Oss.</th>
-                        <th>Deposito Finale</th>
-                        <th>Tot. Incassato</th>
+                        <th style="width: 120px;">Scadenza</th> <th>Tot. Incassato</th>
                         <th>Tot. Richiesto</th>
                         <th>Saldo Residuo</th>
-                        <th>Stato</th>
-                        <th>Azioni</th>
+                        <th style="width: 80px;">Stato</th>
+                        <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -614,16 +612,11 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Conf. Incarico</th>
-                        <th>Inizio Op.</th>
-                        <th>Invio Bozza</th>
-                        <th>Ricez. Oss.</th>
-                        <th>Deposito Finale</th>
-                        <th>Tot. Incassato</th>
+                        <th style="width: 120px;">Scadenza</th> <th>Tot. Incassato</th>
                         <th>Tot. Richiesto</th>
                         <th>Saldo Residuo</th>
-                        <th>Stato</th>
-                        <th>Azioni</th>
+                        <th style="width: 80px;">Stato</th>
+                        <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -641,12 +634,10 @@
         const addPaymentBtn = document.getElementById('add-payment-btn');
         const paymentsList = document.getElementById('payments-list');
 
-        // Nuovi elementi per il JSON
         const jsonInput = document.getElementById('json-input');
         const loadJsonBtn = document.getElementById('load-json-btn');
         const clearJsonBtn = document.getElementById('clear-json-btn');
 
-        // Checkbox per la descrizione
         const descCheckboxes = [
             { id: 'desc-stima', value: 'Stima' },
             { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
@@ -662,13 +653,13 @@
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
 
-        // Mappa dei campi data e relative checkbox
+        // Mappa dei campi data e relative checkbox con priorità
         const dateFields = [
-            { id: 'data-conferimento', doneId: 'data-conferimento-done' },
-            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done' },
-            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done' },
-            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done' },
-            { id: 'data-deposito', doneId: 'data-deposito-done' }
+            { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1 },
+            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', priority: 2 },
+            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', priority: 3 },
+            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', priority: 4 },
+            { id: 'data-deposito', doneId: 'data-deposito-done', priority: 5 }
         ];
 
         // Funzione per caricare gli incarichi dal localStorage
@@ -787,6 +778,34 @@
             }
         }
 
+        // NUOVA FUNZIONE: Calcola la scadenza corrente
+        function getScadenzaCorrente(incarico) {
+            let scadenza = { value: '', class: 'date-normal' };
+            
+            // Ordine di priorità: conferimento, operazioni peritali, bozza, osservazioni, deposito
+            for (const field of dateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    scadenza.value = dateInfo.value;
+                    scadenza.class = getDateClass(dateInfo.value, false);
+                    break; // Trova la prima scadenza non completata e ferma
+                }
+            }
+
+            if (scadenza.value === '' && incarico['data-deposito'] && incarico['data-deposito'].done) {
+                 // Se tutte le date precedenti sono fatte, e il deposito è fatto, non c'è una scadenza attiva, ma potresti voler mostrare il deposito finale
+                 scadenza.value = incarico['data-deposito'].value;
+                 scadenza.class = getDateClass(incarico['data-deposito'].value, true);
+            } else if (scadenza.value === '' && incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+                // Se non c'è nessuna data non completata, ma l'incarico è stato conferito, mostra la data di conferimento come indicatore
+                scadenza.value = incarico['data-conferimento'].value;
+                scadenza.class = getDateClass(incarico['data-conferimento'].value, true); // Considera come completata ai fini della colorazione se non ci sono altre scadenze attive
+            }
+            
+            return scadenza;
+        }
+
+
         // Funzione per aggiungere una riga alla tabella specificata
         function aggiungiRigaTabella(incarico, targetTableBody) {
             const newRow = targetTableBody.insertRow();
@@ -794,6 +813,7 @@
 
             const statoGenerale = getStatoIncarico(incarico);
             const { totaleIncassato, totaleRichiesto, saldoResiduo } = calcolaTotaliPagamenti(incarico.pagamenti);
+            const scadenzaCorrente = getScadenzaCorrente(incarico); // Ottieni la scadenza corrente
 
             newRow.innerHTML = `
                 <td data-label="ID:">${incarico.id}</td>
@@ -801,20 +821,8 @@
                 <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Conf. Incarico:" class="${getDateClass(incarico['data-conferimento']?.value, incarico['data-conferimento']?.done)}">
-                    ${incarico['data-conferimento']?.value || ''}
-                </td>
-                <td data-label="Inizio Op.:" class="${getDateClass(incarico['data-inizio-operazioni']?.value, incarico['data-inizio-operazioni']?.done)}">
-                    ${incarico['data-inizio-operazioni']?.value || ''}
-                </td>
-                <td data-label="Invio Bozza:" class="${getDateClass(incarico['data-invio-bozza']?.value, incarico['data-invio-bozza']?.done)}">
-                    ${incarico['data-invio-bozza']?.value || ''}
-                </td>
-                <td data-label="Ricez. Oss.:" class="${getDateClass(incarico['data-ricezione-osservazioni']?.value, incarico['data-ricezione-osservazioni']?.done)}">
-                    ${incarico['data-ricezione-osservazioni']?.value || ''}
-                </td>
-                <td data-label="Deposito Finale:" class="${getDateClass(incarico['data-deposito']?.value, incarico['data-deposito']?.done)}">
-                    ${incarico['data-deposito']?.value || ''}
+                <td data-label="Scadenza:" class="${scadenzaCorrente.class}">
+                    ${scadenzaCorrente.value || ''}
                 </td>
                 <td data-label="Tot. Incassato:">${totaleIncassato.toFixed(2)} €</td>
                 <td data-label="Tot. Richiesto:">${totaleRichiesto.toFixed(2)} €</td>
@@ -822,6 +830,7 @@
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
                 <td data-label="Azioni:">
                     <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
+                    <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
                 </td>
             `;
         }
@@ -909,6 +918,32 @@
             }
         }
 
+        // FUNZIONE: Elimina Incarico
+        function eliminaIncarico(id) {
+            if (confirm('Sei sicuro di voler eliminare questa pratica? L\'azione è irreversibile.')) {
+                // Rimuovi dagli incarichi attivi
+                incarichiAttivi = incarichiAttivi.filter(incarico => incarico.id !== id);
+                // Rimuovi dagli incarichi archiviati
+                incarichiArchiviati = incarichiArchiviati.filter(incarico => incarico.id !== id);
+
+                salvaIncarichi();
+                renderTables();
+                
+                // Se l'incarico eliminato era quello in modifica, resetta il form
+                if (incaricoIdField.value == id) {
+                    form.reset();
+                    incaricoIdField.value = '';
+                    submitButton.textContent = 'Aggiungi Incarico';
+                    paymentsList.innerHTML = '';
+                    addPaymentField();
+                    descCheckboxes.forEach(checkboxInfo => {
+                        document.getElementById(checkboxInfo.id).checked = false;
+                    });
+                    jsonInput.value = '';
+                }
+            }
+        }
+
         // Gestione dell'invio del modulo
         form.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -945,13 +980,13 @@
             });
 
             let incaricoData = {
-                descrizione: selectedDescriptions, // Ora è un array di stringhe dalle checkbox
+                descrizione: selectedDescriptions, 
                 'tipo-incarico': document.getElementById('tipo-incarico').value,
                 giudice: document.getElementById('giudice').value,
                 'rif-procedura': document.getElementById('rif-procedura').value,
                 note: document.getElementById('note').value,
                 pagamenti: currentPayments,
-                // Inserisci qui le date come raccolte da dateData
+                
                 'data-conferimento': dateData['data-conferimento'],
                 'data-inizio-operazioni': dateData['data-inizio-operazioni'],
                 'data-invio-bozza': dateData['data-invio-bozza'],
@@ -963,18 +998,15 @@
             const isCompleted = (statoGenerale.text === 'Completato');
 
             if (idInModifica) {
-                let targetArray = null;
-                let targetIndex = -1;
-
-                // Rimuovi l'incarico da entrambi gli array se presente
+                // Rimuovi l'incarico da entrambi gli array se presente prima di riaggiungerlo
                 const idxActive = incarichiAttivi.findIndex(i => i.id == idInModifica);
                 if (idxActive !== -1) incarichiAttivi.splice(idxActive, 1);
                 
                 const idxArchived = incarichiArchiviati.findIndex(i => i.id == idInModifica);
                 if (idxArchived !== -1) incarichiArchiviati.splice(idxArchived, 1);
 
-                // Determina in quale array va l'incarico e aggiungilo
                 incaricoData.id = parseInt(idInModifica);
+                
                 if (isCompleted) {
                     incarichiArchiviati.push(incaricoData);
                 } else {
@@ -1033,7 +1065,7 @@
         loadJsonBtn.addEventListener('click', () => {
             const jsonText = jsonInput.value.trim();
             if (!jsonText) {
-                alert('Per favore, incolla un JSON valido nell\'area di testo.');
+                alert('Per favor, incolla un JSON valido nell\'area di testo.');
                 return;
             }
 
@@ -1044,7 +1076,7 @@
                 form.reset();
                 incaricoIdField.value = '';
                 paymentsList.innerHTML = '';
-                addPaymentField(); // Assicura almeno un campo pagamento
+                addPaymentField(); 
                 descCheckboxes.forEach(checkboxInfo => {
                     document.getElementById(checkboxInfo.id).checked = false;
                 });
@@ -1052,7 +1084,7 @@
                 // Popola il form con i dati del JSON
                 populateForm(incaricoFromJson);
 
-                submitButton.textContent = 'Aggiungi Incarico (da JSON)'; // Cambia testo per chiarezza
+                submitButton.textContent = 'Aggiungi Incarico (da JSON)'; 
                 alert('Dati JSON caricati nel form. Puoi modificarli e poi cliccare "Aggiungi Incarico".');
 
             } catch (e) {
