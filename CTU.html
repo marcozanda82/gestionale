@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Fix Definitivo Duplicati)</title>
+    <title>Gestionale Incarichi CTU (Ordinamento Scadenza)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -883,10 +883,11 @@
                 if (dateInfo && dateInfo.value && !dateInfo.done) {
                     const dateStringFormatted = formatDataggmm(dateInfo.value);
                     const classToApply = getDateClass(dateInfo.value, false); 
-                    return { text: `${field.label}: ${dateStringFormatted}`, class: classToApply };
+                    return { text: `${field.label}: ${dateStringFormatted}`, class: classToApply, date: new Date(dateInfo.value) };
                 }
             }
-            return { text: 'Tutte completate', class: 'date-completed' };
+            // Se tutte le date sono completate o non definite, restituisci una data molto lontana nel futuro per il sorting
+            return { text: 'Tutte completate', class: 'date-completed', date: new Date('9999-12-31') }; 
         }
 
 
@@ -895,15 +896,18 @@
             tabellaAttiviBody.innerHTML = '';
             tabellaArchiviatiBody.innerHTML = '';
 
+            // Ordina incarichiAttivi per prossima scadenza
             incarichiAttivi.sort((a, b) => {
-                const dateA = a['data-conferimento']?.value ? new Date(a['data-conferimento'].value) : new Date(0);
-                const dateB = b['data-conferimento']?.value ? new Date(b['data-conferimento'].value) : new Date(0);
-                return dateB - dateA;
+                const scadenzaA = getProssimaScadenza(a).date;
+                const scadenzaB = getProssimaScadenza(b).date;
+                return scadenzaA.getTime() - scadenzaB.getTime();
             });
+
+            // Ordina incarichiArchiviati per data di deposito (più recenti in cima)
             incarichiArchiviati.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
-                return dateB - dateA;
+                return dateB.getTime() - dateA.getTime();
             });
 
 
