@@ -715,8 +715,8 @@ const firebaseConfig = {
         const incaricoIdField = document.getElementById('incarico-id');
         const addPaymentBtn = document.getElementById('add-payment-btn');
         const paymentsList = document.getElementById('payments-list');
-        const inputDataStringField = document.getElementById('input-data-string'); // New
-        const loadStringBtn = document.getElementById('load-string-btn'); // New
+        const inputDataStringField = document.getElementById('input-data-string');
+        const loadStringBtn = document.getElementById('load-string-btn');
 
         // Checkbox per la descrizione
         const descCheckboxes = [
@@ -750,22 +750,17 @@ const firebaseConfig = {
             let loadedArchiviati = [];
             let firebaseIncarichi = [];
 
-            // 1. Carica da localStorage
+            // 1. Carica da localStorage (solo attivi per evitare QuotaExceededError se gli archiviati sono troppi)
             try {
                 const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
                 if (attiviSalvati) loadedAttivi = JSON.parse(attiviSalvati);
+                // Gli incarichi archiviati non vengono più caricati da localStorage per evitare problemi di quota
+                // e verranno recuperati solo da Firebase.
             } catch (e) {
                 console.error("Errore nel parsing di incarichiCTU_attivi da localStorage:", e);
                 loadedAttivi = [];
             }
-            try {
-                const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
-                if (archiviatiSalvati) loadedArchiviati = JSON.parse(archiviatiSalvati);
-            } catch (e) {
-                console.error("Errore nel parsing di incarichiCTU_archiviati da localStorage:", e);
-                loadedArchiviati = [];
-            }
-
+            
             // 2. Carica da Firebase
             try {
                 const snapshot = await incarichiCollection.get();
@@ -779,11 +774,12 @@ const firebaseConfig = {
                 });
             } catch (e) {
                 console.error("Errore nel caricamento da Firebase:", e);
-                // Se Firebase fallisce, prosegui solo con i dati locali
+                // Se Firebase fallisce, prosegui solo con i dati locali (quelli attivi)
             }
 
             // 3. Unisci, deduplica e risolvi conflitti
-            let allIncarichi = [...loadedAttivi, ...loadedArchiviati, ...firebaseIncarichi];
+            // Vengono uniti i dati caricati localmente (solo attivi) con tutti quelli di Firebase
+            let allIncarichi = [...loadedAttivi, ...firebaseIncarichi];
             const uniqueIncarichiMap = new Map();
             let tempIdCounter = -1; // Per assegnare ID temporanei negativi
 
@@ -840,15 +836,17 @@ const firebaseConfig = {
                 }
             });
             
-            salvaIncarichiLocally(); // Salva lo stato pulito e con ID validi nel localStorage
+            salvaIncarichiLocally(); // Salva lo stato pulito e con ID validi nel localStorage (solo attivi)
             renderTables();
             syncToFirebase(); // Sincronizza lo stato finale a Firebase
         }
 
         // Funzione per salvare gli incarichi SOLO nel localStorage
         function salvaIncarichiLocally() {
+            // Salva solo gli incarichi attivi per evitare il superamento della quota di localStorage.
+            // Gli incarichi archiviati saranno sempre recuperati da Firebase.
             localStorage.setItem('incarichiCTU_attivi', JSON.stringify(incarichiAttivi));
-            localStorage.setItem('incarichiCTU_archiviati', JSON.stringify(incarichiArchiviati));
+            console.log("Dati attivi salvati localmente. Gli incarichi archiviati non sono salvati localmente per ottimizzazione dello spazio.");
         }
 
         // Funzione per sincronizzare i dati da localStorage a Firebase
@@ -953,7 +951,7 @@ const firebaseConfig = {
                     }
                 });
 
-                salvaIncarichiLocally(); // Salva lo stato risolto nel localStorage
+                salvaIncarichiLocally(); // Salva lo stato risolto nel localStorage (solo attivi)
                 renderTables(); // Aggiorna l'UI
                 console.log("Sincronizzazione da Firebase completata. UI aggiornata.");
             }, (error) => {
@@ -1234,7 +1232,7 @@ const firebaseConfig = {
         }
 
         // Gestione dell'invio del modulo
-        form.addEventListener('submit', async function(event) { // Aggiunto 'async' qui
+        form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
             const idInModifica = incaricoIdField.value;
@@ -1317,7 +1315,7 @@ const firebaseConfig = {
                 incarichiAttivi.push(incaricoData);
             }
 
-            salvaIncarichiLocally(); // Salva immediatamente in localStorage
+            salvaIncarichiLocally(); // Salva immediatamente in localStorage (ora salva solo gli attivi)
             renderTables(); // Aggiorna l'UI immediatamente
             await syncToFirebase(); // Sincronizza con Firebase in background
 
