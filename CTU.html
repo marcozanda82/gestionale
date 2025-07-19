@@ -202,8 +202,8 @@
         .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
         .stato-da-iniziare { color: var(--info-color); }
 
-        .payment-status-paid { color: var(--success-color); font-weight: bold; }
-        .payment-status-unpaid { color: var(--danger-color); font-weight: bold; }
+        .payment-status-paid { color: var(--success-color); font-weight: bold; } /* Verde per pagato */
+        .payment-status-unpaid { color: var(--danger-color); font-weight: bold; } /* Rosso per non pagato */
 
         .action-button {
             background: none;
@@ -224,7 +224,7 @@
             color: var(--primary-dark);
             transform: scale(1.1);
         }
-        .action-button.delete { /* Nuovo stile per il pulsante elimina */
+        .action-button.delete {
             color: var(--danger-color);
         }
         .action-button.delete:hover {
@@ -417,13 +417,11 @@
             td:nth-of-type(2):before { content: "Descrizione:"; }
             td:nth-of-type(3):before { content: "Tipo:"; }
             td:nth-of-type(4):before { content: "Giudice:"; }
-            td:nth-of-type(5):before { content: "Rif. Proc.:"; }
-            td:nth-of-type(6):before { content: "Scadenza:"; } /* Modificato */
-            td:nth-of-type(7):before { content: "Tot. Incassato:"; }
-            td:nth-of-type(8):before { content: "Tot. Richiesto:"; }
-            td:nth-of-type(9):before { content: "Saldo Residuo:"; }
-            td:nth-of-type(10):before { content: "Stato:"; }
-            td:nth-of-type(11):before { content: "Azioni:"; }
+            td:nth-of-type(5):before { content: "Rif. Procedura:"; }
+            td:nth-of-type(6):before { content: "Scadenza:"; }
+            td:nth-of-type(7):before { content: "Pagamenti:"; } /* Modificato */
+            td:nth-of-type(8):before { content: "Stato:"; }
+            td:nth-of-type(9):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
             .payment-item {
@@ -589,10 +587,8 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th style="width: 120px;">Scadenza</th> <th>Tot. Incassato</th>
-                        <th>Tot. Richiesto</th>
-                        <th>Saldo Residuo</th>
-                        <th style="width: 80px;">Stato</th>
+                        <th style="width: 120px;">Scadenza</th>
+                        <th style="width: 120px;">Pagamenti</th> <th style="width: 80px;">Stato</th>
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -612,10 +608,8 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th style="width: 120px;">Scadenza</th> <th>Tot. Incassato</th>
-                        <th>Tot. Richiesto</th>
-                        <th>Saldo Residuo</th>
-                        <th style="width: 80px;">Stato</th>
+                        <th style="width: 120px;">Scadenza</th>
+                        <th style="width: 120px;">Pagamenti</th> <th style="width: 80px;">Stato</th>
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -728,8 +722,8 @@
             return 'date-normal';
         }
 
-        // Funzione per calcolare i totali dei pagamenti
-        function calcolaTotaliPagamenti(pagamenti) {
+        // Funzione per calcolare i totali dei pagamenti e lo stato
+        function getPaymentStatus(pagamenti) {
             let totaleIncassato = 0;
             let totaleRichiesto = 0;
 
@@ -743,7 +737,12 @@
                 });
             }
             const saldoResiduo = totaleRichiesto - totaleIncassato;
-            return { totaleIncassato, totaleRichiesto, saldoResiduo };
+
+            if (saldoResiduo <= 0) {
+                return { text: 'Pagato', class: 'payment-status-paid' };
+            } else {
+                return { text: `${saldoResiduo.toFixed(2)} € non saldati`, class: 'payment-status-unpaid' };
+            }
         }
 
         // Funzione per renderizzare le tabelle
@@ -778,28 +777,28 @@
             }
         }
 
-        // NUOVA FUNZIONE: Calcola la scadenza corrente
+        // FUNZIONE: Calcola la scadenza corrente
         function getScadenzaCorrente(incarico) {
             let scadenza = { value: '', class: 'date-normal' };
             
             // Ordine di priorità: conferimento, operazioni peritali, bozza, osservazioni, deposito
-            for (const field of dateFields) {
-                const dateInfo = incarico[field.id];
-                if (dateInfo && dateInfo.value && !dateInfo.done) {
-                    scadenza.value = dateInfo.value;
-                    scadenza.class = getDateClass(dateInfo.value, false);
-                    break; // Trova la prima scadenza non completata e ferma
-                }
-            }
+            // Filtra solo le date con valore e non completate, e ordina per priorità
+            const upcomingDates = dateFields
+                .filter(field => incarico[field.id] && incarico[field.id].value && !incarico[field.id].done)
+                .sort((a, b) => a.priority - b.priority);
 
-            if (scadenza.value === '' && incarico['data-deposito'] && incarico['data-deposito'].done) {
-                 // Se tutte le date precedenti sono fatte, e il deposito è fatto, non c'è una scadenza attiva, ma potresti voler mostrare il deposito finale
+            if (upcomingDates.length > 0) {
+                const nextField = upcomingDates[0];
+                scadenza.value = incarico[nextField.id].value;
+                scadenza.class = getDateClass(incarico[nextField.id].value, false);
+            } else if (incarico['data-deposito'] && incarico['data-deposito'].done) {
+                 // Se tutte le date precedenti sono fatte, e il deposito è fatto, non c'è una scadenza attiva, mostra il deposito finale come completato
                  scadenza.value = incarico['data-deposito'].value;
                  scadenza.class = getDateClass(incarico['data-deposito'].value, true);
-            } else if (scadenza.value === '' && incarico['data-conferimento'] && incarico['data-conferimento'].value) {
-                // Se non c'è nessuna data non completata, ma l'incarico è stato conferito, mostra la data di conferimento come indicatore
+            } else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+                // Se non c'è nessuna data non completata, ma l'incarico è stato conferito, mostra la data di conferimento
                 scadenza.value = incarico['data-conferimento'].value;
-                scadenza.class = getDateClass(incarico['data-conferimento'].value, true); // Considera come completata ai fini della colorazione se non ci sono altre scadenze attive
+                scadenza.class = getDateClass(incarico['data-conferimento'].value, incarico['data-conferimento'].done);
             }
             
             return scadenza;
@@ -812,7 +811,7 @@
             newRow.dataset.id = incarico.id;
 
             const statoGenerale = getStatoIncarico(incarico);
-            const { totaleIncassato, totaleRichiesto, saldoResiduo } = calcolaTotaliPagamenti(incarico.pagamenti);
+            const paymentStatus = getPaymentStatus(incarico.pagamenti); // Ottieni lo stato dei pagamenti
             const scadenzaCorrente = getScadenzaCorrente(incarico); // Ottieni la scadenza corrente
 
             newRow.innerHTML = `
@@ -824,9 +823,9 @@
                 <td data-label="Scadenza:" class="${scadenzaCorrente.class}">
                     ${scadenzaCorrente.value || ''}
                 </td>
-                <td data-label="Tot. Incassato:">${totaleIncassato.toFixed(2)} €</td>
-                <td data-label="Tot. Richiesto:">${totaleRichiesto.toFixed(2)} €</td>
-                <td data-label="Saldo Residuo:">${saldoResiduo.toFixed(2)} €</td>
+                <td data-label="Pagamenti:" class="${paymentStatus.class}">
+                    ${paymentStatus.text}
+                </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
                 <td data-label="Azioni:">
                     <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
@@ -1065,7 +1064,7 @@
         loadJsonBtn.addEventListener('click', () => {
             const jsonText = jsonInput.value.trim();
             if (!jsonText) {
-                alert('Per favor, incolla un JSON valido nell\'area di testo.');
+                alert('Per favore, incolla un JSON valido nell\'area di testo.');
                 return;
             }
 
