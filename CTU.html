@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Fix Bug)</title>
+    <title>Gestionale Incarichi CTU (Fix Bug Duplicati)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -689,27 +689,84 @@
         let incarichiArchiviati = [];
 
         // Mappa dei campi data e relative checkbox (Ord. Cronologico per prossima scadenza)
-        // L'ordine qui è FONDAMENTALE per la nuova logica di "Prossima Scadenza"
         const dateFields = [
             { id: 'data-conferimento', doneId: 'data-conferimento-done', label: 'Conf. Incarico' },
             { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', label: 'Inizio Op.' },
             { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', label: 'Invio Bozza' },
             { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', label: 'Ricez. Oss.' },
             { id: 'data-deposito', doneId: 'data-deposito-done', label: 'Deposito Finale' },
-            { id: 'data-udienza', doneId: 'data-udienza-done', label: 'Udienza' } // NUOVO CAMPO
+            { id: 'data-udienza', doneId: 'data-udienza-done', label: 'Udienza' }
         ];
 
-        // Funzione per caricare gli incarichi dal localStorage
+        // Funzione per caricare gli incarichi dal localStorage e deduplicare
         function caricaIncarichi() {
-            const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
-            const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
+            let loadedAttivi = [];
+            let loadedArchiviati = [];
 
-            if (attiviSalvati) {
-                incarichiAttivi = JSON.parse(attiviSalvati);
+            try {
+                const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
+                if (attiviSalvati) {
+                    loadedAttivi = JSON.parse(attiviSalvati);
+                }
+            } catch (e) {
+                console.error("Errore nel parsing di incarichiCTU_attivi:", e);
+                loadedAttivi = [];
             }
-            if (archiviatiSalvati) {
-                incarichiArchiviati = JSON.parse(archiviatiSalvati);
+
+            try {
+                const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
+                if (archiviatiSalvati) {
+                    loadedArchiviati = JSON.parse(archiviatiSalvati);
+                }
+            } catch (e) {
+                console.error("Errore nel parsing di incarichiCTU_archiviati:", e);
+                loadedArchiviati = [];
             }
+
+            // Unisci tutti gli incarichi per la deduplicazione
+            let allIncarichi = [...loadedAttivi, ...loadedArchiviati];
+            const uniqueIncarichiMap = new Map();
+
+            allIncarichi.forEach(incarico => {
+                // Assicurati che l'ID sia un numero valido
+                const id = parseInt(incarico.id);
+                if (isNaN(id)) {
+                    console.warn("Incarico con ID non valido trovato, verrà ignorato:", incarico);
+                    return;
+                }
+
+                // Se l'incarico non ha un timestamp, assegnane uno vecchio per essere sovrascritto
+                if (!incarico.timestamp) {
+                    incarico.timestamp = 0; 
+                }
+
+                if (uniqueIncarichiMap.has(id)) {
+                    // Se esiste già un incarico con questo ID, confronta i timestamp
+                    const existingIncarico = uniqueIncarichiMap.get(id);
+                    if (incarico.timestamp > existingIncarico.timestamp) {
+                        // Mantieni la versione più recente
+                        uniqueIncarichiMap.set(id, incarico);
+                    }
+                } else {
+                    // Aggiungi il primo incarico con questo ID
+                    uniqueIncarichiMap.set(id, incarico);
+                }
+            });
+
+            // Ricostruisci gli array attivi e archiviati dai valori unici
+            incarichiAttivi = [];
+            incarichiArchiviati = [];
+            uniqueIncarichiMap.forEach(incarico => {
+                const statoGenerale = getStatoIncarico(incarico);
+                const isCompleted = (statoGenerale.text === 'Completato');
+                if (isCompleted) {
+                    incarichiArchiviati.push(incarico);
+                } else {
+                    incarichiAttivi.push(incarico);
+                }
+            });
+
+            salvaIncarichi(); // Salva lo stato pulito nel localStorage
             renderTables();
         }
 
@@ -805,21 +862,14 @@
 
         // Funzione per trovare la prossima data non completata secondo la logica sequenziale
         function getProssimaScadenza(incarico) {
-            // Itera attraverso i campi data nell'ordine definito in `dateFields`
             for (const field of dateFields) {
-                const dateInfo = incarico[field.id]; // Ottieni l'oggetto data (es. incarico['data-conferimento'])
-                
-                // Controlla se la data esiste e non è stata flaggata come 'done'
+                const dateInfo = incarico[field.id];
                 if (dateInfo && dateInfo.value && !dateInfo.done) {
-                    const date = new Date(dateInfo.value); // Crea un oggetto Data per il confronto o la formattazione
-                    const dateStringFormatted = formatDataggmm(dateInfo.value); // Formatta per la visualizzazione
-                    const classToApply = getDateClass(dateInfo.value, false); // Ottieni la classe semaforo (non è done)
-                    
+                    const dateStringFormatted = formatDataggmm(dateInfo.value);
+                    const classToApply = getDateClass(dateInfo.value, false); 
                     return { text: `${field.label}: ${dateStringFormatted}`, class: classToApply };
                 }
             }
-            
-            // Se si arriva qui, significa che tutte le date sono state completate o non sono presenti
             return { text: 'Tutte completate', class: 'date-completed' };
         }
 
@@ -829,13 +879,11 @@
             tabellaAttiviBody.innerHTML = '';
             tabellaArchiviatiBody.innerHTML = '';
 
-            // Ordina gli incarichi attivi per la data di conferimento più recente (o ID se non c'è)
             incarichiAttivi.sort((a, b) => {
                 const dateA = a['data-conferimento']?.value ? new Date(a['data-conferimento'].value) : new Date(0);
                 const dateB = b['data-conferimento']?.value ? new Date(b['data-conferimento'].value) : new Date(0);
                 return dateB - dateA;
             });
-            // Ordina gli incarichi archiviati per la data di deposito più recente (o ID se non c'è)
             incarichiArchiviati.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
@@ -862,9 +910,7 @@
         function aggiungiRigaTabella(incarico, targetTableBody) {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
-            // Aggiungi event listener per il click sulla riga
             newRow.addEventListener('click', (e) => {
-                // Previene l'attivazione del click sulla riga se il click è sul bottone "modifica"
                 if (e.target.closest('.action-button')) {
                     return;
                 }
@@ -924,9 +970,8 @@
             `;
             paymentsList.appendChild(paymentItem);
 
-            // Aggiungi event listener per il pulsante di rimozione
             paymentItem.querySelector('.remove-payment-btn').addEventListener('click', (e) => {
-                e.stopPropagation(); // Previeni il click sulla riga se il bottone è all'interno di una riga cliccabile
+                e.stopPropagation();
                 paymentsList.removeChild(paymentItem);
             });
         }
@@ -964,7 +1009,7 @@
                 if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
                     incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
                 } else {
-                    addPaymentField(); // Aggiungi almeno un campo vuoto se non ci sono pagamenti
+                    addPaymentField();
                 }
 
                 submitButton.textContent = 'Salva Modifiche';
@@ -976,7 +1021,7 @@
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const idInModifica = incaricoIdField.value; // Questo sarà una stringa o vuoto
+            const idInModifica = incaricoIdField.value;
 
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
@@ -1017,34 +1062,35 @@
                 'data-invio-bozza': dateData['data-invio-bozza'],
                 'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
                 'data-deposito': dateData['data-deposito'],
-                'data-udienza': dateData['data-udienza'] 
+                'data-udienza': dateData['data-udienza'],
+                timestamp: Date.now() // Aggiungi/aggiorna il timestamp
             };
 
             const statoGenerale = getStatoIncarico(incaricoData);
             const isCompleted = (statoGenerale.text === 'Completato');
 
-            let incaricoEsistente = false;
+            let incaricoFoundAndRemoved = false;
 
-            // Tentativo di trovare e rimuovere l'incarico sia dagli attivi che dagli archiviati
+            // Rimuovi l'incarico esistente da entrambi gli array se presente
             let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
             if (idxAttivi !== -1) {
                 incarichiAttivi.splice(idxAttivi, 1);
-                incaricoEsistente = true;
+                incaricoFoundAndRemoved = true;
             }
             
             let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
             if (idxArchiviati !== -1) {
                 incarichiArchiviati.splice(idxArchiviati, 1);
-                incaricoEsistente = true;
+                incaricoFoundAndRemoved = true;
             }
 
-            if (incaricoEsistente) {
-                // Aggiorna l'ID a quello esistente se era una modifica
+            if (incaricoFoundAndRemoved) {
+                // Se era una modifica, conserva l'ID originale
                 incaricoData.id = parseInt(idInModifica); 
             } else {
-                // Nuovo incarico: assegna un nuovo ID unico
-                const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati]; // Ricolleziona dopo le splice
-                const maxId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) : 0;
+                // Se è un nuovo incarico, assegna un nuovo ID unico
+                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; // Ricolleziona dopo le splice
+                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => i.id || 0)) : 0; // Gestisci ID nulli/undefined con || 0
                 incaricoData.id = maxId + 1;
             }
 
@@ -1061,7 +1107,7 @@
             incaricoIdField.value = '';
             submitButton.textContent = 'Aggiungi Incarico';
             paymentsList.innerHTML = '';
-            addPaymentField(); // Assicurati che ci sia sempre un campo pagamento vuoto
+            addPaymentField();
 
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
