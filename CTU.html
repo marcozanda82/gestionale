@@ -297,40 +297,35 @@
         }
 
         /* Date Field Specific Styles */
-        .date-input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .date-input-group input[type="date"] {
-            flex-grow: 1;
-            width: auto;
-        }
-        .date-input-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        /* Semaforo Date - Modificato per centratura verticale */
+        /* Ho modificato questi stili per un migliore allineamento */
         .date-completed,
         .date-overdue,
         .date-due-soon,
         .date-normal {
-            display: flex;
-            align-items: center; /* Centra verticalmente */
-            justify-content: center; /* Centra orizzontalmente (opzionale, ma utile per riquadri piccoli) */
+            display: inline-flex; /* Usa inline-flex per agire come blocco ma consentire il testo nella stessa riga */
+            align-items: center; /* Centra verticalmente il contenuto del riquadro */
+            justify-content: center; /* Centra orizzontalmente il contenuto del riquadro */
             padding: 5px 8px;
             border-radius: 4px;
             font-weight: bold;
-            height: 100%; /* Assicura che l'elemento occupi l'altezza della cella */
-            box-sizing: border-box; /* Include padding nel calcolo dell'altezza */
-            text-align: center; /* Per testo multi-linea */
+            min-width: 75px; /* Larghezza minima per contenere gg-mm-aaaa */
+            box-sizing: border-box;
+            text-align: center;
         }
         .date-completed { background-color: var(--date-completed-color); color: var(--text-light); }
         .date-overdue { background-color: var(--date-overdue-color); color: var(--text-light); }
         .date-due-soon { background-color: var(--date-due-soon-color); color: var(--text-dark); }
-        .date-normal { /* No specific background, default text color */ color: var(--text-dark); }
+        .date-normal { color: var(--text-dark); }
+
+        /* Stile specifico per la cella della scadenza per centrare il contenuto */
+        td[data-label="Scadenza:"] {
+            text-align: center; /* Allinea il contenuto della cella al centro */
+        }
+        /* Assicurati che l'intestazione della colonna Scadenza sia centrata */
+        th:has( + td[data-label="Scadenza:"]) { /* Selettore per la th corrispondente alla td con data-label="Scadenza:" */
+            text-align: center;
+        }
+
 
         /* Checkbox Group for Description */
         .checkbox-group {
@@ -805,24 +800,26 @@
                 const scadenzaA = getScadenzaCorrente(a);
                 const scadenzaB = getScadenzaCorrente(b);
 
-                const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01'); // Data molto lontana se non c'è scadenza
+                // Assegna una data molto lontana nel futuro se non c'è una scadenza definita (o è già completata)
+                const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01'); 
                 const dateB = scadenzaB.value ? new Date(scadenzaB.value) : new Date('2999-01-01');
 
                 const today = new Date();
                 today.setHours(0,0,0,0);
 
-                // Priorità 1: Scadenze passate (più vecchie prima)
+                // Criterio di ordinamento:
+                // 1. Scadenze passate vengono prima (più vecchie per prime)
                 if (dateA < today && dateB < today) {
                     return dateA.getTime() - dateB.getTime();
                 }
-                // Priorità 2: Una scaduta e l'altra no (scaduta prima)
+                // 2. Se solo una è scaduta, quella scaduta viene prima
                 if (dateA < today && dateB >= today) {
                     return -1;
                 }
                 if (dateA >= today && dateB < today) {
                     return 1;
                 }
-                // Priorità 3: Entrambe non scadute (più vicine prima)
+                // 3. Entrambe non scadute o nessuna scadenza: ordina per data (più vicina per prima)
                 return dateA.getTime() - dateB.getTime();
             });
 
