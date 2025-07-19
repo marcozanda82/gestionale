@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Layout Responsive)</title>
+    <title>Gestionale Incarichi CTU (Fix ID String)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
@@ -171,20 +171,20 @@
 
         /* Responsive table wrapper for horizontal scroll */
         .table-responsive {
-            overflow-x: auto; /* Enables horizontal scroll on small screens */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
-            min-width: 800px; /* Minimum width to prevent excessive squishing */
+            min-width: 800px;
             border-collapse: collapse;
             margin-top: 25px;
             background-color: var(--text-light);
             box-shadow: 0 4px 15px var(--shadow-light);
             border-radius: 8px;
             overflow: hidden;
-            table-layout: fixed; /* Crucial for fixed column widths */
+            table-layout: fixed;
         }
 
         th, td {
@@ -194,14 +194,14 @@
             vertical-align: middle;
             font-size: 0.9em;
             color: var(--text-dark);
-            word-wrap: break-word; /* Allow long text to wrap */
+            word-wrap: break-word;
         }
 
         th {
             background-color: var(--primary-color);
             color: var(--text-light);
             font-weight: 700;
-            white-space: nowrap; /* Prevent wrapping of headers */
+            white-space: nowrap;
         }
 
         /* Column Width Adjustments (Recalculated for 9 columns + 1 ID) */
@@ -216,7 +216,7 @@
         th:nth-child(9), td:nth-child(9) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
         
         tr {
-            cursor: pointer; /* Indica che la riga è cliccabile */
+            cursor: pointer;
         }
         tr:nth-child(even) {
             background-color: var(--bg-light);
@@ -232,8 +232,25 @@
         .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
         .stato-da-iniziare { color: var(--info-color); }
 
-        /* No more specific action button styling, as the column is removed */
-        /* .action-button {} */
+        .action-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            color: var(--primary-color);
+            padding: 0;
+            margin: 0;
+            transition: color 0.2s ease, transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+        .action-button:hover {
+            color: var(--primary-dark);
+            transform: scale(1.1);
+        }
 
         .archivio-section {
             margin-top: 60px;
@@ -444,8 +461,7 @@
             td:nth-of-type(6):before { content: "Rif. Proc.:"; }
             td:nth-of-type(7):before { content: "Pagamenti:"; }
             td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Azioni:"; } /* Still needed if there's an action cell */
-            td:nth-of-type(10):before { content: "Prossima Scadenza:"; }
+            td:nth-of-type(9):before { content: "Prossima Scadenza:"; } /* Azioni è stata rimossa, quindi -1 sull'indice */
 
 
             /* Adjust payment item layout for small screens */
@@ -611,7 +627,8 @@
 
         <div class="table-section">
             <h2>Incarichi in Lavorazione</h2>
-            <div class="table-responsive"> <table id="tabella-incarichi-attivi">
+            <div class="table-responsive">
+                <table id="tabella-incarichi-attivi">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -622,7 +639,8 @@
                             <th>Rif. Procedura</th>
                             <th>Pagamenti</th>
                             <th>Stato</th>
-                            <th>Prossima Scadenza</th> </tr>
+                            <th>Prossima Scadenza</th>
+                        </tr>
                     </thead>
                     <tbody>
                         
@@ -634,7 +652,8 @@
 
         <div class="archivio-section">
             <h2>Archivio Incarichi Completati</h2>
-            <div class="table-responsive"> <table id="tabella-incarichi-archiviati">
+            <div class="table-responsive">
+                <table id="tabella-incarichi-archiviati">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -645,7 +664,8 @@
                             <th>Rif. Procedura</th>
                             <th>Pagamenti</th>
                             <th>Stato</th>
-                            <th>Prossima Scadenza</th> </tr>
+                            <th>Prossima Scadenza</th>
+                        </tr>
                     </thead>
                     <tbody>
                         
@@ -735,8 +755,6 @@ const firebaseConfig = {
                 const snapshot = await incarichiCollection.get();
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // Firebase doc.id è la chiave unica del documento
-                    // Assicurati che l'ID del documento Firestore sia il campo 'id' dell'incarico
                     data.id = doc.id; // L'ID del documento Firestore è sempre una stringa
                     if (data.timestamp === undefined || data.timestamp === null) {
                         data.timestamp = 0; // Se da Firebase non ha timestamp (vecchio dato), mettiamo 0
@@ -745,24 +763,22 @@ const firebaseConfig = {
                 });
             } catch (e) {
                 console.error("Errore nel caricamento da Firebase:", e);
-                // Se Firebase fallisce, prosegui solo con i dati locali
             }
 
             // 3. Unisci, deduplica e risolvi conflitti
             let allIncarichi = [...loadedAttivi, ...loadedArchiviati, ...firebaseIncarichi];
             const uniqueIncarichiMap = new Map();
-            let tempIdCounter = -1; // Per assegnare ID temporanei negativi
+            let tempIdCounter = -1; // Per assegnare ID temporanei negativi per i record senza ID valido
 
             allIncarichi.forEach(incarico => {
-                let currentId = incarico.id;
-
-                // Gestisci ID nulli/non validi assegnando un ID temporaneo per la deduplicazione
-                // Firestore doc.id è sempre stringa, ma localStorage potrebbe avere numeri o null
-                if (currentId === null || currentId === undefined || (typeof currentId !== 'string' && isNaN(parseInt(currentId)))) {
-                    currentId = `temp_${tempIdCounter--}`; // ID temporaneo stringa
-                    // console.warn(`Incarico con ID non valido/nullo, assegnato ID temporaneo: ${currentId}`, incarico);
-                } else if (typeof currentId === 'number') {
-                    currentId = String(currentId); // Normalizza a stringa per ID di documento Firestore
+                let currentId;
+                // Normalizza l'ID per usarlo come chiave nella Map
+                if (incarico.id === null || incarico.id === undefined || (typeof incarico.id === 'string' && incarico.id.startsWith('temp_')) || isNaN(parseInt(incarico.id))) {
+                    currentId = `temp_${tempIdCounter--}`; // ID temporaneo stringa per elementi senza ID valido
+                } else if (typeof incarico.id === 'number') {
+                    currentId = String(incarico.id); // Converti ID numerici in stringhe
+                } else { // Già stringa numerica da Firestore doc.id
+                    currentId = incarico.id;
                 }
 
                 if (incarico.timestamp === undefined || incarico.timestamp === null) {
@@ -779,12 +795,12 @@ const firebaseConfig = {
                 }
             });
 
-            // 4. Ricostruisci gli array e assegna ID numerici definitivi se necessario
+            // 4. Ricostruisci gli array e assegna ID numerici definitivi (se temporanei o nulli)
             incarichiAttivi = [];
             incarichiArchiviati = [];
-            let maxNumericId = 0; // Trova il massimo ID numerico esistente
+            let maxNumericId = 0; 
 
-            // Primo giro per trovare il max ID tra quelli validi (numerici)
+            // Primo giro per trovare il massimo ID numerico esistente tra quelli validi
             uniqueIncarichiMap.forEach(incarico => {
                 const numericId = parseInt(incarico.id);
                 if (!isNaN(numericId) && numericId > maxNumericId) {
@@ -793,14 +809,12 @@ const firebaseConfig = {
             });
 
             // Secondo giro per assegnare nuovi ID e popolare gli array
-            const finalIncarichi = []; // Usiamo un array temporaneo per poi assegnare gli ID definitivi
+            const finalIncarichi = []; 
             uniqueIncarichiMap.forEach(incarico => {
-                // Se l'ID è temporaneo o non numerico (originale), assegna un nuovo ID definitivo
-                if (typeof incarico.id !== 'number' || isNaN(parseInt(incarico.id)) || parseInt(incarico.id) < 1) { 
+                // Se l'ID è temporaneo o non valido (come da localStorage prima del fix), assegnane uno nuovo
+                if (typeof incarico.id !== 'string' || incarico.id.startsWith('temp_') || isNaN(parseInt(incarico.id)) || parseInt(incarico.id) < 1) { 
                     maxNumericId++;
                     incarico.id = String(maxNumericId); // Assicurati che l'ID finale sia una stringa per Firestore
-                } else {
-                    incarico.id = String(parseInt(incarico.id)); // Normalizza ID numerici a stringhe
                 }
                 finalIncarichi.push(incarico);
             });
@@ -815,10 +829,9 @@ const firebaseConfig = {
                 }
             });
 
-
-            salvaIncarichiLocally(); // Salva lo stato pulito e con ID validi nel localStorage
+            salvaIncarichiLocally(); 
             renderTables();
-            syncToFirebase(); // Sincronizza lo stato finale a Firebase
+            syncToFirebase(); // Avvia la sincronizzazione dopo il caricamento iniziale e la pulizia
         }
 
         // Funzione per salvare gli incarichi SOLO nel localStorage
@@ -832,22 +845,19 @@ const firebaseConfig = {
             console.log("Sincronizzazione dati a Firebase...");
             const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
 
-            // Ottieni tutti i documenti attuali su Firebase per identificare le eliminazioni
             const firebaseDocsSnapshot = await incarichiCollection.get();
             const firebaseDocIds = new Set();
             firebaseDocsSnapshot.forEach(doc => firebaseDocIds.add(doc.id));
 
             for (const incarico of allIncarichi) {
                 try {
-                    // Imposta il documento usando l'ID dell'incarico come ID del documento Firestore
-                    await incarichiCollection.doc(String(incarico.id)).set(incarico);
-                    firebaseDocIds.delete(String(incarico.id)); // Rimuovi l'ID dai documenti di Firebase che sono ancora presenti localmente
+                    await incarichiCollection.doc(String(incarico.id)).set(incarico); // ID documento Firestore deve essere stringa
+                    firebaseDocIds.delete(String(incarico.id)); 
                 } catch (e) {
                     console.error(`Errore durante il salvataggio dell'incarico ${incarico.id} su Firebase:`, e);
                 }
             }
 
-            // Elimina i documenti su Firebase che non sono più presenti localmente
             for (const docId of firebaseDocIds) {
                 try {
                     await incarichiCollection.doc(docId).delete();
@@ -864,8 +874,6 @@ const firebaseConfig = {
             incarichiCollection.onSnapshot(async (snapshot) => {
                 const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
                 if (source === "Local") {
-                    // Questa è una modifica che ho fatto io stesso su questo dispositivo, ignorala.
-                    // La mia modifica locale è già gestita dal form.
                     return; 
                 }
 
@@ -880,16 +888,17 @@ const firebaseConfig = {
                     latestFirebaseData.push(data);
                 });
 
-                // Unisci i dati locali con quelli di Firebase e risolvi i conflitti
                 let combinedData = [...incarichiAttivi, ...incarichiArchiviati, ...latestFirebaseData];
                 const uniqueIncarichiMap = new Map();
                 
                 combinedData.forEach(incarico => {
-                    let currentId = incarico.id;
-                    if (currentId === null || currentId === undefined || (typeof currentId !== 'string' && isNaN(parseInt(currentId)))) {
+                    let currentId;
+                    if (incarico.id === null || incarico.id === undefined || (typeof incarico.id === 'string' && incarico.id.startsWith('temp_')) || isNaN(parseInt(incarico.id))) {
                         currentId = `temp_${Date.now()}_${Math.random()}`; 
-                    } else if (typeof currentId === 'number') {
-                        currentId = String(currentId); 
+                    } else if (typeof incarico.id === 'number') {
+                        currentId = String(incarico.id); 
+                    } else {
+                        currentId = incarico.id;
                     }
 
                     if (incarico.timestamp === undefined || incarico.timestamp === null) {
@@ -906,7 +915,6 @@ const firebaseConfig = {
                     }
                 });
 
-                // Ricostruisci gli array Attivi/Archiviati con i dati sincronizzati
                 incarichiAttivi = [];
                 incarichiArchiviati = [];
                 let maxIdFromCombined = 0;
@@ -918,11 +926,11 @@ const firebaseConfig = {
                 });
 
                 uniqueIncarichiMap.forEach(incarico => {
-                    if (typeof incarico.id !== 'number' || isNaN(parseInt(incarico.id)) || parseInt(incarico.id) < 1) { 
+                    if (typeof incarico.id !== 'string' || incarico.id.startsWith('temp_') || isNaN(parseInt(incarico.id)) || parseInt(incarico.id) < 1) { 
                         maxIdFromCombined++;
                         incarico.id = String(maxIdFromCombined);
                     } else {
-                        incarico.id = String(parseInt(incarico.id)); 
+                        incarico.id = incarico.id; // Già stringa numerica valida
                     }
                     const statoGenerale = getStatoIncarico(incarico);
                     const isCompleted = (statoGenerale.text === 'Completato');
@@ -1075,7 +1083,6 @@ const firebaseConfig = {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
             newRow.addEventListener('click', (e) => {
-                // Se l'evento è stato generato da un elemento .action-button (la matita), non propagare il click alla riga
                 if (e.target.closest('.action-button')) {
                     return;
                 }
@@ -1101,8 +1108,6 @@ const firebaseConfig = {
                     ${prossimaScadenza.text}
                 </span></td>
             `;
-            // Ho rimosso la colonna "Azioni" dal thead e dalla riga.
-            // L'event listener sulla riga gestisce il click per la modifica.
         }
 
         // Funzione per aggiungere un set di campi per un pagamento
@@ -1142,9 +1147,11 @@ const firebaseConfig = {
 
         // Funzione per popolare il modulo con i dati dell'incarico da modificare
         function modificaIncarico(id) {
-            const incaricoToEdit = incarichiAttivi.find(i => i.id == id) || incarichiArchiviati.find(i => i.id == id);
+            // Assicurati che l'ID sia una stringa per il confronto
+            const idString = String(id); 
+            const incaricoToEdit = incarichiAttivi.find(i => String(i.id) === idString) || incarichiArchiviati.find(i => String(i.id) === idString);
             if (incaricoToEdit) {
-                incaricoIdField.value = incaricoToEdit.id;
+                incaricoIdField.value = incaricoToEdit.id; // L'ID nel campo nascosto rimane la stringa
                 
                 descCheckboxes.forEach(checkboxInfo => {
                     const checkbox = document.getElementById(checkboxInfo.id);
@@ -1185,7 +1192,7 @@ const firebaseConfig = {
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            const idInModifica = incaricoIdField.value;
+            const idInModifica = incaricoIdField.value; // Questo sarà già una stringa
 
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
@@ -1233,29 +1240,29 @@ const firebaseConfig = {
             const statoGenerale = getStatoIncarico(incaricoData);
             const isCompleted = (statoGenerale.text === 'Completato');
 
-            let incaricoFoundAndRemoved = false;
+            let finalIncaricoId;
 
-            // Rimuovi l'incarico esistente da entrambi gli array se presente
-            let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
-            if (idxAttivi !== -1) {
-                incarichiAttivi.splice(idxAttivi, 1);
-                incaricoFoundAndRemoved = true;
-            }
-            
-            let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
-            if (idxArchiviati !== -1) {
-                incarichiArchiviati.splice(idxArchiviati, 1);
-                incaricoFoundAndRemoved = true;
-            }
+            // Se l'ID in modifica non è vuoto, significa che stiamo modificando un incarico esistente
+            if (idInModifica) {
+                finalIncaricoId = idInModifica; 
 
-            if (incaricoFoundAndRemoved) {
-                incaricoData.id = String(parseInt(idInModifica)); // Assicurati che l'ID sia una stringa numerica
+                // Rimuovi l'incarico esistente da entrambi gli array (se presente) prima di riaggiungerlo
+                let idxAttivi = incarichiAttivi.findIndex(i => String(i.id) === finalIncaricoId);
+                if (idxAttivi !== -1) incarichiAttivi.splice(idxAttivi, 1);
+                
+                let idxArchiviati = incarichiArchiviati.findIndex(i => String(i.id) === finalIncaricoId);
+                if (idxArchiviati !== -1) incarichiArchiviati.splice(idxArchiviati, 1);
+
             } else {
+                // Nuovo incarico: assegna un nuovo ID unico (come stringa)
                 const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
-                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' || (typeof i.id === 'string' && !isNaN(parseInt(i.id))) ? parseInt(i.id) : 0)) : 0; 
-                incaricoData.id = String(maxId + 1); // Assicurati che l'ID sia una stringa numerica
+                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'string' && !isNaN(parseInt(i.id)) ? parseInt(i.id) : 0)) : 0; 
+                finalIncaricoId = String(maxId + 1); 
             }
 
+            incaricoData.id = finalIncaricoId; // Assegna l'ID definitivo all'oggetto incaricoData
+
+            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
             if (isCompleted) {
                 incarichiArchiviati.push(incaricoData);
             } else {
@@ -1264,7 +1271,7 @@ const firebaseConfig = {
 
             salvaIncarichiLocally(); 
             renderTables(); 
-            await syncToFirebase(); // Sincronizza con Firebase in background
+            await syncToFirebase(); 
 
             form.reset();
             incaricoIdField.value = '';
