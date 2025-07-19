@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionale Incarichi CTU (Sincronizzato con Firebase)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --secondary-color: #6c757d;
+            --bg-light: #f8f9fa;
+            --bg-dark: #e9ecef;
+            --text-dark: #343a40;
+            --text-light: #fff;
+            --border-color: #dee2e6;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+
+            /* Colori Semaforo Date */
+            --date-completed-color: #28a745; /* Verde */
+            --date-overdue-color: #dc3545; /* Rosso */
+            --date-due-soon-color: #ffc107; /* Giallo */
+
+            /* Colori Semaforo Pagamenti */
+            --payment-summary-paid: #28a745; /* Verde per pagato */
+            --payment-summary-unpaid: #dc3545; /* Rosso per mancante */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--text-light);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow-medium);
+        }
+
+        h1, h2 {
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            display: inline-block;
+            width: auto;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-top: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-section {
+            background-color: var(--bg-dark);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow-light);
+            margin-bottom: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background-color: var(--text-light);
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background-color: var(--text-light);
+            box-shadow: 0 4px 15px var(--shadow-light);
+            border-radius: 8px;
+            overflow: hidden;
+            table-layout: fixed; /* Crucial for fixed column widths */
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            text-align: left;
+            vertical-align: middle; /* Ensure vertical alignment */
+            font-size: 0.9em;
+            color: var(--text-dark);
+            word-wrap: break-word; /* Allow long text to wrap */
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            font-weight: 700;
+            white-space: nowrap; /* Prevent wrapping of headers */
+        }
+
+        /* Column Width Adjustments */
+        th:nth-child(1), td:nth-child(1) { width: 40px; text-align: center; } /* ID */
+        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Descrizione */
+        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Parti */
+        th:nth-child(4), td:nth-child(4) { width: 80px; } /* Tipo */
+        th:nth-child(5), td:nth-child(5) { width: 100px; } /* Giudice */
+        th:nth-child(6), td:nth-child(6) { width: 8%; } /* Rif. Procedura */
+        th:nth-child(7), td:nth-child(7) { width: 9%; text-align: center; } /* Pagamenti */
+        th:nth-child(8), td:nth-child(8) { width: 9%; text-align: center; } /* Stato */
+        th:nth-child(9), td:nth-child(9) { width: 60px; text-align: center; } /* Azioni */
+        th:nth-child(10), td:nth-child(10) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
+        
+        tr {
+            cursor: pointer; /* Indica che la riga è cliccabile */
+        }
+        tr:nth-child(even) {
+            background-color: var(--bg-light);
+        }
+
+        tr:hover {
+            background-color: var(--bg-dark);
+            transition: background-color 0.2s ease;
+        }
+
+        .stato-completato { color: var(--success-color); font-weight: bold; }
+        .stato-in-corso { color: var(--warning-color); font-weight: bold; }
+        .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
+        .stato-da-iniziare { color: var(--info-color); }
+
+        .action-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            color: var(--primary-color);
+            padding: 0;
+            margin: 0;
+            transition: color 0.2s ease, transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+        .action-button:hover {
+            color: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        .archivio-section {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-style: italic;
+            background-color: var(--bg-dark);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        /* Pagamenti Section Styling (Form) */
+        .payments-section-container {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+        }
+        .payments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+        .payment-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            align-items: center;
+        }
+        .payment-item label {
+            margin-bottom: 5px;
+            font-weight: normal;
+            font-size: 0.9em;
+            color: var(--text-dark);
+        }
+        .payment-item .form-group {
+            margin-bottom: 0;
+        }
+        .remove-payment-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0 5px;
+            transition: color 0.2s ease;
+        }
+        .remove-payment-btn:hover {
+            color: #a71d2a;
+        }
+
+        /* Date Field Specific Styles (Form) */
+        .date-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .date-input-group input[type="date"] {
+            flex-grow: 1;
+            width: auto;
+        }
+        .date-input-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        /* Semaforo Date (Table Cells) */
+        .date-cell-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .date-completed {
+            background-color: var(--date-completed-color);
+            color: var(--text-light);
+        }
+        .date-overdue {
+            background-color: var(--date-overdue-color);
+            color: var(--text-light);
+        }
+        .date-due-soon {
+            background-color: var(--date-due-soon-color);
+            color: var(--text-dark);
+        }
+        .date-normal .date-cell-content {
+            background-color: transparent;
+            color: var(--text-dark);
+            font-weight: normal;
+        }
+        
+        /* Payment Summary Highlighting (Table Cell) */
+        .payment-summary-paid {
+            color: var(--payment-summary-paid);
+            font-weight: bold;
+        }
+        .payment-summary-unpaid {
+            color: var(--payment-summary-unpaid);
+            font-weight: bold;
+        }
+
+        /* Checkbox Group for Description */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--text-light);
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+            color: var(--text-dark);
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn {
+                width: 100%;
+            }
+            table {
+                table-layout: auto;
+            }
+            th, td {
+                width: auto !important;
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                border: 1px solid var(--border-color);
+                margin-bottom: 10px;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            td {
+                border: none;
+                border-bottom: 1px solid var(--border-color);
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            td:last-child {
+                border-bottom: none;
+            }
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: calc(50% - 20px);
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: var(--primary-dark);
+            }
+            /* Specific column labels for mobile (Updated for simplified table) */
+            td:nth-of-type(1):before { content: "ID:"; }
+            td:nth-of-type(2):before { content: "Descrizione:"; }
+            td:nth-of-type(3):before { content: "Parti:"; }
+            td:nth-of-type(4):before { content: "Tipo:"; }
+            td:nth-of-type(5):before { content: "Giudice:"; }
+            td:nth-of-type(6):before { content: "Rif. Proc.:"; }
+            td:nth-of-type(7):before { content: "Pagamenti:"; } /* New label */
+            td:nth-of-type(8):before { content: "Stato:"; }
+            td:nth-of-type(9):before { content: "Azioni:"; }
+            td:nth-of-type(10):before { content: "Prossima Scadenza:"; }
+
+
+            /* Adjust payment item layout for small screens */
+            .payment-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .payment-item .form-group input,
+            .payment-item .form-group select {
+                width: 100%;
+            }
+
+            /* Adjust date input group for small screens */
+            .date-input-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .date-input-group label {
+                width: 100%;
+            }
+            .date-input-group input[type="date"],
+            .date-input-group input[type="checkbox"] {
+                width: auto;
+            }
+            .date-input-group input[type="checkbox"] {
+                align-self: flex-end;
+            }
+            .checkbox-group {
+                align-items: flex-start;
+            }
+            /* Ensure date content in table cells is aligned for mobile */
+            td .date-cell-content {
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 style="text-align: center;">Gestionale Incarichi CTU</h1>
+
+        <div class="form-section">
+            <h2>Dettagli Incarico</h2>
+            <form id="form-incarico">
+                <input type="hidden" id="incarico-id" value=""> 
+
+                <div class="form-grid">
+                    
+<div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Attività Richieste (Infortunistica Stradale):</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="desc-stima" value="Stima">
+                                <label for="desc-stima">Stima</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="desc-valutazione-commerciale" value="Valutazione Commerciale">
+                                <label for="desc-valutazione-commerciale">Valutazione Commerciale</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="desc-compatibilita" value="Compatibilità">
+                                <label for="desc-compatibilita">Compatibilità</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="desc-ricostruzione-sinistro" value="Ricostruzione Sinistro">
+                                <label for="desc-ricostruzione-sinistro">Ricostruzione Sinistro</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+<div class="form-group">
+                        <label for="tipo-incarico">Tipo Incarico:</label>
+                        <select id="tipo-incarico" name="tipo-incarico">
+                            <option value="Civile">Civile</option>
+                            <option value="Penale">Penale</option>
+                            <option value="Amministrativo">Amministrativo</option>
+                            <option value="Arbitrato">Arbitrato</option>
+                            <option value="Altro">Altro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="giudice">Giudice:</label>
+                        <input type="text" id="giudice" name="giudice">
+                    </div>
+                    <div class="form-group">
+                        <label for="rif-procedura">Riferimento Procedura:</label>
+                        <input type="text" id="rif-procedura" name="rif-procedura">
+                    </div>
+                    <div class="form-group">
+                        <label for="parti">Parti (es. Attore vs Convenuto):</label>
+                        <input type="text" id="parti" name="parti">
+                    </div>
+                    
+                    
+<div class="form-group">
+                        <label for="data-conferimento">Data Conferimento Incarico:</label>
+                        <div class="date-input-group">
+                            <input type="date" id="data-conferimento" name="data-conferimento" required>
+                            <input type="checkbox" id="data-conferimento-done" name="data-conferimento-done" title="Completato">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="data-inizio-operazioni">Data Inizio Operazioni Peritali:</label>
+                        <div class="date-input-group">
+                            <input type="date" id="data-inizio-operazioni" name="data-inizio-operazioni">
+                            <input type="checkbox" id="data-inizio-operazioni-done" name="data-inizio-operazioni-done" title="Completato">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="data-invio-bozza">Data Invio Bozza:</label>
+                        <div class="date-input-group">
+                            <input type="date" id="data-invio-bozza" name="data-invio-bozza">
+                            <input type="checkbox" id="data-invio-bozza-done" name="data-invio-bozza-done" title="Completato">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="data-ricezione-osservazioni">Data Ricezione Osservazioni:</label>
+                        <div class="date-input-group">
+                            <input type="date" id="data-ricezione-osservazioni" name="data-ricezione-osservazioni">
+                            <input type="checkbox" id="data-ricezione-osservazioni-done" name="data-ricezione-osservazioni-done" title="Completato">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="data-deposito">Data Deposito Finale:</label>
+                        <div class="date-input-group">
+                            <input type="date" id="data-deposito" name="data-deposito">
+                            <input type="checkbox" id="data-deposito-done" name="data-deposito-done" title="Completato">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="data-udienza">Data Udienza:</label>
+                        <div class="date-input-group">
+                            <input type="date" id="data-udienza" name="data-udienza">
+                            <input type="checkbox" id="data-udienza-done" name="data-udienza-done" title="Completato">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="note">Note:</label>
+                        <textarea id="note" name="note" rows="3"></textarea>
+                    </div>
+
+                    
+<div class="payments-section-container">
+                        <div class="payments-header">
+                            <span>Pagamenti</span>
+                            <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
+                        </div>
+                        <div id="payments-list">
+                            
+</div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" id="submit-button" class="btn btn-primary">Aggiungi Incarico</button>
+                    <button type="button" id="reset-button" class="btn btn-secondary">Nuovo Incarico</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-section">
+            <h2>Incarichi in Lavorazione</h2>
+            <table id="tabella-incarichi-attivi">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descrizione</th>
+                        <th>Parti</th>
+                        <th>Tipo</th>
+                        <th>Giudice</th>
+                        <th>Rif. Procedura</th>
+                        <th>Pagamenti</th>
+                        <th>Stato</th>
+                        <th>Azioni</th>
+                        <th>Prossima Scadenza</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+</tbody>
+            </table>
+            <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
+        </div>
+
+        <div class="archivio-section">
+            <h2>Archivio Incarichi Completati</h2>
+            <table id="tabella-incarichi-archiviati">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descrizione</th>
+                        <th>Parti</th>
+                        <th>Tipo</th>
+                        <th>Giudice</th>
+                        <th>Rif. Procedura</th>
+                        <th>Pagamenti</th>
+                        <th>Stato</th>
+                        <th>Azioni</th>
+                        <th>Prossima Scadenza</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+</tbody>
+            </table>
+            <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
+        </div>
+    </div>
+
+    <script>
+        // *** CONFIGURAZIONE FIREBASE - INSERISCI QUI LE TUE CREDENZIALI ***
+        const firebaseConfig = {
+          apiKey: "LA_TUA_API_KEY",      // <-- INSERISCI QUI LA TUA API KEY
+          authDomain: "TUO_PROGETTO.firebaseapp.com", // <-- INSERISCI QUI IL TUO AUTH DOMAIN
+          projectId: "TUO_PROGETTO-ID", // <-- INSERISCI QUI IL TUO PROJECT ID
+          storageBucket: "TUO_PROGETTO.appspot.com",
+          messagingSenderId: "TUO_SENDER_ID",
+          appId: "LA_TUA_APP_ID"
+        };
+        // Inizializza Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const incarichiCollection = db.collection('incarichi'); // Nome della tua collezione su Firestore
+
+        // *** FINE CONFIGURAZIONE FIREBASE ***
+
+
+        const form = document.getElementById('form-incarico');
+        const submitButton = document.getElementById('submit-button');
+        const resetButton = document.getElementById('reset-button');
+        const incaricoIdField = document.getElementById('incarico-id');
+        const addPaymentBtn = document.getElementById('add-payment-btn');
+        const paymentsList = document.getElementById('payments-list');
+
+        // Checkbox per la descrizione
+        const descCheckboxes = [
+            { id: 'desc-stima', value: 'Stima' },
+            { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
+            { id: 'desc-compatibilita', value: 'Compatibilità' },
+            { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
+        ];
+
+        const tabellaAttiviBody = document.querySelector('#tabella-incarichi-attivi tbody');
+        const tabellaArchiviatiBody = document.querySelector('#tabella-incarichi-archiviati tbody');
+        const noActiveMessage = document.getElementById('no-active-incarichi');
+        const noArchivedMessage = document.getElementById('no-archived-incarichi');
+
+        let incarichiAttivi = [];
+        let incarichiArchiviati = [];
+
+        // Mappa dei campi data e relative checkbox (Ord. Cronologico per prossima scadenza)
+        const dateFields = [
+            { id: 'data-conferimento', doneId: 'data-conferimento-done', label: 'Conf. Incarico' },
+            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', label: 'Inizio Op.' },
+            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', label: 'Invio Bozza' },
+            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', label: 'Ricez. Oss.' },
+            { id: 'data-deposito', doneId: 'data-deposito-done', label: 'Deposito Finale' },
+            { id: 'data-udienza', doneId: 'data-udienza-done', label: 'Udienza' }
+        ];
+
+        // Funzione per caricare e sincronizzare gli incarichi
+        async function caricaIncarichi() {
+            let loadedAttivi = [];
+            let loadedArchiviati = [];
+            let firebaseIncarichi = [];
+
+            // 1. Carica da localStorage
+            try {
+                const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
+                if (attiviSalvati) loadedAttivi = JSON.parse(attiviSalvati);
+            } catch (e) {
+                console.error("Errore nel parsing di incarichiCTU_attivi da localStorage:", e);
+                loadedAttivi = [];
+            }
+            try {
+                const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
+                if (archiviatiSalvati) loadedArchiviati = JSON.parse(archiviatiSalvati);
+            } catch (e) {
+                console.error("Errore nel parsing di incarichiCTU_archiviati da localStorage:", e);
+                loadedArchiviati = [];
+            }
+
+            // 2. Carica da Firebase
+            try {
+                const snapshot = await incarichiCollection.get();
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Assicurati che l'ID del documento Firestore sia il campo 'id' dell'incarico
+                    if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
+                        data.id = parseInt(doc.id) || doc.id; // Tenta di usare doc.id come numerico, altrimenti stringa
+                    }
+                    firebaseIncarichi.push(data);
+                });
+            } catch (e) {
+                console.error("Errore nel caricamento da Firebase:", e);
+                // Se Firebase fallisce, prosegui solo con i dati locali
+            }
+
+            // 3. Unisci, deduplica e risolvi conflitti
+            let allIncarichi = [...loadedAttivi, ...loadedArchiviati, ...firebaseIncarichi];
+            const uniqueIncarichiMap = new Map();
+            let tempIdCounter = -1; // Per assegnare ID temporanei negativi
+
+            allIncarichi.forEach(incarico => {
+                let currentId = incarico.id;
+
+                // Gestisci ID nulli/non validi assegnando un ID temporaneo per la deduplicazione
+                if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
+                    currentId = `temp_${tempIdCounter--}`;
+                    // console.warn(`Incarico con ID non valido/nullo, assegnato ID temporaneo: ${currentId}`, incarico);
+                } else {
+                    currentId = parseInt(currentId);
+                }
+
+                // Assicurati che il timestamp esista per il confronto dei duplicati
+                if (incarico.timestamp === undefined || incarico.timestamp === null) {
+                    incarico.timestamp = 0; // Se non ha timestamp, è considerato molto vecchio
+                }
+
+                if (uniqueIncarichiMap.has(currentId)) {
+                    const existingIncarico = uniqueIncarichiMap.get(currentId);
+                    // Prevale la versione con timestamp più recente
+                    if (incarico.timestamp > existingIncarico.timestamp) {
+                        uniqueIncarichiMap.set(currentId, incarico);
+                    }
+                } else {
+                    uniqueIncarichiMap.set(currentId, incarico);
+                }
+            });
+
+            // 4. Ricostruisci gli array e assegna ID numerici definitivi se necessario
+            incarichiAttivi = [];
+            incarichiArchiviati = [];
+            let maxExistingId = 0; 
+
+            uniqueIncarichiMap.forEach(incarico => {
+                if (typeof incarico.id === 'number' && incarico.id > maxExistingId) {
+                    maxExistingId = incarico.id;
+                }
+            });
+
+            uniqueIncarichiMap.forEach(incarico => {
+                if (typeof incarico.id !== 'number' || incarico.id < 1) { 
+                    maxExistingId++;
+                    incarico.id = maxExistingId;
+                }
+
+                const statoGenerale = getStatoIncarico(incarico);
+                const isCompleted = (statoGenerale.text === 'Completato');
+                if (isCompleted) {
+                    incarichiArchiviati.push(incarico);
+                } else {
+                    incarichiAttivi.push(incarico);
+                }
+            });
+            
+            salvaIncarichiLocally(); // Salva lo stato pulito e con ID validi nel localStorage
+            renderTables();
+            syncToFirebase(); // Sincronizza lo stato finale a Firebase
+        }
+
+        // Funzione per salvare gli incarichi SOLO nel localStorage
+        function salvaIncarichiLocally() {
+            localStorage.setItem('incarichiCTU_attivi', JSON.stringify(incarichiAttivi));
+            localStorage.setItem('incarichiCTU_archiviati', JSON.stringify(incarichiArchiviati));
+        }
+
+        // Funzione per sincronizzare i dati da localStorage a Firebase
+        async function syncToFirebase() {
+            console.log("Sincronizzazione dati a Firebase...");
+            const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+
+            // Ottieni tutti i documenti attuali su Firebase per identificare le eliminazioni
+            const firebaseDocsSnapshot = await incarichiCollection.get();
+            const firebaseDocIds = new Set();
+            firebaseDocsSnapshot.forEach(doc => firebaseDocIds.add(doc.id));
+
+            for (const incarico of allIncarichi) {
+                try {
+                    // Imposta il documento usando l'ID dell'incarico come ID del documento Firestore
+                    await incarichiCollection.doc(String(incarico.id)).set(incarico);
+                    firebaseDocIds.delete(String(incarico.id)); // Rimuovi l'ID dai documenti di Firebase che sono ancora presenti localmente
+                } catch (e) {
+                    console.error(`Errore durante il salvataggio dell'incarico ${incarico.id} su Firebase:`, e);
+                }
+            }
+
+            // Elimina i documenti su Firebase che non sono più presenti localmente
+            for (const docId of firebaseDocIds) {
+                try {
+                    await incarichiCollection.doc(docId).delete();
+                    console.log(`Documento Firebase ${docId} eliminato (non più presente localmente).`);
+                } catch (e) {
+                    console.error(`Errore durante l'eliminazione del documento ${docId} da Firebase:`, e);
+                }
+            }
+            console.log("Sincronizzazione completata.");
+        }
+
+        // Funzione per ascoltare i cambiamenti da Firebase in tempo reale
+        function setupFirebaseListener() {
+            incarichiCollection.onSnapshot(async (snapshot) => {
+                const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
+                if (source === "Local") {
+                    // Questa è una modifica che ho fatto io stesso su questo dispositivo, ignorala.
+                    // La mia modifica locale è già gestita dal form.
+                    return; 
+                }
+
+                console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Sincronizzazione in corso...");
+                let latestFirebaseData = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
+                        data.id = parseInt(doc.id) || doc.id; 
+                    }
+                    latestFirebaseData.push(data);
+                });
+
+                // Unisci i dati locali con quelli di Firebase e risolvi i conflitti
+                let combinedData = [...incarichiAttivi, ...incarichiArchiviati, ...latestFirebaseData];
+                const uniqueIncarichiMap = new Map();
+                
+                combinedData.forEach(incarico => {
+                    let currentId = incarico.id;
+                    if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
+                        currentId = `temp_${Date.now()}_${Math.random()}`; // ID temporaneo univoco per unici
+                    } else {
+                        currentId = parseInt(currentId);
+                    }
+
+                    if (incarico.timestamp === undefined || incarico.timestamp === null) {
+                        incarico.timestamp = 0;
+                    }
+
+                    if (uniqueIncarichiMap.has(currentId)) {
+                        const existingIncarico = uniqueIncarichiMap.get(currentId);
+                        if (incarico.timestamp > existingIncarico.timestamp) {
+                            uniqueIncarichiMap.set(currentId, incarico);
+                        }
+                    } else {
+                        uniqueIncarichiMap.set(currentId, incarico);
+                    }
+                });
+
+                // Ricostruisci gli array Attivi/Archiviati con i dati sincronizzati
+                incarichiAttivi = [];
+                incarichiArchiviati = [];
+                let maxIdFromCombined = 0;
+                uniqueIncarichiMap.forEach(incarico => {
+                    if (typeof incarico.id === 'number' && incarico.id > maxIdFromCombined) {
+                        maxIdFromCombined = incarico.id;
+                    }
+                });
+
+                uniqueIncarichiMap.forEach(incarico => {
+                    if (typeof incarico.id !== 'number' || incarico.id < 1) { 
+                        maxIdFromCombined++;
+                        incarico.id = maxIdFromCombined;
+                    }
+                    const statoGenerale = getStatoIncarico(incarico);
+                    const isCompleted = (statoGenerale.text === 'Completato');
+                    if (isCompleted) {
+                        incarichiArchiviati.push(incarico);
+                    } else {
+                        incarichiAttivi.push(incarico);
+                    }
+                });
+
+                salvaIncarichiLocally(); // Salva lo stato risolto nel localStorage
+                renderTables(); // Aggiorna l'UI
+                console.log("Sincronizzazione da Firebase completata. UI aggiornata.");
+            }, (error) => {
+                console.error("Errore nel listener Firebase:", error);
+            });
+        }
+
+
+        // Funzione per determinare lo stato dell'incarico generale
+        function getStatoIncarico(incarico) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const deposito = incarico['data-deposito'] && incarico['data-deposito'].value ? new Date(incarico['data-deposito'].value) : null;
+            const depositoDone = incarico['data-deposito'] && incarico['data-deposito'].done;
+
+            if (depositoDone) {
+                return { text: 'Completato', class: 'stato-completato' };
+            }
+            if (deposito && deposito < today) {
+                return { text: 'Deposito Scaduto', class: 'stato-in-scadenza' };
+            }
+            if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+                return { text: 'In Corso', class: 'stato-in-corso' };
+            }
+
+            return { text: 'In attesa', class: '' };
+        }
+
+        // Funzione per determinare la classe CSS per una data specifica (per cella singola)
+        function getDateClass(dateStr, isDone) {
+            if (!dateStr) return '';
+
+            if (isDone) return 'date-completed';
+
+            const date = new Date(dateStr);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const sevenDaysFromNow = new Date();
+            sevenDaysFromNow.setDate(today.getDate() + 7);
+            sevenDaysFromNow.setHours(0, 0, 0, 0);
+
+            if (date < today) {
+                return 'date-overdue';
+            }
+            if (date <= sevenDaysFromNow) {
+                return 'date-due-soon';
+            }
+            return 'date-normal';
+        }
+
+        // Funzione per calcolare i totali dei pagamenti
+        function calcolaTotaliPagamenti(pagamenti) {
+            let totaleIncassato = 0;
+            let totaleRichiesto = 0;
+
+            if (pagamenti && pagamenti.length > 0) {
+                pagamenti.forEach(p => {
+                    const importo = parseFloat(p.importo) || 0;
+                    totaleRichiesto += importo;
+                    if (p.stato === 'Pagato') {
+                        totaleIncassato += importo;
+                    }
+                });
+            }
+            const saldoResiduo = totaleRichiesto - totaleIncassato;
+            return { totaleIncassato, totaleRichiesto, saldoResiduo };
+        }
+
+        // Nuova funzione per ottenere lo stato riassuntivo dei pagamenti
+        function getPaymentStatusSummary(pagamenti) {
+            const { totaleIncassato, totaleRichiesto, saldoResiduo } = calcolaTotaliPagamenti(pagamenti);
+
+            if (saldoResiduo <= 0) {
+                return { text: 'Pagato', class: 'payment-summary-paid' };
+            } else {
+                return { text: `${saldoResiduo.toFixed(2)} €`, class: 'payment-summary-unpaid' };
+            }
+        }
+
+        // Funzione per formattare una data nel formato gg-mm
+        function formatDataggmm(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${day}-${month}`;
+        }
+
+        // Funzione per trovare la prossima data non completata secondo la logica sequenziale
+        function getProssimaScadenza(incarico) {
+            for (const field of dateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    const dateStringFormatted = formatDataggmm(dateInfo.value);
+                    const classToApply = getDateClass(dateInfo.value, false); 
+                    return { text: `${field.label}: ${dateStringFormatted}`, class: classToApply, date: new Date(dateInfo.value) };
+                }
+            }
+            return { text: 'Tutte completate', class: 'date-completed', date: new Date('9999-12-31') }; 
+        }
+
+
+        // Funzione per renderizzare le tabelle
+        function renderTables() {
+            tabellaAttiviBody.innerHTML = '';
+            tabellaArchiviatiBody.innerHTML = '';
+
+            incarichiAttivi.sort((a, b) => {
+                const scadenzaA = getProssimaScadenza(a).date;
+                const scadenzaB = getProssimaScadenza(b).date;
+                return scadenzaA.getTime() - scadenzaB.getTime();
+            });
+
+            incarichiArchiviati.sort((a, b) => {
+                const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
+                const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            });
+
+
+            if (incarichiAttivi.length === 0) {
+                noActiveMessage.style.display = 'block';
+            } else {
+                noActiveMessage.style.display = 'none';
+                incarichiAttivi.forEach(incarico => aggiungiRigaTabella(incarico, tabellaAttiviBody));
+            }
+
+            if (incarichiArchiviati.length === 0) {
+                noArchivedMessage.style.display = 'block';
+            } else {
+                noArchivedMessage.style.display = 'none';
+                incarichiArchiviati.forEach(incarico => aggiungiRigaTabella(incarico, tabellaArchiviatiBody));
+            }
+        }
+
+        // Funzione per aggiungere una riga alla tabella specificata
+        function aggiungiRigaTabella(incarico, targetTableBody) {
+            const newRow = targetTableBody.insertRow();
+            newRow.dataset.id = incarico.id;
+            newRow.addEventListener('click', (e) => {
+                if (e.target.closest('.action-button')) {
+                    return;
+                }
+                modificaIncarico(incarico.id);
+            });
+
+            const statoGenerale = getStatoIncarico(incarico);
+            const paymentSummary = getPaymentStatusSummary(incarico.pagamenti);
+            const prossimaScadenza = getProssimaScadenza(incarico);
+
+            newRow.innerHTML = `
+                <td data-label="ID:">${incarico.id === null || incarico.id === undefined ? 'N/A' : incarico.id}</td>
+                <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
+                <td data-label="Parti:">${incarico.parti || ''}</td>
+                <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
+                <td data-label="Giudice:">${incarico.giudice || ''}</td>
+                <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
+                <td data-label="Pagamenti:"><span class="date-cell-content ${paymentSummary.class}">
+                    ${paymentSummary.text}
+                </span></td>
+                <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
+                <td data-label="Azioni:">
+                    <button class="action-button" title="Modifica Incarico">✏️</button> 
+                </td>
+                <td data-label="Prossima Scadenza:"><span class="date-cell-content ${prossimaScadenza.class}">
+                    ${prossimaScadenza.text}
+                </span></td>
+            `;
+        }
+
+        // Funzione per aggiungere un set di campi per un pagamento
+        function addPaymentField(payment = { tipo: 'Fondo Spese', stato: 'Non Pagato', importo: '' }) {
+            const paymentItem = document.createElement('div');
+            paymentItem.className = 'payment-item';
+            paymentItem.innerHTML = `
+                <div class="form-group">
+                    <label>Tipo:</label>
+                    <select class="payment-type">
+                        <option value="Fondo Spese" ${payment.tipo === 'Fondo Spese' ? 'selected' : ''}>Fondo Spese</option>
+                        <option value="Saldo" ${payment.tipo === 'Saldo' ? 'selected' : ''}>Saldo</option>
+                        <option value="Acconto" ${payment.tipo === 'Acconto' ? 'selected' : ''}>Acconto</option>
+                        <option value="Rimborso Spese" ${payment.tipo === 'Rimborso Spese' ? 'selected' : ''}>Rimborso Spese</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stato:</label>
+                    <select class="payment-status">
+                        <option value="Non Pagato" ${payment.stato === 'Non Pagato' ? 'selected' : ''}>Non Pagato</option>
+                        <option value="Pagato" ${payment.stato === 'Pagato' ? 'selected' : ''}>Pagato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Importo (€):</label>
+                    <input type="number" class="payment-amount" step="0.01" min="0" value="${payment.importo}">
+                </div>
+                <button type="button" class="remove-payment-btn" title="Rimuovi Pagamento">&times;</button>
+            `;
+            paymentsList.appendChild(paymentItem);
+
+            paymentItem.querySelector('.remove-payment-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                paymentsList.removeChild(paymentItem);
+            });
+        }
+
+        // Funzione per popolare il modulo con i dati dell'incarico da modificare
+        function modificaIncarico(id) {
+            const incaricoToEdit = incarichiAttivi.find(i => i.id == id) || incarichiArchiviati.find(i => i.id == id);
+            if (incaricoToEdit) {
+                incaricoIdField.value = incaricoToEdit.id;
+                
+                descCheckboxes.forEach(checkboxInfo => {
+                    const checkbox = document.getElementById(checkboxInfo.id);
+                    checkbox.checked = Array.isArray(incaricoToEdit.descrizione) && incaricoToEdit.descrizione.includes(checkboxInfo.value);
+                });
+
+                document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'];
+                document.getElementById('giudice').value = incaricoToEdit.giudice;
+                document.getElementById('rif-procedura').value = incaricoToEdit['rif-procedura'];
+                document.getElementById('parti').value = incaricoToEdit.parti || '';
+                document.getElementById('note').value = incaricoToEdit.note;
+
+                dateFields.forEach(field => {
+                    const dateInput = document.getElementById(field.id);
+                    const doneCheckbox = document.getElementById(field.doneId);
+                    if (incaricoToEdit[field.id]) {
+                        dateInput.value = incaricoToEdit[field.id].value || '';
+                        doneCheckbox.checked = incaricoToEdit[field.id].done || false;
+                    } else {
+                        dateInput.value = '';
+                        doneCheckbox.checked = false;
+                    }
+                });
+
+                paymentsList.innerHTML = '';
+                if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
+                    incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
+                } else {
+                    addPaymentField();
+                }
+
+                submitButton.textContent = 'Salva Modifiche';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Gestione dell'invio del modulo
+        form.addEventListener('submit', async function(event) { // Aggiunto 'async' qui
+            event.preventDefault();
+
+            const idInModifica = incaricoIdField.value;
+
+            const selectedDescriptions = [];
+            descCheckboxes.forEach(checkboxInfo => {
+                if (document.getElementById(checkboxInfo.id).checked) {
+                    selectedDescriptions.push(checkboxInfo.value);
+                }
+            });
+
+            const currentPayments = [];
+            document.querySelectorAll('.payment-item').forEach(item => {
+                const type = item.querySelector('.payment-type').value;
+                const status = item.querySelector('.payment-status').value;
+                const amount = item.querySelector('.payment-amount').value;
+                currentPayments.push({ tipo: type, stato: status, importo: amount });
+            });
+
+            const dateData = {};
+            dateFields.forEach(field => {
+                const dateValue = document.getElementById(field.id).value;
+                const doneChecked = document.getElementById(field.doneId).checked;
+                if (dateValue) {
+                    dateData[field.id] = { value: dateValue, done: doneChecked };
+                } else {
+                    dateData[field.id] = null;
+                }
+            });
+
+            let incaricoData = {
+                descrizione: selectedDescriptions,
+                'tipo-incarico': document.getElementById('tipo-incarico').value,
+                giudice: document.getElementById('giudice').value,
+                'rif-procedura': document.getElementById('rif-procedura').value,
+                parti: document.getElementById('parti').value,
+                note: document.getElementById('note').value,
+                pagamenti: currentPayments,
+                'data-conferimento': dateData['data-conferimento'],
+                'data-inizio-operazioni': dateData['data-inizio-operazioni'],
+                'data-invio-bozza': dateData['data-invio-bozza'],
+                'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
+                'data-deposito': dateData['data-deposito'],
+                'data-udienza': dateData['data-udienza'],
+                timestamp: Date.now() // Aggiungi/aggiorna il timestamp
+            };
+
+            const statoGenerale = getStatoIncarico(incaricoData);
+            const isCompleted = (statoGenerale.text === 'Completato');
+
+            let incaricoFoundAndRemoved = false;
+
+            // Rimuovi l'incarico esistente da entrambi gli array se presente
+            let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
+            if (idxAttivi !== -1) {
+                incarichiAttivi.splice(idxAttivi, 1);
+                incaricoFoundAndRemoved = true;
+            }
+            
+            let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
+            if (idxArchiviati !== -1) {
+                incarichiArchiviati.splice(idxArchiviati, 1);
+                incaricoFoundAndRemoved = true;
+            }
+
+            if (incaricoFoundAndRemoved) {
+                // Se era una modifica, conserva l'ID originale
+                incaricoData.id = parseInt(idInModifica); 
+            } else {
+                // Se è un nuovo incarico, assegna un nuovo ID unico
+                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
+                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
+                incaricoData.id = maxId + 1;
+            }
+
+            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
+            if (isCompleted) {
+                incarichiArchiviati.push(incaricoData);
+            } else {
+                incarichiAttivi.push(incaricoData);
+            }
+
+            salvaIncarichiLocally(); // Salva immediatamente in localStorage
+            renderTables(); // Aggiorna l'UI immediatamente
+            await syncToFirebase(); // Sincronizza con Firebase in background
+
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
+
+            descCheckboxes.forEach(checkboxInfo => {
+                document.getElementById(checkboxInfo.id).checked = false;
+            });
+        });
+
+        // Gestione del pulsante "Nuovo Incarico"
+        resetButton.addEventListener('click', () => {
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            descCheckboxes.forEach(checkboxInfo => {
+                document.getElementById(checkboxInfo.id).checked = false;
+            });
+        });
+
+        // Event listener per il pulsante "+ Aggiungi Pagamento"
+        addPaymentBtn.addEventListener('click', () => addPaymentField());
+
+        // Inizializzazione: Carica da localStorage/Firebase e imposta listener
+        async function initializeApp() {
+            await caricaIncarichi(); // Carica e deduplica iniziale
+            setupFirebaseListener(); // Imposta il listener per le modifiche da Firebase
+        }
+        initializeApp(); // Avvia l'app
+
+        if (paymentsList.children.length === 0) {
+            addPaymentField(); // Assicura che ci sia almeno un campo pagamento all'avvio
+        }
+    </script>
+
+</body>
+</html>
