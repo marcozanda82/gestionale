@@ -415,14 +415,13 @@
             /* Specific column labels for mobile */
             td:nth-of-type(1):before { content: "ID:"; }
             td:nth-of-type(2):before { content: "Descrizione:"; }
-            td:nth-of-type(3):before { content: "Tipo:"; }
-            td:nth-of-type(4):before { content: "Giudice:"; }
-            td:nth-of-type(5):before { content: "Rif. Procedura:"; }
-            td:nth-of-type(6):before { content: "Parti:"; }
-            td:nth-of-type(7):before { content: "Pagamenti:"; }
-            td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Scadenza:"; } 
-            td:nth-of-type(10):before { content: "Azioni:"; }
+            td:nth-of-type(3):before { content: "Parti:"; } /* NUOVO POSIZIONAMENTO */
+            td:nth-of-type(4):before { content: "Rif. Procedura:"; } /* NUOVO POSIZIONAMENTO */
+            td:nth-of-type(5):before { content: "Giudice:"; } /* NUOVO POSIZIONAMENTO */
+            td:nth-of-type(6):before { content: "Pagamenti:"; }
+            td:nth-of-type(7):before { content: "Stato:"; }
+            td:nth-of-type(8):before { content: "Scadenza:"; } 
+            td:nth-of-type(9):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
             .payment-item {
@@ -594,10 +593,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th>Tipo</th>
-                        <th>Giudice</th>
-                        <th>Rif. Procedura</th>
-                        <th>Parti</th>
+                        <th>Parti</th> <th>Rif. Procedura</th> <th>Giudice</th> <th>Tipo</th>
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 80px;">Stato</th>
                         <th style="width: 120px;">Scadenza</th> 
@@ -617,10 +613,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th>Tipo</th>
-                        <th>Giudice</th>
-                        <th>Rif. Procedura</th>
-                        <th>Parti</th>
+                        <th>Parti</th> <th>Rif. Procedura</th> <th>Giudice</th> <th>Tipo</th>
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 80px;">Stato</th>
                         <th style="width: 120px;">Scadenza</th> 
@@ -668,7 +661,7 @@
             { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', priority: 3 },
             { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', priority: 4 },
             { id: 'data-deposito', doneId: 'data-deposito-done', priority: 5 },
-            { id: 'data-udienza', doneId: 'data-udienza-done', priority: 6 } // NUOVA DATA: Data Udienza
+            { id: 'data-udienza', doneId: 'data-udienza-done', priority: 6 } // Data Udienza è l'ultima in priorità
         ];
 
         // Funzione per caricare gli incarichi dal localStorage
@@ -702,19 +695,30 @@
             const invioBozza = incarico['data-invio-bozza'] && incarico['data-invio-bozza'].value ? new Date(incarico['data-invio-bozza'].value) : null;
             const invioBozzaDone = incarico['data-invio-bozza'] && incarico['data-invio-bozza'].done;
 
+            const dataUdienza = incarico['data-udienza'] && incarico['data-udienza'].value ? new Date(incarico['data-udienza'].value) : null;
+            const dataUdienzaDone = incarico['data-udienza'] && incarico['data-udienza'].done;
+
             if (depositoDone) {
                 return { text: 'Completato', class: 'stato-completato' };
             }
+            if (dataUdienzaDone) { // Se l'udienza è stata completata
+                return { text: 'Udienza Svolta', class: 'stato-completato' }; // Potrebbe essere anche "chiuso" se non c'è deposito
+            }
             if (invioBozzaDone) { // Se la bozza è stata inviata e il deposito non è completato
-                return { text: 'Bozza Inviata', class: 'stato-in-corso' }; // Considerato in corso dopo l'invio bozza
+                return { text: 'Bozza Inviata', class: 'stato-in-corso' };
             }
             if (deposito && deposito < today) {
                 return { text: 'Deposito Scaduto', class: 'stato-in-scadenza' };
             }
-            if (invioBozza && invioBozza < today && !invioBozzaDone) { // Se la data invio bozza è passata ma non segnata come fatta
+            if (invioBozza && invioBozza < today && !invioBozzaDone) {
                 return { text: 'Invio Bozza Scaduto', class: 'stato-in-scadenza' };
             }
-            if (deposito || invioBozza) { // Se c'è una data di deposito o invio bozza futura
+            if (dataUdienza && dataUdienza < today && !dataUdienzaDone) {
+                return { text: 'Udienza Scaduta', class: 'stato-in-scadenza' };
+            }
+
+            // Se ci sono date future o non scadute, è in corso
+            if (deposito || invioBozza || dataUdienza) {
                 return { text: 'In Corso', class: 'stato-in-corso' };
             }
             if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
@@ -848,15 +852,12 @@
             newRow.innerHTML = `
                 <td data-label="ID:">${incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
-                <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
-                <td data-label="Giudice:">${incarico.giudice || ''}</td>
-                <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Parti:">${incarico.parti || ''}</td>
+                <td data-label="Parti:">${incarico.parti || ''}</td> <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td> <td data-label="Giudice:">${incarico.giudice || ''}</td> <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Pagamenti:" class="${paymentStatus.class}">
                     ${paymentStatus.text}
                 </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
-                <td data-label="Scadenza:" class="${scadenzaCorrente.class}">
+                <td data-label="Scadenza:" class="${scadenzaCorrente.class}"> 
                     ${scadenzaCorrente.value || ''}
                 </td>
                 <td data-label="Azioni:">
@@ -1025,11 +1026,11 @@
                 'data-invio-bozza': dateData['data-invio-bozza'],
                 'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
                 'data-deposito': dateData['data-deposito'],
-                'data-udienza': dateData['data-udienza'] // SALVA LA NUOVA DATA
+                'data-udienza': dateData['data-udienza'] 
             };
 
             const statoGenerale = getStatoIncarico(incaricoData);
-            const isCompleted = (statoGenerale.text === 'Completato');
+            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text === 'Udienza Svolta'); // Considera anche l'udienza svolta come completamento ai fini dell'archiviazione
 
             if (idInModifica) {
                 // Rimuovi l'incarico da entrambi gli array se presente prima di riaggiungerlo
