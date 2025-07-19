@@ -168,6 +168,18 @@
             background-color: #5a6268;
             transform: translateY(-2px);
         }
+        /* Added for the new input field */
+        .input-string-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .input-string-section textarea {
+            min-height: 60px;
+            margin-bottom: 10px;
+        }
 
         table {
             width: 100%;
@@ -195,31 +207,19 @@
             color: var(--text-light);
             font-weight: 700;
             white-space: nowrap; /* Prevent wrapping of headers */
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-
-        th .column-filter {
-            width: calc(100% - 10px);
-            padding: 5px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 0.8em;
         }
 
         /* Column Width Adjustments */
-        th:nth-child(1), td:nth-child(1) { width: 40px; text-align: center; } /* Checkbox */
-        th:nth-child(2), td:nth-child(2) { width: 40px; text-align: center; } /* ID */
-        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Descrizione */
-        th:nth-child(4), td:nth-child(4) { width: 15%; } /* Parti */
-        th:nth-child(5), td:nth-child(5) { width: 80px; } /* Tipo */
-        th:nth-child(6), td:nth-child(6) { width: 100px; } /* Giudice */
-        th:nth-child(7), td:nth-child(7) { width: 8%; } /* Rif. Procedura */
-        th:nth-child(8), td:nth-child(8) { width: 9%; text-align: center; } /* Pagamenti */
-        th:nth-child(9), td:nth-child(9) { width: 9%; text-align: center; } /* Stato */
-        th:nth-child(10), td:nth-child(10) { width: 60px; text-align: center; } /* Azioni */
-        th:nth-child(11), td:nth-child(11) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
+        th:nth-child(1), td:nth-child(1) { width: 40px; text-align: center; } /* ID */
+        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Descrizione */
+        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Parti */
+        th:nth-child(4), td:nth-child(4) { width: 80px; } /* Tipo */
+        th:nth-child(5), td:nth-child(5) { width: 100px; } /* Giudice */
+        th:nth-child(6), td:nth-child(6) { width: 8%; } /* Rif. Procedura */
+        th:nth-child(7), td:nth-child(7) { width: 9%; text-align: center; } /* Pagamenti */
+        th:nth-child(8), td:nth-child(8) { width: 9%; text-align: center; } /* Stato */
+        th:nth-child(9), td:nth-child(9) { width: 60px; text-align: center; } /* Azioni */
+        th:nth-child(10), td:nth-child(10) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
         
         tr {
             cursor: pointer; /* Indica che la riga è cliccabile */
@@ -457,17 +457,16 @@
                 color: var(--primary-dark);
             }
             /* Specific column labels for mobile (Updated for simplified table) */
-            td:nth-of-type(1):before { content: "Seleziona:"; } /* Checkbox */
-            td:nth-of-type(2):before { content: "ID:"; }
-            td:nth-of-type(3):before { content: "Descrizione:"; }
-            td:nth-of-type(4):before { content: "Parti:"; }
-            td:nth-of-type(5):before { content: "Tipo:"; }
-            td:nth-of-type(6):before { content: "Giudice:"; }
-            td:nth-of-type(7):before { content: "Rif. Proc.:"; }
-            td:nth-of-type(8):before { content: "Pagamenti:"; }
-            td:nth-of-type(9):before { content: "Stato:"; }
-            td:nth-of-type(10):before { content: "Azioni:"; }
-            td:nth-of-type(11):before { content: "Prossima Scadenza:"; }
+            td:nth-of-type(1):before { content: "ID:"; }
+            td:nth-of-type(2):before { content: "Descrizione:"; }
+            td:nth-of-type(3):before { content: "Parti:"; }
+            td:nth-of-type(4):before { content: "Tipo:"; }
+            td:nth-of-type(5):before { content: "Giudice:"; }
+            td:nth-of-type(6):before { content: "Rif. Proc.:"; }
+            td:nth-of-type(7):before { content: "Pagamenti:"; } /* New label */
+            td:nth-of-type(8):before { content: "Stato:"; }
+            td:nth-of-type(9):before { content: "Azioni:"; }
+            td:nth-of-type(10):before { content: "Prossima Scadenza:"; }
 
 
             /* Adjust payment item layout for small screens */
@@ -503,71 +502,6 @@
             td .date-cell-content {
                 justify-content: flex-end;
             }
-
-            th .column-filter {
-                width: calc(100% - 10px); /* Adjust width for mobile */
-            }
-        }
-        .pagination-controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: var(--bg-dark);
-            border-radius: 8px;
-            align-items: center;
-        }
-        .pagination-controls button {
-            padding: 10px 20px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            transition: background-color 0.3s ease;
-        }
-        .pagination-controls button:hover:not(:disabled) {
-            background-color: var(--primary-dark);
-        }
-        .pagination-controls button:disabled {
-            background-color: var(--secondary-color);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        .pagination-info {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            color: var(--primary-dark);
-            margin: 0 10px;
-        }
-        .table-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-            gap: 10px;
-        }
-        .delete-btn {
-            background-color: var(--danger-color);
-            color: var(--text-light);
-            padding: 8px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 700;
-            transition: background-color 0.3s ease;
-        }
-        .delete-btn:hover {
-            background-color: #a71d2a;
-        }
-        .delete-btn:disabled {
-            background-color: var(--secondary-color);
-            cursor: not-allowed;
-            opacity: 0.7;
         }
     </style>
 </head>
@@ -583,7 +517,7 @@
 
                 <div class="form-grid">
                     
-                    <div class="form-group" style="grid-column: 1 / -1;">
+<div class="form-group" style="grid-column: 1 / -1;">
                         <label>Attività Richieste (Infortunistica Stradale):</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
@@ -605,7 +539,7 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
+<div class="form-group">
                         <label for="tipo-incarico">Tipo Incarico:</label>
                         <select id="tipo-incarico" name="tipo-incarico">
                             <option value="Civile">Civile</option>
@@ -629,7 +563,7 @@
                     </div>
                     
                     
-                    <div class="form-group">
+<div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
                             <input type="date" id="data-conferimento" name="data-conferimento" required>
@@ -678,14 +612,14 @@
                     </div>
 
                     
-                    <div class="payments-section-container">
+<div class="payments-section-container">
                         <div class="payments-header">
                             <span>Pagamenti</span>
                             <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
                         </div>
                         <div id="payments-list">
                             
-                        </div>
+</div>
                     </div>
                 </div>
 
@@ -696,166 +630,109 @@
             </form>
         </div>
 
-        <div class="form-section" style="margin-top: 40px;">
-            <h2>Inserimento Massivo (da AI)</h2>
+        <div class="form-section input-string-section">
+            <h2>Carica Dati da Stringa</h2>
             <div class="form-group">
-                <label for="mass-input-string">Incolla stringa incarichi da AI:</label>
-                <textarea id="mass-input-string" rows="8" placeholder="Incolla qui la stringa generata dall'AI nel formato specificato..."></textarea>
+                <label for="input-data-string">Incolla la stringa di dati qui:</label>
+                <textarea id="input-data-string" rows="4" placeholder="Es: {'tipo-incarico':'Civile', 'giudice':'Dott. Rossi', ...}"></textarea>
             </div>
-            <div class="button-group" style="justify-content: flex-start;">
-                <button type="button" id="process-string-btn" class="btn btn-primary">Processa Stringa e Aggiungi</button>
-                <button type="button" id="clear-string-input-btn" class="btn btn-secondary">Pulisci Campo</button>
+            <div class="button-group">
+                <button type="button" id="load-string-btn" class="btn btn-primary">Carica Dati</button>
             </div>
         </div>
-
         <div class="table-section">
             <h2>Incarichi in Lavorazione</h2>
-            <div class="table-actions">
-                <button id="delete-selected-active-btn" class="delete-btn" disabled>Elimina Selezionati</button>
-            </div>
             <table id="tabella-incarichi-attivi">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" class="select-all-checkbox" data-table="active"></th>
                         <th>ID</th>
-                        <th>
-                            Descrizione
-                            <input type="text" class="column-filter" data-filter-column="descrizione" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Parti
-                            <input type="text" class="column-filter" data-filter-column="parti" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Tipo
-                            <input type="text" class="column-filter" data-filter-column="tipo-incarico" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Giudice
-                            <input type="text" class="column-filter" data-filter-column="giudice" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Rif. Procedura
-                            <input type="text" class="column-filter" data-filter-column="rif-procedura" placeholder="Filtra...">
-                        </th>
+                        <th>Descrizione</th>
+                        <th>Parti</th>
+                        <th>Tipo</th>
+                        <th>Giudice</th>
+                        <th>Rif. Procedura</th>
                         <th>Pagamenti</th>
-                        <th>
-                            Stato
-                            <input type="text" class="column-filter" data-filter-column="stato" placeholder="Filtra...">
-                        </th>
+                        <th>Stato</th>
                         <th>Azioni</th>
-                        <th>
-                            Prossima Scadenza
-                            <input type="text" class="column-filter" data-filter-column="prossimaScadenza" placeholder="Filtra...">
-                        </th>
+                        <th>Prossima Scadenza</th>
                     </tr>
                 </thead>
                 <tbody>
                     
-                </tbody>
+</tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
-            <div class="pagination-controls">
-                <button id="prev-active-btn" disabled>Precedente</button>
-                <span id="page-info-active" class="pagination-info">Pagina 1</span>
-                <button id="next-active-btn">Successiva</button>
-            </div>
         </div>
 
         <div class="archivio-section">
             <h2>Archivio Incarichi Completati</h2>
-            <div class="table-actions">
-                <button id="delete-selected-archived-btn" class="delete-btn" disabled>Elimina Selezionati</button>
-            </div>
             <table id="tabella-incarichi-archiviati">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" class="select-all-checkbox" data-table="archived"></th>
                         <th>ID</th>
-                        <th>
-                            Descrizione
-                            <input type="text" class="column-filter" data-filter-column="descrizione" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Parti
-                            <input type="text" class="column-filter" data-filter-column="parti" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Tipo
-                            <input type="text" class="column-filter" data-filter-column="tipo-incarico" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Giudice
-                            <input type="text" class="column-filter" data-filter-column="giudice" placeholder="Filtra...">
-                        </th>
-                        <th>
-                            Rif. Procedura
-                            <input type="text" class="column-filter" data-filter-column="rif-procedura" placeholder="Filtra...">
-                        </th>
+                        <th>Descrizione</th>
+                        <th>Parti</th>
+                        <th>Tipo</th>
+                        <th>Giudice</th>
+                        <th>Rif. Procedura</th>
                         <th>Pagamenti</th>
-                        <th>
-                            Stato
-                            <input type="text" class="column-filter" data-filter-column="stato" placeholder="Filtra...">
-                        </th>
+                        <th>Stato</th>
                         <th>Azioni</th>
-                        <th>
-                            Prossima Scadenza
-                            <input type="text" class="column-filter" data-filter-column="prossimaScadenza" placeholder="Filtra...">
-                        </th>
+                        <th>Prossima Scadenza</th>
                     </tr>
                 </thead>
                 <tbody>
                     
-                </tbody>
+</tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
-            <div class="pagination-controls">
-                <button id="prev-archived-btn" disabled>Precedente</button>
-                <span id="page-info-archived" class="pagination-info">Pagina 1</span>
-                <button id="next-archived-btn">Successiva</button>
-            </div>
         </div>
     </div>
 
     <script>
         // *** CONFIGURAZIONE FIREBASE - INSERISCI QUI LE TUE CREDENZIALI ***
-        const firebaseConfig = {
-          apiKey: "AIzaSyDjX0BhHWiWaVl9obEFypAgiA52fc-zR3c",
-          authDomain: "mioctuapp.firebaseapp.com",
-          projectId: "mioctuapp",
-          storageBucket: "mioctuapp.firebasestorage.app",
-          messagingSenderId: "587141315273",
-          appId: "1:587141315273:web:bb83e5bf5d3c01e5686b18"
-        };
+        // Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDjX0BhHWiWaVl9obEFypAgiA52fc-zR3c",
+  authDomain: "mioctuapp.firebaseapp.com",
+  projectId: "mioctuapp",
+  storageBucket: "mioctuapp.firebasestorage.app",
+  messagingSenderId: "587141315273",
+  appId: "1:587141315273:web:bb83e5bf5d3c01e5686b18"
+};
 
+        // Inizializza Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const incarichiCollection = db.collection('incarichi'); 
+        const incarichiCollection = db.collection('incarichi'); // Nome della tua collezione su Firestore
+
         // *** FINE CONFIGURAZIONE FIREBASE ***
 
-        // *** VARIABILI GLOBALI ***
-        let form, submitButton, resetButton, incaricoIdField, addPaymentBtn, paymentsList;
-        let massInputString, processStringBtn, clearStringInputBtn;
-        let descCheckboxes;
-        let tabellaAttiviBody, tabellaArchiviatiBody, noActiveMessage, noArchivedMessage;
-        let prevActiveBtn, nextActiveBtn, pageInfoActive, prevArchivedBtn, nextArchivedBtn, pageInfoArchived;
-        let deleteSelectedActiveBtn, deleteSelectedArchivedBtn;
 
-        // Paginazione - Variabili di stato per la tabella Attivi
-        const itemsPerPage = 10; 
-        let lastVisibleActive = null; 
-        let historyActive = [null]; 
-        let currentPageActive = 1;
-        let currentActiveDocs = []; 
+        const form = document.getElementById('form-incarico');
+        const submitButton = document.getElementById('submit-button');
+        const resetButton = document.getElementById('reset-button');
+        const incaricoIdField = document.getElementById('incarico-id');
+        const addPaymentBtn = document.getElementById('add-payment-btn');
+        const paymentsList = document.getElementById('payments-list');
+        const inputDataStringField = document.getElementById('input-data-string'); // New
+        const loadStringBtn = document.getElementById('load-string-btn'); // New
 
-        // Paginazione - Variabili di stato per la tabella Archiviati
-        let lastVisibleArchived = null;
-        let historyArchived = [null];
-        let currentPageArchived = 1;
-        let currentArchivedDocs = []; 
+        // Checkbox per la descrizione
+        const descCheckboxes = [
+            { id: 'desc-stima', value: 'Stima' },
+            { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
+            { id: 'desc-compatibilita', value: 'Compatibilità' },
+            { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
+        ];
 
+        const tabellaAttiviBody = document.querySelector('#tabella-incarichi-attivi tbody');
+        const tabellaArchiviatiBody = document.querySelector('#tabella-incarichi-archiviati tbody');
+        const noActiveMessage = document.getElementById('no-active-incarichi');
+        const noArchivedMessage = document.getElementById('no-archived-incarichi');
 
-        // *** FUNZIONI DI UTILITÀ (DEFINITE PRIMA DELL'USO) ***
+        let incarichiAttivi = [];
+        let incarichiArchiviati = [];
 
         // Mappa dei campi data e relative checkbox (Ord. Cronologico per prossima scadenza)
         const dateFields = [
@@ -866,6 +743,224 @@
             { id: 'data-deposito', doneId: 'data-deposito-done', label: 'Deposito Finale' },
             { id: 'data-udienza', doneId: 'data-udienza-done', label: 'Udienza' }
         ];
+
+        // Funzione per caricare e sincronizzare gli incarichi
+        async function caricaIncarichi() {
+            let loadedAttivi = [];
+            let loadedArchiviati = [];
+            let firebaseIncarichi = [];
+
+            // 1. Carica da localStorage
+            try {
+                const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
+                if (attiviSalvati) loadedAttivi = JSON.parse(attiviSalvati);
+            } catch (e) {
+                console.error("Errore nel parsing di incarichiCTU_attivi da localStorage:", e);
+                loadedAttivi = [];
+            }
+            try {
+                const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
+                if (archiviatiSalvati) loadedArchiviati = JSON.parse(archiviatiSalvati);
+            } catch (e) {
+                console.error("Errore nel parsing di incarichiCTU_archiviati da localStorage:", e);
+                loadedArchiviati = [];
+            }
+
+            // 2. Carica da Firebase
+            try {
+                const snapshot = await incarichiCollection.get();
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Assicurati che l'ID del documento Firestore sia il campo 'id' dell'incarico
+                    if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
+                        data.id = parseInt(doc.id) || doc.id; // Tenta di usare doc.id come numerico, altrimenti stringa
+                    }
+                    firebaseIncarichi.push(data);
+                });
+            } catch (e) {
+                console.error("Errore nel caricamento da Firebase:", e);
+                // Se Firebase fallisce, prosegui solo con i dati locali
+            }
+
+            // 3. Unisci, deduplica e risolvi conflitti
+            let allIncarichi = [...loadedAttivi, ...loadedArchiviati, ...firebaseIncarichi];
+            const uniqueIncarichiMap = new Map();
+            let tempIdCounter = -1; // Per assegnare ID temporanei negativi
+
+            allIncarichi.forEach(incarico => {
+                let currentId = incarico.id;
+
+                // Gestisci ID nulli/non validi assegnando un ID temporaneo per la deduplicazione
+                if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
+                    currentId = `temp_${tempIdCounter--}`;
+                    // console.warn(`Incarico con ID non valido/nullo, assegnato ID temporaneo: ${currentId}`, incarico);
+                } else {
+                    currentId = parseInt(currentId);
+                }
+
+                // Assicurati che il timestamp esista per il confronto dei duplicati
+                if (incarico.timestamp === undefined || incarico.timestamp === null) {
+                    incarico.timestamp = 0; // Se non ha timestamp, è considerato molto vecchio
+                }
+
+                if (uniqueIncarichiMap.has(currentId)) {
+                    const existingIncarico = uniqueIncarichiMap.get(currentId);
+                    // Prevale la versione con timestamp più recente
+                    if (incarico.timestamp > existingIncarico.timestamp) {
+                        uniqueIncarichiMap.set(currentId, incarico);
+                    }
+                } else {
+                    uniqueIncarichiMap.set(currentId, incarico);
+                }
+            });
+
+            // 4. Ricostruisci gli array e assegna ID numerici definitivi se necessario
+            incarichiAttivi = [];
+            incarichiArchiviati = [];
+            let maxExistingId = 0; 
+
+            uniqueIncarichiMap.forEach(incarico => {
+                if (typeof incarico.id === 'number' && incarico.id > maxExistingId) {
+                    maxExistingId = incarico.id;
+                }
+            });
+
+            uniqueIncarichiMap.forEach(incarico => {
+                if (typeof incarico.id !== 'number' || incarico.id < 1) { 
+                    maxExistingId++;
+                    incarico.id = maxExistingId;
+                }
+
+                const statoGenerale = getStatoIncarico(incarico);
+                const isCompleted = (statoGenerale.text === 'Completato');
+                if (isCompleted) {
+                    incarichiArchiviati.push(incarico);
+                } else {
+                    incarichiAttivi.push(incarico);
+                }
+            });
+            
+            salvaIncarichiLocally(); // Salva lo stato pulito e con ID validi nel localStorage
+            renderTables();
+            syncToFirebase(); // Sincronizza lo stato finale a Firebase
+        }
+
+        // Funzione per salvare gli incarichi SOLO nel localStorage
+        function salvaIncarichiLocally() {
+            localStorage.setItem('incarichiCTU_attivi', JSON.stringify(incarichiAttivi));
+            localStorage.setItem('incarichiCTU_archiviati', JSON.stringify(incarichiArchiviati));
+        }
+
+        // Funzione per sincronizzare i dati da localStorage a Firebase
+        async function syncToFirebase() {
+            console.log("Sincronizzazione dati a Firebase...");
+            const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+
+            // Ottieni tutti i documenti attuali su Firebase per identificare le eliminazioni
+            const firebaseDocsSnapshot = await incarichiCollection.get();
+            const firebaseDocIds = new Set();
+            firebaseDocsSnapshot.forEach(doc => firebaseDocIds.add(doc.id));
+
+            for (const incarico of allIncarichi) {
+                try {
+                    // Imposta il documento usando l'ID dell'incarico come ID del documento Firestore
+                    await incarichiCollection.doc(String(incarico.id)).set(incarico);
+                    firebaseDocIds.delete(String(incarico.id)); // Rimuovi l'ID dai documenti di Firebase che sono ancora presenti localmente
+                } catch (e) {
+                    console.error(`Errore durante il salvataggio dell'incarico ${incarico.id} su Firebase:`, e);
+                }
+            }
+
+            // Elimina i documenti su Firebase che non sono più presenti localmente
+            for (const docId of firebaseDocIds) {
+                try {
+                    await incarichiCollection.doc(docId).delete();
+                    console.log(`Documento Firebase ${docId} eliminato (non più presente localmente).`);
+                } catch (e) {
+                    console.error(`Errore durante l'eliminazione del documento ${docId} da Firebase:`, e);
+                }
+            }
+            console.log("Sincronizzazione completata.");
+        }
+
+        // Funzione per ascoltare i cambiamenti da Firebase in tempo reale
+        function setupFirebaseListener() {
+            incarichiCollection.onSnapshot(async (snapshot) => {
+                const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
+                if (source === "Local") {
+                    // Questa è una modifica che ho fatto io stesso su questo dispositivo, ignorala.
+                    // La mia modifica locale è già gestita dal form.
+                    return; 
+                }
+
+                console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Sincronizzazione in corso...");
+                let latestFirebaseData = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.id === undefined || data.id === null || isNaN(parseInt(data.id))) {
+                        data.id = parseInt(doc.id) || doc.id; 
+                    }
+                    latestFirebaseData.push(data);
+                });
+
+                // Unisci i dati locali con quelli di Firebase e risolvi i conflitti
+                let combinedData = [...incarichiAttivi, ...incarichiArchiviati, ...latestFirebaseData];
+                const uniqueIncarichiMap = new Map();
+                
+                combinedData.forEach(incarico => {
+                    let currentId = incarico.id;
+                    if (currentId === null || currentId === undefined || (typeof currentId === 'string' && currentId.startsWith('temp_')) || isNaN(parseInt(currentId))) {
+                        currentId = `temp_${Date.now()}_${Math.random()}`; // ID temporaneo univoco per unici
+                    } else {
+                        currentId = parseInt(currentId);
+                    }
+
+                    if (incarico.timestamp === undefined || incarico.timestamp === null) {
+                        incarico.timestamp = 0;
+                    }
+
+                    if (uniqueIncarichiMap.has(currentId)) {
+                        const existingIncarico = uniqueIncarichiMap.get(currentId);
+                        if (incarico.timestamp > existingIncarico.timestamp) {
+                            uniqueIncarichiMap.set(currentId, incarico);
+                        }
+                    } else {
+                        uniqueIncarichiMap.set(currentId, incarico);
+                    }
+                });
+
+                // Ricostruisci gli array Attivi/Archiviati con i dati sincronizzati
+                incarichiAttivi = [];
+                incarichiArchiviati = [];
+                let maxIdFromCombined = 0;
+                uniqueIncarichiMap.forEach(incarico => {
+                    if (typeof incarico.id === 'number' && incarico.id > maxIdFromCombined) {
+                        maxIdFromCombined = incarico.id;
+                    }
+                });
+
+                uniqueIncarichiMap.forEach(incarico => {
+                    if (typeof incarico.id !== 'number' || incarico.id < 1) { 
+                        maxIdFromCombined++;
+                        incarico.id = maxIdFromCombined;
+                    }
+                    const statoGenerale = getStatoIncarico(incarico);
+                    const isCompleted = (statoGenerale.text === 'Completato');
+                    if (isCompleted) {
+                        incarichiArchiviati.push(incarico);
+                    } else {
+                        incarichiAttivi.push(incarico);
+                    }
+                });
+
+                salvaIncarichiLocally(); // Salva lo stato risolto nel localStorage
+                renderTables(); // Aggiorna l'UI
+                console.log("Sincronizzazione da Firebase completata. UI aggiornata.");
+            }, (error) => {
+                console.error("Errore nel listener Firebase:", error);
+            });
+        }
+
 
         // Funzione per determinare lo stato dell'incarico generale
         function getStatoIncarico(incarico) {
@@ -958,20 +1053,80 @@
                     return { text: `${field.label}: ${dateStringFormatted}`, class: classToApply, date: new Date(dateInfo.value) };
                 }
             }
-            // Se tutte le date sono completate o non ci sono date, considera 'data-deposito' per l'ordinamento se esiste
-            if (incarico['data-deposito'] && incarico['data-deposito'].value) {
-                return { text: 'Tutte completate', class: 'date-completed', date: new Date(incarico['data-deposito'].value) };
+            return { text: 'Tutte completate', class: 'date-completed', date: new Date('9999-12-31') }; 
+        }
+
+
+        // Funzione per renderizzare le tabelle
+        function renderTables() {
+            tabellaAttiviBody.innerHTML = '';
+            tabellaArchiviatiBody.innerHTML = '';
+
+            incarichiAttivi.sort((a, b) => {
+                const scadenzaA = getProssimaScadenza(a).date;
+                const scadenzaB = getProssimaScadenza(b).date;
+                return scadenzaA.getTime() - scadenzaB.getTime();
+            });
+
+            incarichiArchiviati.sort((a, b) => {
+                const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
+                const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            });
+
+
+            if (incarichiAttivi.length === 0) {
+                noActiveMessage.style.display = 'block';
+            } else {
+                noActiveMessage.style.display = 'none';
+                incarichiAttivi.forEach(incarico => aggiungiRigaTabella(incarico, tabellaAttiviBody));
             }
-            return { text: 'N/D', class: 'date-normal', date: new Date('9999-12-31') }; 
+
+            if (incarichiArchiviati.length === 0) {
+                noArchivedMessage.style.display = 'block';
+            } else {
+                noArchivedMessage.style.display = 'none';
+                incarichiArchiviati.forEach(incarico => aggiungiRigaTabella(incarico, tabellaArchiviatiBody));
+            }
+        }
+
+        // Funzione per aggiungere una riga alla tabella specificata
+        function aggiungiRigaTabella(incarico, targetTableBody) {
+            const newRow = targetTableBody.insertRow();
+            newRow.dataset.id = incarico.id;
+            newRow.addEventListener('click', (e) => {
+                if (e.target.closest('.action-button')) {
+                    return;
+                }
+                modificaIncarico(incarico.id);
+            });
+
+            const statoGenerale = getStatoIncarico(incarico);
+            const paymentSummary = getPaymentStatusSummary(incarico.pagamenti);
+            const prossimaScadenza = getProssimaScadenza(incarico);
+
+            newRow.innerHTML = `
+                <td data-label="ID:">${incarico.id === null || incarico.id === undefined ? 'N/A' : incarico.id}</td>
+                <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
+                <td data-label="Parti:">${incarico.parti || ''}</td>
+                <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
+                <td data-label="Giudice:">${incarico.giudice || ''}</td>
+                <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
+                <td data-label="Pagamenti:"><span class="date-cell-content ${paymentSummary.class}">
+                    ${paymentSummary.text}
+                </span></td>
+                <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
+                <td data-label="Azioni:">
+                    <button class="action-button" title="Modifica Incarico">✏️</button> 
+                </td>
+                <td data-label="Prossima Scadenza:"><span class="date-cell-content ${prossimaScadenza.class}">
+                    ${prossimaScadenza.text}
+                </span></td>
+            `;
         }
 
         // Funzione per aggiungere un set di campi per un pagamento
         function addPaymentField(payment = { tipo: 'Fondo Spese', stato: 'Non Pagato', importo: '' }) {
-            const paymentsListEl = document.getElementById('payments-list'); 
-            if (!paymentsListEl) {
-                console.error("Elemento 'payments-list' non trovato.");
-                return;
-            }
             const paymentItem = document.createElement('div');
             paymentItem.className = 'payment-item';
             paymentItem.innerHTML = `
@@ -997,584 +1152,230 @@
                 </div>
                 <button type="button" class="remove-payment-btn" title="Rimuovi Pagamento">&times;</button>
             `;
-            paymentsListEl.appendChild(paymentItem);
+            paymentsList.appendChild(paymentItem);
 
             paymentItem.querySelector('.remove-payment-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
-                paymentsListEl.removeChild(paymentItem);
+                paymentsList.removeChild(paymentItem);
             });
         }
+
+        // Funzione per popolare il modulo con i dati dell'incarico da modificare o da stringa
+        function fillForm(data) {
+            // Reset the form first to clear existing values and payments
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField(); // Ensure at least one payment field exists
+
+            // Uncheck all description checkboxes
+            descCheckboxes.forEach(checkboxInfo => {
+                document.getElementById(checkboxInfo.id).checked = false;
+            });
+
+            // Populate description checkboxes
+            if (data.descrizione && Array.isArray(data.descrizione)) {
+                data.descrizione.forEach(desc => {
+                    const checkbox = descCheckboxes.find(cb => cb.value === desc);
+                    if (checkbox) {
+                        document.getElementById(checkbox.id).checked = true;
+                    }
+                });
+            }
+
+            // Populate single value fields
+            if (data['tipo-incarico']) document.getElementById('tipo-incarico').value = data['tipo-incarico'];
+            if (data.giudice) document.getElementById('giudice').value = data.giudice;
+            if (data['rif-procedura']) document.getElementById('rif-procedura').value = data['rif-procedura'];
+            if (data.parti) document.getElementById('parti').value = data.parti;
+            if (data.note) document.getElementById('note').value = data.note;
+
+            // Populate date fields
+            dateFields.forEach(field => {
+                const dateInput = document.getElementById(field.id);
+                const doneCheckbox = document.getElementById(field.doneId);
+                if (data[field.id]) {
+                    dateInput.value = data[field.id].value || '';
+                    doneCheckbox.checked = data[field.id].done || false;
+                } else {
+                    dateInput.value = '';
+                    doneCheckbox.checked = false;
+                }
+            });
+
+            // Populate payments
+            paymentsList.innerHTML = ''; // Clear existing payment fields
+            if (data.pagamenti && Array.isArray(data.pagamenti) && data.pagamenti.length > 0) {
+                data.pagamenti.forEach(payment => addPaymentField(payment));
+            } else {
+                addPaymentField(); // Add a default empty payment field if none are provided
+            }
+
+            // If an ID is provided, it means we are editing an existing task
+            if (data.id) {
+                incaricoIdField.value = data.id;
+                submitButton.textContent = 'Salva Modifiche';
+            } else {
+                 incaricoIdField.value = '';
+                 submitButton.textContent = 'Aggiungi Incarico';
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
 
         // Funzione per popolare il modulo con i dati dell'incarico da modificare
-        async function modificaIncarico(id) {
-            try {
-                const doc = await incarichiCollection.doc(String(id)).get();
-                if (doc.exists) {
-                    const incaricoToEdit = doc.data();
-                    incaricoIdField.value = incaricoToEdit.id; 
-                    
-                    descCheckboxes.forEach(checkboxInfo => {
-                        const checkbox = document.getElementById(checkboxInfo.id);
-                        if (checkbox) checkbox.checked = Array.isArray(incaricoToEdit.descrizione) && incaricoToEdit.descrizione.includes(checkboxInfo.value);
-                    });
+        function modificaIncarico(id) {
+            const incaricoToEdit = incarichiAttivi.find(i => i.id == id) || incarichiArchiviati.find(i => i.id == id);
+            if (incaricoToEdit) {
+                fillForm(incaricoToEdit);
+            }
+        }
 
-                    if (document.getElementById('tipo-incarico')) document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'] || '';
-                    if (document.getElementById('giudice')) document.getElementById('giudice').value = incaricoToEdit.giudice || '';
-                    if (document.getElementById('rif-procedura')) document.getElementById('rif-procedura').value = incaricoToEdit['rif-procedura'] || '';
-                    if (document.getElementById('parti')) document.getElementById('parti').value = incaricoToEdit.parti || '';
-                    if (document.getElementById('note')) document.getElementById('note').value = incaricoToEdit.note || '';
+        // Gestione dell'invio del modulo
+        form.addEventListener('submit', async function(event) { // Aggiunto 'async' qui
+            event.preventDefault();
 
-                    paymentsList.innerHTML = '';
-                    if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
-                        incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
-                    } else {
-                        addPaymentField(); 
-                    }
+            const idInModifica = incaricoIdField.value;
 
-                    dateFields.forEach(field => {
-                        const dateInput = document.getElementById(field.id);
-                        const doneCheckbox = document.getElementById(field.doneId);
-                        if (dateInput && doneCheckbox) {
-                            if (incaricoToEdit[field.id]) {
-                                dateInput.value = incaricoToEdit[field.id].value || '';
-                                doneCheckbox.checked = incaricoToEdit[field.id].done || false;
-                            } else {
-                                dateInput.value = '';
-                                doneCheckbox.checked = false;
-                            }
-                        }
-                    });
+            const selectedDescriptions = [];
+            descCheckboxes.forEach(checkboxInfo => {
+                if (document.getElementById(checkboxInfo.id).checked) {
+                    selectedDescriptions.push(checkboxInfo.value);
+                }
+            });
 
-                    submitButton.textContent = 'Salva Modifiche';
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+            const currentPayments = [];
+            document.querySelectorAll('.payment-item').forEach(item => {
+                const type = item.querySelector('.payment-type').value;
+                const status = item.querySelector('.payment-status').value;
+                const amount = item.querySelector('.payment-amount').value;
+                currentPayments.push({ tipo: type, stato: status, importo: amount });
+            });
+
+            const dateData = {};
+            dateFields.forEach(field => {
+                const dateValue = document.getElementById(field.id).value;
+                const doneChecked = document.getElementById(field.doneId).checked;
+                if (dateValue) {
+                    dateData[field.id] = { value: dateValue, done: doneChecked };
                 } else {
-                    console.warn("Incarico non trovato in Firebase per la modifica:", id);
-                    alert("La pratica selezionata non è stata trovata.");
-                }
-            } catch (e) {
-                console.error("Errore durante il recupero dell'incarico per la modifica:", e);
-                alert("Errore durante il caricamento della pratica per la modifica. Controlla la console.");
-            }
-        }
-
-        // Funzione per aggiungere un singolo incarico (nuovo o modificato) A FIREBASE
-        async function addOrUpdateIncarico(incaricoData) {
-            console.log("Tentativo di aggiungere/aggiornare incarico:", incaricoData);
-            
-            let docIdToUse = String(incaricoData.id); 
-
-            if (!incaricoData.id || isNaN(parseInt(incaricoData.id))) {
-                try {
-                    const maxIdSnapshot = await incarichiCollection.orderBy('id', 'desc').limit(1).get();
-                    let maxExistingId = 0;
-                    if (!maxIdSnapshot.empty) {
-                        maxExistingId = maxIdSnapshot.docs[0].data().id;
-                    }
-                    incaricoData.id = maxExistingId + 1; 
-                    docIdToUse = String(incaricoData.id); 
-                    console.log("Assegnato nuovo ID numerico all'incarico:", incaricoData.id, "e ID documento Firebase:", docIdToUse);
-                } catch (e) {
-                    console.error("Errore nel recupero del massimo ID per nuovo incarico:", e);
-                    docIdToUse = `temp_${Date.now()}`;
-                    incaricoData.id = docIdToUse; 
-                    alert("Errore nella generazione dell'ID. La pratica potrebbe avere un ID temporaneo.");
-                }
-            } else {
-                incaricoData.id = parseInt(incaricoData.id); 
-                docIdToUse = String(incaricoData.id);
-            }
-
-            incaricoData.timestamp = Date.now(); 
-
-            try {
-                await incarichiCollection.doc(docIdToUse).set(incaricoData);
-                console.log(`Incarico ${incaricoData.id} (Firestore ID: ${docIdToUse}) salvato/aggiornato su Firebase.`);
-            } catch (e) {
-                console.error(`Errore durante il salvataggio dell'incarico ${incaricoData.id} su Firebase:`, e);
-                alert("Errore durante il salvataggio della pratica su Firebase. Controlla la console.");
-            }
-        }
-
-        async function processInputString() {
-            const inputString = massInputString.value.trim();
-            if (!inputString) {
-                alert("Il campo della stringa è vuoto. Incolla i dati.");
-                return;
-            }
-
-            const incaricoStrings = inputString.split('###INCARICO_START###')
-                                               .filter(s => s.trim() !== '')
-                                               .map(s => s.split('###INCARICO_END###')[0].trim());
-
-            if (incaricoStrings.length === 0) {
-                alert("Nessun incarico valido trovato nella stringa. Controlla il formato.");
-                return;
-            }
-
-            console.log("Incarichi da processare dalla stringa:", incaricoStrings.length);
-
-            for (const incStr of incaricoStrings) {
-                console.log("Processing incarico string:", incStr);
-                const fields = incStr.split('||').map(f => f.trim()).filter(f => f !== '');
-                let newIncaricoData = {
-                    descrizione: [],
-                    'tipo-incarico': 'Civile', 
-                    giudice: '',
-                    'rif-procedura': '',
-                    parti: '',
-                    note: '',
-                    pagamenti: [],
-                    id: null 
-                };
-
-                dateFields.forEach(field => {
-                    newIncaricoData[field.id] = null;
-                });
-
-                fields.forEach(field => {
-                    const parts = field.split('::').map(p => p.trim());
-                    const key = parts[0];
-                    const value = parts[1];
-                    console.log(`Parsing field: ${key} = ${value}`);
-
-                    switch (key) {
-                        case 'descrizione':
-                            newIncaricoData.descrizione = value.split(',').map(d => d.trim());
-                            break;
-                        case 'pagamenti':
-                            const paymentsBlockStart = field.indexOf('###PAGAMENTI_START###');
-                            const paymentsBlockEnd = field.indexOf('###PAGAMENTI_END###');
-
-                            if (paymentsBlockStart !== -1 && paymentsBlockEnd !== -1) {
-                                const paymentsBlock = field.substring(paymentsBlockStart + '###PAGAMENTI_START###'.length, paymentsBlockEnd);
-                                newIncaricoData.pagamenti = paymentsBlock.split('&&').map(p => {
-                                    const pParts = p.split('::').map(pp => pp.trim());
-                                    return {
-                                        tipo: pParts[0] || 'Fondo Spese',
-                                        stato: pParts[1] || 'Non Pagato',
-                                        importo: parseFloat(pParts[2]) || 0
-                                    };
-                                }).filter(p => p.importo > 0 || p.tipo);
-                            }
-                            break;
-                        case 'data-conferimento':
-                        case 'data-inizio-operazioni':
-                        case 'data-invio-bozza':
-                        case 'data-ricezione-osservazioni':
-                        case 'data-deposito':
-                        case 'data-udienza':
-                            if (parts.length === 3) { 
-                                newIncaricoData[key] = {
-                                    value: value,
-                                    done: parts[2] === 'true'
-                                };
-                            } else if (value) { 
-                                newIncaricoData[key] = {
-                                    value: value,
-                                    done: false
-                                };
-                            }
-                            break;
-                        default:
-                            newIncaricoData[key] = value;
-                            break;
-                    }
-                });
-                
-                await addOrUpdateIncarico(newIncaricoData); 
-            }
-
-            alert(`Elaborazione completata. Aggiunti/Aggiornati ${incaricoStrings.length} incarichi.`);
-            massInputString.value = '';
-        }
-
-        // Funzione per renderizzare le tabelle
-        function renderTable(targetTableBody, data, noDataMessageElement, tableType) {
-            if (!targetTableBody) {
-                console.warn(`renderTable: targetTableBody per ${tableType} non trovato. Skippando rendering.`);
-                return;
-            }
-
-            targetTableBody.innerHTML = ''; 
-
-            if (data.length === 0) {
-                if (noDataMessageElement) noDataMessageElement.style.display = 'block';
-            } else {
-                if (noDataMessageElement) noDataMessageElement.style.display = 'none';
-                data.forEach(incarico => aggiungiRigaTabella(incarico, targetTableBody, tableType));
-            }
-            
-            updatePaginationControls(tableType, data.length);
-            
-            const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
-            if (selectAllCheckbox) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false; 
-            }
-            updateDeleteButtonState(tableType);
-
-            requestAnimationFrame(() => {
-                applyTableFilters(tableType);
-            });
-        }
-
-        // Funzione per aggiungere una riga alla tabella specificata
-        function aggiungiRigaTabella(incarico, targetTableBody, tableType) {
-            const newRow = targetTableBody.insertRow();
-            newRow.dataset.id = String(incarico.id); 
-            newRow.addEventListener('click', (e) => {
-                if (e.target.closest('.action-button') || e.target.type === 'checkbox') {
-                    return;
-                }
-                modificaIncarico(incarico.id);
-            });
-
-            const statoGenerale = getStatoIncarico(incarico);
-            const paymentSummary = getPaymentStatusSummary(incarico.pagamenti);
-            const prossimaScadenza = getProssimaScadenza(incarico);
-
-            newRow.dataset.descrizione = incarico.descrizione.join(', ').toLowerCase();
-            newRow.dataset.parti = (incarico.parti || '').toLowerCase();
-            newRow.dataset.tipoIncarico = (incarico['tipo-incarico'] || '').toLowerCase();
-            newRow.dataset.giudice = (incarico.giudice || '').toLowerCase();
-            newRow.dataset.rifProcedura = (incarico['rif-procedura'] || '').toLowerCase();
-            newRow.dataset.stato = statoGenerale.text.toLowerCase();
-            newRow.dataset.prossimaScadenza = prossimaScadenza.text.toLowerCase();
-
-
-            newRow.innerHTML = `
-                <td><input type="checkbox" class="row-select-checkbox" data-id="${String(incarico.id)}" data-table="${tableType}"></td>
-                <td data-label="ID:">${incarico.id === null || incarico.id === undefined ? 'N/A' : incarico.id}</td>
-                <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
-                <td data-label="Parti:">${incarico.parti || ''}</td>
-                <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
-                <td data-label="Giudice:">${incarico.giudice || ''}</td>
-                <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Pagamenti:"><span class="date-cell-content ${paymentSummary.class}">
-                    ${paymentSummary.text}
-                </span></td>
-                <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
-                <td data-label="Azioni:">
-                    <button class="action-button" title="Modifica Incarico">✏️</button> 
-                </td>
-                <td data-label="Prossima Scadenza:"><span class="date-cell-content ${prossimaScadenza.class}">
-                    ${prossimaScadenza.text}
-                </span></td>
-            `;
-
-            newRow.querySelector('.row-select-checkbox').addEventListener('change', (e) => {
-                updateDeleteButtonState(tableType);
-                updateSelectAllCheckboxState(tableType); 
-            });
-        }
-
-        // Funzione per aggiornare i controlli di paginazione
-        function updatePaginationControls(tableType, currentItemsCount) {
-            let prevBtn, nextBtn, pageInfo, currentPage, hasMore;
-
-            if (tableType === 'active') {
-                prevBtn = prevActiveBtn;
-                nextBtn = nextActiveBtn;
-                pageInfo = pageInfoActive;
-                currentPage = currentPageActive;
-                hasMore = currentActiveDocs.length === itemsPerPage; 
-            } else { 
-                prevBtn = prevArchivedBtn;
-                nextBtn = nextArchivedBtn;
-                pageInfo = pageInfoArchived;
-                currentPage = currentPageArchived;
-                hasMore = currentArchivedDocs.length === itemsPerPage; 
-            }
-
-            if (prevBtn) prevBtn.disabled = currentPage === 1;
-            if (nextBtn) nextBtn.disabled = !hasMore; 
-            if (pageInfo) pageInfo.textContent = `Pagina ${currentPage}`;
-        }
-
-        // Funzione per aggiornare lo stato del pulsante "Elimina Selezionati"
-        function updateDeleteButtonState(tableType) {
-            const checkboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody .row-select-checkbox:checked`);
-            if (tableType === 'active') {
-                if (deleteSelectedActiveBtn) deleteSelectedActiveBtn.disabled = checkboxes.length === 0;
-            } else {
-                if (deleteSelectedArchivedBtn) deleteSelectedArchivedBtn.disabled = checkboxes.length === 0;
-            }
-        }
-        
-        // Funzione per aggiornare lo stato della checkbox "Seleziona Tutto"
-        function updateSelectAllCheckboxState(tableType) {
-            const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
-            if (!selectAllCheckbox) return;
-
-            const visibleCheckboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox`);
-            const checkedVisibleCheckboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox:checked`);
-
-            if (visibleCheckboxes.length === 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
-                selectAllCheckbox.checked = true;
-                selectAllCheckbox.indeterminate = false;
-            } else if (checkedVisibleCheckboxes.length > 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = true;
-            } else {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            }
-        }
-
-        // Funzione per eliminare gli incarichi selezionati
-        async function deleteSelectedIncarichi(tableType) {
-            const checkboxes = document.querySelectorAll(`#tabella-incarichi-${tableType} tbody .row-select-checkbox:checked`);
-            const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
-
-            if (idsToDelete.length === 0) {
-                alert("Nessuna pratica selezionata da eliminare.");
-                return;
-            }
-
-            const confirmed = confirm(`Sei sicuro di voler eliminare ${idsToDelete.length} pratiche selezionate? Questa operazione è irreversibile.`);
-            if (!confirmed) {
-                return;
-            }
-
-            console.log("Tentativo di eliminare ID:", idsToDelete);
-
-            try {
-                const batch = db.batch(); 
-                idsToDelete.forEach(id => {
-                    const docRef = incarichiCollection.doc(String(id)); 
-                    batch.delete(docRef);
-                });
-                await batch.commit();
-                alert(`Eliminate ${idsToDelete.length} pratiche con successo.`);
-                
-                if (tableType === 'active') {
-                    await loadActivePage('reload'); 
-                } else {
-                    await loadArchivedPage('reload');
-                }
-                const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
-                if (selectAllCheckbox) {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = false;
-                }
-                updateDeleteButtonState(tableType);
-
-            } catch (error) {
-                console.error("Errore durante l'eliminazione delle pratiche:", error);
-                alert("Errore durante l'eliminazione delle pratiche. Controlla la console per i dettagli.");
-            }
-        }
-
-        // --- FUNZIONALITÀ DI FILTRO PER COLONNA ---
-        function applyTableFilters(tableType) {
-            const tableBody = document.querySelector(`#tabella-incarichi-${tableType} tbody`);
-            if (!tableBody) {
-                console.warn(`Impossibile applicare filtri: tbody per ${tableType} non trovato.`);
-                return;
-            }
-
-            const rows = Array.from(tableBody.querySelectorAll('tr')); 
-            const filterInputs = document.querySelectorAll(`#tabella-incarichi-${tableType} thead .column-filter`);
-
-            const filters = {};
-            filterInputs.forEach(input => {
-                const column = input.dataset.filterColumn;
-                const value = input.value.trim().toLowerCase();
-                if (value) {
-                    filters[column] = value;
+                    dateData[field.id] = null;
                 }
             });
 
-            rows.forEach(row => {
-                let showRow = true;
-                for (const column in filters) {
-                    let cellValue = row.dataset[column] || ''; 
-                    if (!cellValue.includes(filters[column])) {
-                        showRow = false;
-                        break;
-                    }
-                }
-                row.style.display = showRow ? '' : 'none';
-            });
-
-            updateSelectAllCheckboxState(tableType);
-            updateDeleteButtonState(tableType);
-        }
-
-        // Funzione per caricare gli incarichi paginati da Firestore
-        async function fetchIncarichiPaginated(queryBuilder, limitVal, startAfterDoc, direction, historyArray, isArchived) {
-            let query = queryBuilder;
-            
-            if (isArchived) {
-                query = query.orderBy('data-deposito.value', 'desc').orderBy('id', 'desc');
-            } else {
-                query = query.orderBy('timestamp', 'desc'); 
-            }
-
-            if (direction === 'next' && startAfterDoc) {
-                query = query.startAfter(startAfterDoc);
-            } else if (direction === 'prev' && historyArray.length > 1) {
-                let prevCursor = historyArray[historyArray.length - 2];
-                if (prevCursor) {
-                    query = query.startAt(prevCursor);
-                }
-                if (isArchived) {
-                     query = query.orderBy('data-deposito.value', 'asc').orderBy('id', 'asc');
-                } else {
-                     query = query.orderBy('timestamp', 'asc');
-                }
-            }
-            
-            const snapshot = await query.limit(limitVal + 1).get(); 
-            let docs = snapshot.docs;
-
-            if (direction === 'prev' && historyArray.length > 1) {
-                docs.reverse(); 
-            }
-
-            const incarichi = [];
-            docs.slice(0, limitVal).forEach(doc => { 
-                const data = doc.data();
-                if (data.id === undefined || data.id === null || (typeof data.id === 'string' && data.id.startsWith('temp_')) || isNaN(parseInt(data.id))) {
-                    data.id = parseInt(doc.id) || doc.id; 
-                }
-                incarichi.push(data);
-            });
-
-            return {
-                docs: incarichi,
-                lastVisible: docs.length > 0 ? docs[docs.length - 1] : null,
-                hasMore: docs.length === (limitVal + 1) 
+            let incaricoData = {
+                descrizione: selectedDescriptions,
+                'tipo-incarico': document.getElementById('tipo-incarico').value,
+                giudice: document.getElementById('giudice').value,
+                'rif-procedura': document.getElementById('rif-procedura').value,
+                parti: document.getElementById('parti').value,
+                note: document.getElementById('note').value,
+                pagamenti: currentPayments,
+                'data-conferimento': dateData['data-conferimento'],
+                'data-inizio-operazioni': dateData['data-inizio-operazioni'],
+                'data-invio-bozza': dateData['data-invio-bozza'],
+                'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
+                'data-deposito': dateData['data-deposito'],
+                'data-udienza': dateData['data-udienza'],
+                timestamp: Date.now() // Aggiungi/aggiorna il timestamp
             };
-        }
 
-        async function loadActivePage(direction = 'first') {
-            console.log(`Caricamento pagina attivi: ${direction}`);
-            const collectionRef = incarichiCollection; 
-            let startDoc = null;
+            const statoGenerale = getStatoIncarico(incaricoData);
+            const isCompleted = (statoGenerale.text === 'Completato');
 
-            if (direction === 'next') {
-                startDoc = lastVisibleActive;
-                historyActive.push(lastVisibleActive); 
-                currentPageActive++;
-            } else if (direction === 'prev') {
-                if (historyActive.length > 1) {
-                    historyActive.pop(); 
-                    startDoc = historyActive[historyActive.length - 1]; 
-                }
-                currentPageActive--;
-            } else { 
-                historyActive = [null]; 
-                currentPageActive = 1;
+            let incaricoFoundAndRemoved = false;
+
+            // Rimuovi l'incarico esistente da entrambi gli array se presente
+            let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
+            if (idxAttivi !== -1) {
+                incarichiAttivi.splice(idxAttivi, 1);
+                incaricoFoundAndRemoved = true;
+            }
+            
+            let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
+            if (idxArchiviati !== -1) {
+                incarichiArchiviati.splice(idxArchiviati, 1);
+                incaricoFoundAndRemoved = true;
             }
 
-            const { docs, lastVisible, hasMore } = await fetchIncarichiPaginated(
-                collectionRef, itemsPerPage, startDoc, direction, historyActive, false
-            );
-            
-            currentActiveDocs = docs.filter(incarico => getStatoIncarico(incarico).text !== 'Completato');
-            currentActiveDocs.sort((a, b) => {
-                const scadenzaA = getProssimaScadenza(a).date;
-                const scadenzaB = getProssimaScadenza(b).date;
-                return scadenzaA.getTime() - scadenzaB.getTime();
-            });
-
-            lastVisibleActive = lastVisible; 
-
-            if (tabellaAttiviBody) { 
-                renderTable(tabellaAttiviBody, currentActiveDocs, noActiveMessage, 'active');
+            if (incaricoFoundAndRemoved) {
+                // Se era una modifica, conserva l'ID originale
+                incaricoData.id = parseInt(idInModifica); 
             } else {
-                console.warn("tabellaAttiviBody è null, impossibile renderizzare.");
-            }
-            
-
-            if (prevActiveBtn) prevActiveBtn.disabled = currentPageActive === 1;
-            if (nextActiveBtn) nextActiveBtn.disabled = !hasMore; 
-            if (pageInfoActive) pageInfoActive.textContent = `Pagina ${currentPageActive}`;
-        }
-
-        async function loadArchivedPage(direction = 'first') {
-            console.log(`Caricamento pagina archiviati: ${direction}`);
-            const collectionRef = incarichiCollection.where('data-deposito.done', '==', true); 
-            let startDoc = null;
-
-            if (direction === 'next') {
-                startDoc = lastVisibleArchived;
-                historyArchived.push(lastVisibleArchived);
-                currentPageArchived++;
-            } else if (direction === 'prev') {
-                if (historyArchived.length > 1) {
-                    historyArchived.pop();
-                    startDoc = historyArchived[historyArchived.length - 1];
-                }
-                currentPageArchived--;
-            } else { 
-                historyArchived = [null];
-                currentPageArchived = 1;
+                // Se è un nuovo incarico, assegna un nuovo ID unico
+                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
+                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
+                incaricoData.id = maxId + 1;
             }
 
-            const { docs, lastVisible, hasMore } = await fetchIncarichiPaginated(
-                collectionRef, itemsPerPage, startDoc, direction, historyArchived, true
-            );
-            
-            currentArchivedDocs = docs;
-            currentArchivedDocs.sort((a, b) => {
-                const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
-                const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
-                return dateB.getTime() - dateA.getTime();
-            });
-
-            lastVisibleArchived = lastVisible;
-
-            if (tabellaArchiviatiBody) { 
-                renderTable(tabellaArchiviatiBody, currentArchivedDocs, noArchivedMessage, 'archived');
+            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
+            if (isCompleted) {
+                incarichiArchiviati.push(incaricoData);
             } else {
-                console.warn("tabellaArchiviatiBody è null, impossibile renderizzare.");
+                incarichiAttivi.push(incaricoData);
             }
 
-            if (prevArchivedBtn) prevArchivedBtn.disabled = currentPageArchived === 1;
-            if (nextArchivedBtn) nextArchivedBtn.disabled = !hasMore;
-            if (pageInfoArchived) pageInfoArchived.textContent = `Pagina ${currentPageArchived}`;
-        }
+            salvaIncarichiLocally(); // Salva immediatamente in localStorage
+            renderTables(); // Aggiorna l'UI immediatamente
+            await syncToFirebase(); // Sincronizza con Firebase in background
 
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
 
-        // Inizializzazione: Carica da Firebase e imposta listener
+            descCheckboxes.forEach(checkboxInfo => {
+                document.getElementById(checkboxInfo.id).checked = false;
+            });
+        });
+
+        // Gestione del pulsante "Nuovo Incarico"
+        resetButton.addEventListener('click', () => {
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            descCheckboxes.forEach(checkboxInfo => {
+                document.getElementById(checkboxInfo.id).checked = false;
+            });
+        });
+
+        // Event listener per il pulsante "+ Aggiungi Pagamento"
+        addPaymentBtn.addEventListener('click', () => addPaymentField());
+
+        // NEW: Function to load data from string
+        loadStringBtn.addEventListener('click', () => {
+            const dataString = inputDataStringField.value;
+            if (dataString) {
+                try {
+                    const data = JSON.parse(dataString);
+                    fillForm(data);
+                    alert('Dati caricati con successo nel modulo!');
+                } catch (e) {
+                    alert('Errore nel parsing della stringa JSON. Assicurati che il formato sia corretto.');
+                    console.error("Errore parsing JSON da stringa:", e);
+                }
+            } else {
+                alert('Inserisci una stringa di dati JSON nel campo di testo.');
+            }
+        });
+
+        // Inizializzazione: Carica da localStorage/Firebase e imposta listener
         async function initializeApp() {
-            // Listener principale di Firebase per aggiornamenti in tempo reale
-            incarichiCollection.onSnapshot(async (snapshot) => {
-                const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
-                if (source === "Local") {
-                    return; 
-                }
-                console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Ricaricamento pagina corrente...");
-                
-                requestAnimationFrame(async () => {
-                    if (tabellaAttiviBody) {
-                        await loadActivePage('reload'); 
-                    } else {
-                        console.warn("tabellaAttiviBody non trovato durante l'aggiornamento da Firebase.");
-                    }
-                    
-                    if (tabellaArchiviatiBody) {
-                        await loadArchivedPage('reload');
-                    } else {
-                        console.warn("tabellaArchiviatiBody non trovato durante l'aggiornamento da Firebase.");
-                    }
-                });
-
-            }, (error) => {
-                console.error("Errore nel listener Firebase:", error);
-                alert("Errore di connessione a Firebase. Alcune funzionalità potrebbero non essere aggiornate in tempo reale.");
-            });
-            
-            // Carica la prima pagina di incarichi attivi e archiviati all'avvio
-            await loadActivePage('first');
-            await loadArchivedPage('first');
+            await caricaIncarichi(); // Carica e deduplica iniziale
+            setupFirebaseListener(); // Imposta il listener per le modifiche da Firebase
         }
-        
+        initializeApp(); // Avvia l'app
+
+        if (paymentsList.children.length === 0) {
+            addPaymentField(); // Assicura che ci sia almeno un campo pagamento all'avvio
+        }
     </script>
 
 </body>
