@@ -501,7 +501,8 @@
                 <input type="hidden" id="incarico-id" value=""> 
 
                 <div class="form-grid">
-                    <div class="form-group" style="grid-column: 1 / -1;">
+                    
+<div class="form-group" style="grid-column: 1 / -1;">
                         <label>Attività Richieste (Infortunistica Stradale):</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
@@ -522,7 +523,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
+                    
+<div class="form-group">
                         <label for="tipo-incarico">Tipo Incarico:</label>
                         <select id="tipo-incarico" name="tipo-incarico">
                             <option value="Civile">Civile</option>
@@ -545,7 +547,8 @@
                         <input type="text" id="parti" name="parti">
                     </div>
                     
-                    <div class="form-group">
+                    
+<div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
                             <input type="date" id="data-conferimento" name="data-conferimento" required>
@@ -586,13 +589,15 @@
                         <textarea id="note" name="note" rows="3"></textarea>
                     </div>
 
-                    <div class="payments-section-container">
+                    
+<div class="payments-section-container">
                         <div class="payments-header">
                             <span>Pagamenti</span>
                             <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
                         </div>
                         <div id="payments-list">
-                            </div>
+                            
+</div>
                     </div>
                 </div>
 
@@ -621,7 +626,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    </tbody>
+                    
+</tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
         </div>
@@ -644,7 +650,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    </tbody>
+                    
+</tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
         </div>
@@ -675,6 +682,7 @@
         let incarichiArchiviati = [];
 
         // Mappa dei campi data e relative checkbox (Ord. Cronologico per prossima scadenza)
+        // L'ordine qui è FONDAMENTALE per la nuova logica di "Prossima Scadenza"
         const dateFields = [
             { id: 'data-conferimento', doneId: 'data-conferimento-done', label: 'Conf. Incarico' },
             { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', label: 'Inizio Op.' },
@@ -787,31 +795,22 @@
             return `${day}-${month}`;
         }
 
-        // Funzione per trovare la prossima data non completata
+        // Funzione per trovare la prossima data non completata secondo la logica sequenziale
         function getProssimaScadenza(incarico) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            const incompleteDates = dateFields.filter(field => 
-                incarico[field.id] && incarico[field.id].value && !incarico[field.id].done
-            ).map(field => ({
-                date: new Date(incarico[field.id].value),
-                label: field.label,
-                originalField: field.id
-            })).sort((a, b) => a.date - b.date); // Ordina cronologicamente
-
-            if (incompleteDates.length > 0) {
-                // Trova la prima data non completata a partire da oggi o futura
-                // Se tutte sono passate, prendi la prima scaduta (che sarà la prima dopo l'ordinamento)
-                const prossimaScadenza = incompleteDates.find(d => d.date >= today) || incompleteDates[0]; 
-
-                if (prossimaScadenza) {
-                    const dateStringFormatted = formatDataggmm(prossimaScadenza.date.toISOString().split('T')[0]); // Formatta per gg-mm
-                    const classToApply = getDateClass(prossimaScadenza.date.toISOString().split('T')[0], false); // Usa la data completa per la classe
-                    return { text: `${prossimaScadenza.label}: ${dateStringFormatted}`, class: classToApply };
+            for (const field of dateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    const date = new Date(dateInfo.value);
+                    const dateStringFormatted = formatDataggmm(dateInfo.value);
+                    const classToApply = getDateClass(dateInfo.value, false); 
+                    return { text: `${field.label}: ${dateStringFormatted}`, class: classToApply };
                 }
             }
             
+            // Se tutte le date sono completate o non presenti
             return { text: 'Tutte completate', class: 'date-completed' };
         }
 
@@ -871,7 +870,8 @@
                 </span></td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
                 <td data-label="Azioni:">
-                    <button class="action-button" title="Modifica Incarico">✏️</button> </td>
+                    <button class="action-button" title="Modifica Incarico">✏️</button> 
+</td>
                 <td data-label="Prossima Scadenza:"><span class="date-cell-content ${prossimaScadenza.class}">
                     ${prossimaScadenza.text}
                 </span></td>
