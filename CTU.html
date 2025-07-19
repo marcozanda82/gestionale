@@ -297,32 +297,35 @@
         }
 
         /* Date Field Specific Styles */
-        /* Ho modificato questi stili per un migliore allineamento */
+        /* Ho modificato questi stili per un migliore allineamento e per riempire la cella */
         .date-completed,
         .date-overdue,
         .date-due-soon,
         .date-normal {
-            display: inline-flex; /* Usa inline-flex per agire come blocco ma consentire il testo nella stessa riga */
+            display: flex; /* Usa flex per riempire la cella e centrare il contenuto */
             align-items: center; /* Centra verticalmente il contenuto del riquadro */
             justify-content: center; /* Centra orizzontalmente il contenuto del riquadro */
             padding: 5px 8px;
-            border-radius: 4px;
+            border-radius: 4px; /* Lasciamo il bordo-raggio per l'aspetto "pillola" */
             font-weight: bold;
-            min-width: 75px; /* Larghezza minima per contenere gg-mm-aaaa */
-            box-sizing: border-box;
-            text-align: center;
+            width: 100%; /* Riempi l'intera larghezza della cella */
+            height: 100%; /* Riempi l'intera altezza della cella */
+            box-sizing: border-box; /* Include padding e border nel calcolo di width/height */
+            text-align: center; /* Utile per testo multilinea, anche se con flex center è meno critico */
+            margin: 0; /* Rimuovi margini che potrebbero impedire di riempire la cella */
         }
         .date-completed { background-color: var(--date-completed-color); color: var(--text-light); }
         .date-overdue { background-color: var(--date-overdue-color); color: var(--text-light); }
         .date-due-soon { background-color: var(--date-due-soon-color); color: var(--text-dark); }
-        .date-normal { color: var(--text-dark); }
+        .date-normal { /* Per le date normali, nessun colore di sfondo per la cella intera, solo testo */ color: var(--text-dark); }
 
-        /* Stile specifico per la cella della scadenza per centrare il contenuto */
+        /* Rimuovi stili di allineamento dal TD per evitare conflitti, lascialo gestire al div interno */
         td[data-label="Scadenza:"] {
-            text-align: center; /* Allinea il contenuto della cella al centro */
+            text-align: initial; /* Reset allineamento testo */
+            padding: 0; /* Rimuovi padding dalla cella TD per permettere al div interno di riempire */
         }
-        /* Assicurati che l'intestazione della colonna Scadenza sia centrata */
-        th:has( + td[data-label="Scadenza:"]) { /* Selettore per la th corrispondente alla td con data-label="Scadenza:" */
+        /* Assicurati che l'intestazione della colonna Scadenza sia centrata, se desiderato */
+        th:has( + td[data-label="Scadenza:"]) {
             text-align: center;
         }
 
@@ -910,9 +913,9 @@
                     ${paymentStatus.text}
                 </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
-                <td data-label="Scadenza:" class="${scadenzaCorrente.class}"> 
+                <td data-label="Scadenza:"><div class="${scadenzaCorrente.class}"> 
                     ${scadenzaCorrente.display || ''}
-                </td>
+                </div></td>
                 <td data-label="Azioni:">
                     <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
                     <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
