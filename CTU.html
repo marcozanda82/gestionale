@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Ordinamento Scadenza)</title>
+    <title>Gestionale Incarichi CTU (Infortunistica Stradale)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,10 +26,6 @@
             --date-completed-color: #28a745; /* Verde */
             --date-overdue-color: #dc3545; /* Rosso */
             --date-due-soon-color: #ffc107; /* Giallo */
-
-            /* Colori Semaforo Pagamenti */
-            --payment-summary-paid: #28a745; /* Verde per pagato */
-            --payment-summary-unpaid: #dc3545; /* Rosso per mancante */
         }
 
         body {
@@ -174,41 +170,24 @@
             box-shadow: 0 4px 15px var(--shadow-light);
             border-radius: 8px;
             overflow: hidden;
-            table-layout: fixed; /* Crucial for fixed column widths */
         }
 
         th, td {
             border: 1px solid var(--border-color);
             padding: 15px;
             text-align: left;
-            vertical-align: middle; /* Ensure vertical alignment */
+            vertical-align: middle;
             font-size: 0.9em;
             color: var(--text-dark);
-            word-wrap: break-word; /* Allow long text to wrap */
         }
 
         th {
             background-color: var(--primary-color);
             color: var(--text-light);
             font-weight: 700;
-            white-space: nowrap; /* Prevent wrapping of headers */
+            white-space: nowrap;
         }
 
-        /* Column Width Adjustments */
-        th:nth-child(1), td:nth-child(1) { width: 40px; text-align: center; } /* ID */
-        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Descrizione */
-        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Parti */
-        th:nth-child(4), td:nth-child(4) { width: 80px; } /* Tipo */
-        th:nth-child(5), td:nth-child(5) { width: 100px; } /* Giudice */
-        th:nth-child(6), td:nth-child(6) { width: 8%; } /* Rif. Procedura */
-        th:nth-child(7), td:nth-child(7) { width: 9%; text-align: center; } /* Pagamenti */
-        th:nth-child(8), td:nth-child(8) { width: 9%; text-align: center; } /* Stato */
-        th:nth-child(9), td:nth-child(9) { width: 60px; text-align: center; } /* Azioni */
-        th:nth-child(10), td:nth-child(10) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
-        
-        tr {
-            cursor: pointer; /* Indica che la riga è cliccabile */
-        }
         tr:nth-child(even) {
             background-color: var(--bg-light);
         }
@@ -223,6 +202,9 @@
         .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
         .stato-da-iniziare { color: var(--info-color); }
 
+        .payment-status-paid { color: var(--success-color); font-weight: bold; }
+        .payment-status-unpaid { color: var(--danger-color); font-weight: bold; }
+
         .action-button {
             background: none;
             border: none;
@@ -232,7 +214,7 @@
             padding: 0;
             margin: 0;
             transition: color 0.2s ease, transform 0.2s ease;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
             width: 30px;
@@ -259,7 +241,7 @@
             margin-top: 20px;
         }
 
-        /* Pagamenti Section Styling (Form) */
+        /* Pagamenti Section Styling */
         .payments-section-container {
             grid-column: 1 / -1;
             margin-top: 20px;
@@ -307,7 +289,7 @@
             color: #a71d2a;
         }
 
-        /* Date Field Specific Styles (Form) */
+        /* Date Field Specific Styles */
         .date-input-group {
             display: flex;
             align-items: center;
@@ -323,47 +305,33 @@
             cursor: pointer;
             flex-shrink: 0;
         }
-        
-        /* Semaforo Date (Table Cells) */
-        .date-cell-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-            padding: 5px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            text-align: center;
-            white-space: nowrap;
-        }
+        /* Semaforo Date */
         .date-completed {
             background-color: var(--date-completed-color);
             color: var(--text-light);
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 4px;
+            display: inline-block;
         }
         .date-overdue {
             background-color: var(--date-overdue-color);
             color: var(--text-light);
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 4px;
+            display: inline-block;
         }
         .date-due-soon {
             background-color: var(--date-due-soon-color);
             color: var(--text-dark);
-        }
-        .date-normal .date-cell-content {
-            background-color: transparent;
-            color: var(--text-dark);
-            font-weight: normal;
-        }
-        
-        /* Payment Summary Highlighting (Table Cell) */
-        .payment-summary-paid {
-            color: var(--payment-summary-paid);
             font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 4px;
+            display: inline-block;
         }
-        .payment-summary-unpaid {
-            color: var(--payment-summary-unpaid);
-            font-weight: bold;
+        .date-normal {
+            /* No specific background, default text color */
         }
 
         /* Checkbox Group for Description */
@@ -402,11 +370,7 @@
             .btn {
                 width: 100%;
             }
-            table {
-                table-layout: auto;
-            }
-            th, td {
-                width: auto !important;
+            table, thead, tbody, th, td, tr {
                 display: block;
             }
             thead tr {
@@ -441,18 +405,22 @@
                 font-weight: bold;
                 color: var(--primary-dark);
             }
-            /* Specific column labels for mobile (Updated for simplified table) */
+            /* Specific column labels for mobile */
             td:nth-of-type(1):before { content: "ID:"; }
             td:nth-of-type(2):before { content: "Descrizione:"; }
-            td:nth-of-type(3):before { content: "Parti:"; }
-            td:nth-of-type(4):before { content: "Tipo:"; }
-            td:nth-of-type(5):before { content: "Giudice:"; }
-            td:nth-of-type(6):before { content: "Rif. Proc.:"; }
-            td:nth-of-type(7):before { content: "Pagamenti:"; } /* New label */
-            td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Azioni:"; }
-            td:nth-of-type(10):before { content: "Prossima Scadenza:"; }
-
+            td:nth-of-type(3):before { content: "Tipo:"; }
+            td:nth-of-type(4):before { content: "Giudice:"; }
+            td:nth-of-type(5):before { content: "Rif. Proc.:"; }
+            td:nth-of-type(6):before { content: "Conf. Inc.:"; }
+            td:nth-of-type(7):before { content: "Inizio Op.:"; }
+            td:nth-of-type(8):before { content: "Invio Bozza:"; }
+            td:nth-of-type(9):before { content: "Ricez. Oss.:"; }
+            td:nth-of-type(10):before { content: "Deposito:"; }
+            td:nth-of-type(11):before { content: "Tot. Incassato:"; }
+            td:nth-of-type(12):before { content: "Tot. Richiesto:"; }
+            td:nth-of-type(13):before { content: "Saldo Residuo:"; }
+            td:nth-of-type(14):before { content: "Stato:"; }
+            td:nth-of-type(15):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
             .payment-item {
@@ -483,10 +451,6 @@
             .checkbox-group {
                 align-items: flex-start;
             }
-            /* Ensure date content in table cells is aligned for mobile */
-            td .date-cell-content {
-                justify-content: flex-end;
-            }
         }
     </style>
 </head>
@@ -501,8 +465,7 @@
                 <input type="hidden" id="incarico-id" value=""> 
 
                 <div class="form-grid">
-                    
-<div class="form-group" style="grid-column: 1 / -1;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
                         <label>Attività Richieste (Infortunistica Stradale):</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
@@ -523,8 +486,7 @@
                             </div>
                         </div>
                     </div>
-                    
-<div class="form-group">
+                    <div class="form-group">
                         <label for="tipo-incarico">Tipo Incarico:</label>
                         <select id="tipo-incarico" name="tipo-incarico">
                             <option value="Civile">Civile</option>
@@ -542,13 +504,8 @@
                         <label for="rif-procedura">Riferimento Procedura:</label>
                         <input type="text" id="rif-procedura" name="rif-procedura">
                     </div>
+                    
                     <div class="form-group">
-                        <label for="parti">Parti (es. Attore vs Convenuto):</label>
-                        <input type="text" id="parti" name="parti">
-                    </div>
-                    
-                    
-<div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
                             <input type="date" id="data-conferimento" name="data-conferimento" required>
@@ -583,28 +540,19 @@
                             <input type="checkbox" id="data-deposito-done" name="data-deposito-done" title="Completato">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="data-udienza">Data Udienza:</label>
-                        <div class="date-input-group">
-                            <input type="date" id="data-udienza" name="data-udienza">
-                            <input type="checkbox" id="data-udienza-done" name="data-udienza-done" title="Completato">
-                        </div>
-                    </div>
 
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="note">Note:</label>
                         <textarea id="note" name="note" rows="3"></textarea>
                     </div>
 
-                    
-<div class="payments-section-container">
+                    <div class="payments-section-container">
                         <div class="payments-header">
                             <span>Pagamenti</span>
                             <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
                         </div>
                         <div id="payments-list">
-                            
-</div>
+                            </div>
                     </div>
                 </div>
 
@@ -615,6 +563,19 @@
             </form>
         </div>
 
+        <div class="form-section" style="margin-top: 40px;">
+            <h2>Carica Incarico da JSON</h2>
+            <div class="form-group">
+                <label for="json-input">Incolla qui il codice JSON dell'incarico:</label>
+                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "data-conferimento": {"value": "2024-01-15", "done": true}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}
+'></textarea>
+            </div>
+            <div class="button-group" style="justify-content: flex-start;">
+                <button type="button" id="load-json-btn" class="btn btn-primary">Carica da JSON</button>
+                <button type="button" id="clear-json-btn" class="btn btn-secondary">Pulisci JSON</button>
+            </div>
+        </div>
+
         <div class="table-section">
             <h2>Incarichi in Lavorazione</h2>
             <table id="tabella-incarichi-attivi">
@@ -622,19 +583,23 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th>Parti</th>
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Pagamenti</th>
+                        <th>Conf. Incarico</th>
+                        <th>Inizio Op.</th>
+                        <th>Invio Bozza</th>
+                        <th>Ricez. Oss.</th>
+                        <th>Deposito Finale</th>
+                        <th>Tot. Incassato</th>
+                        <th>Tot. Richiesto</th>
+                        <th>Saldo Residuo</th>
                         <th>Stato</th>
                         <th>Azioni</th>
-                        <th>Prossima Scadenza</th>
                     </tr>
                 </thead>
                 <tbody>
-                    
-</tbody>
+                    </tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
         </div>
@@ -646,19 +611,23 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th>Parti</th>
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Pagamenti</th>
+                        <th>Conf. Incarico</th>
+                        <th>Inizio Op.</th>
+                        <th>Invio Bozza</th>
+                        <th>Ricez. Oss.</th>
+                        <th>Deposito Finale</th>
+                        <th>Tot. Incassato</th>
+                        <th>Tot. Richiesto</th>
+                        <th>Saldo Residuo</th>
                         <th>Stato</th>
                         <th>Azioni</th>
-                        <th>Prossima Scadenza</th>
                     </tr>
                 </thead>
                 <tbody>
-                    
-</tbody>
+                    </tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
         </div>
@@ -671,6 +640,11 @@
         const incaricoIdField = document.getElementById('incarico-id');
         const addPaymentBtn = document.getElementById('add-payment-btn');
         const paymentsList = document.getElementById('payments-list');
+
+        // Nuovi elementi per il JSON
+        const jsonInput = document.getElementById('json-input');
+        const loadJsonBtn = document.getElementById('load-json-btn');
+        const clearJsonBtn = document.getElementById('clear-json-btn');
 
         // Checkbox per la descrizione
         const descCheckboxes = [
@@ -688,101 +662,26 @@
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
 
-        // Mappa dei campi data e relative checkbox (Ord. Cronologico per prossima scadenza)
+        // Mappa dei campi data e relative checkbox
         const dateFields = [
-            { id: 'data-conferimento', doneId: 'data-conferimento-done', label: 'Conf. Incarico' },
-            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', label: 'Inizio Op.' },
-            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', label: 'Invio Bozza' },
-            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', label: 'Ricez. Oss.' },
-            { id: 'data-deposito', doneId: 'data-deposito-done', label: 'Deposito Finale' },
-            { id: 'data-udienza', doneId: 'data-udienza-done', label: 'Udienza' }
+            { id: 'data-conferimento', doneId: 'data-conferimento-done' },
+            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done' },
+            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done' },
+            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done' },
+            { id: 'data-deposito', doneId: 'data-deposito-done' }
         ];
 
-        // Funzione per caricare gli incarichi dal localStorage e deduplicare/pulire ID
+        // Funzione per caricare gli incarichi dal localStorage
         function caricaIncarichi() {
-            let loadedAttivi = [];
-            let loadedArchiviati = [];
+            const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
+            const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
 
-            try {
-                const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
-                if (attiviSalvati) {
-                    loadedAttivi = JSON.parse(attiviSalvati);
-                }
-            } catch (e) {
-                console.error("Errore nel parsing di incarichiCTU_attivi:", e);
-                loadedAttivi = [];
+            if (attiviSalvati) {
+                incarichiAttivi = JSON.parse(attiviSalvati);
             }
-
-            try {
-                const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
-                if (archiviatiSalvati) {
-                    loadedArchiviati = JSON.parse(archiviatiSalvati);
-                }
-            } catch (e) {
-                console.error("Errore nel parsing di incarichiCTU_archiviati:", e);
-                loadedArchiviati = [];
+            if (archiviatiSalvati) {
+                incarichiArchiviati = JSON.parse(archiviatiSalvati);
             }
-
-            let allIncarichi = [...loadedAttivi, ...loadedArchiviati];
-            const uniqueIncarichiMap = new Map();
-            let tempIdCounter = -1; // Per assegnare ID temporanei negativi
-
-            allIncarichi.forEach(incarico => {
-                let currentId = incarico.id;
-
-                // Se l'ID è nullo, undefined o non numerico, assegna un ID temporaneo
-                if (currentId === null || currentId === undefined || isNaN(parseInt(currentId))) {
-                    currentId = `temp_${tempIdCounter--}`; // ID temporaneo stringa
-                    console.warn(`Incarico con ID non valido/nullo, assegnato ID temporaneo: ${currentId}`, incarico);
-                } else {
-                    currentId = parseInt(currentId); // Assicurati che sia un numero per la Map
-                }
-
-                // Assicurati che il timestamp esista per il confronto
-                if (incarico.timestamp === undefined || incarico.timestamp === null) {
-                    incarico.timestamp = 0; // Assegna 0 per considerare le versioni senza timestamp come le più vecchie
-                }
-
-                if (uniqueIncarichiMap.has(currentId)) {
-                    const existingIncarico = uniqueIncarichiMap.get(currentId);
-                    if (incarico.timestamp > existingIncarico.timestamp) {
-                        uniqueIncarichiMap.set(currentId, incarico); // Mantieni la versione più recente
-                    }
-                } else {
-                    uniqueIncarichiMap.set(currentId, incarico); // Aggiungi il primo incarico con questo ID
-                }
-            });
-
-            // Ricostruisci gli array attivi e archiviati e riassegna ID numerici definitivi
-            incarichiAttivi = [];
-            incarichiArchiviati = [];
-            let maxExistingId = 0; // Trova il massimo ID numerico esistente
-
-            // Primo giro per trovare il max ID tra quelli validi
-            uniqueIncarichiMap.forEach(incarico => {
-                if (typeof incarico.id === 'number' && incarico.id > maxExistingId) {
-                    maxExistingId = incarico.id;
-                }
-            });
-
-            // Secondo giro per assegnare nuovi ID e popolare gli array
-            uniqueIncarichiMap.forEach(incarico => {
-                // Se l'ID è temporaneo o non numerico (originale), assegna un nuovo ID definitivo
-                if (typeof incarico.id !== 'number' || incarico.id < 1) { // <1 per coprire temp_IDs o 0 se mai generato
-                    maxExistingId++;
-                    incarico.id = maxExistingId;
-                }
-
-                const statoGenerale = getStatoIncarico(incarico);
-                const isCompleted = (statoGenerale.text === 'Completato');
-                if (isCompleted) {
-                    incarichiArchiviati.push(incarico);
-                } else {
-                    incarichiAttivi.push(incarico);
-                }
-            });
-            
-            salvaIncarichi(); // Salva lo stato pulito e con ID validi nel localStorage
             renderTables();
         }
 
@@ -800,25 +699,25 @@
             const deposito = incarico['data-deposito'] && incarico['data-deposito'].value ? new Date(incarico['data-deposito'].value) : null;
             const depositoDone = incarico['data-deposito'] && incarico['data-deposito'].done;
 
-            // Considera completato se il deposito è flaggato come fatto
             if (depositoDone) {
                 return { text: 'Completato', class: 'stato-completato' };
             }
-            // Se c'è una data di deposito e questa è passata
             if (deposito && deposito < today) {
                 return { text: 'Deposito Scaduto', class: 'stato-in-scadenza' };
             }
-            // Se c'è una data di conferimento, è in corso
-            if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+            if (deposito) {
                 return { text: 'In Corso', class: 'stato-in-corso' };
+            }
+            if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+                return { text: 'Conferito', class: 'stato-da-iniziare' };
             }
 
             return { text: 'In attesa', class: '' };
         }
 
-        // Funzione per determinare la classe CSS per una data specifica (per cella singola)
+        // Funzione per determinare la classe CSS per una data specifica
         function getDateClass(dateStr, isDone) {
-            if (!dateStr) return '';
+            if (!dateStr) return 'date-normal';
 
             if (isDone) return 'date-completed';
 
@@ -856,58 +755,20 @@
             return { totaleIncassato, totaleRichiesto, saldoResiduo };
         }
 
-        // Nuova funzione per ottenere lo stato riassuntivo dei pagamenti
-        function getPaymentStatusSummary(pagamenti) {
-            const { totaleIncassato, totaleRichiesto, saldoResiduo } = calcolaTotaliPagamenti(pagamenti);
-
-            if (saldoResiduo <= 0) { // Se saldo residuo è zero o negativo (incassato di più)
-                return { text: 'Pagato', class: 'payment-summary-paid' };
-            } else {
-                return { text: `${saldoResiduo.toFixed(2)} €`, class: 'payment-summary-unpaid' };
-            }
-        }
-
-        // Funzione per formattare una data nel formato gg-mm
-        function formatDataggmm(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Mesi da 0 a 11
-            return `${day}-${month}`;
-        }
-
-        // Funzione per trovare la prossima data non completata secondo la logica sequenziale
-        function getProssimaScadenza(incarico) {
-            for (const field of dateFields) {
-                const dateInfo = incarico[field.id];
-                if (dateInfo && dateInfo.value && !dateInfo.done) {
-                    const dateStringFormatted = formatDataggmm(dateInfo.value);
-                    const classToApply = getDateClass(dateInfo.value, false); 
-                    return { text: `${field.label}: ${dateStringFormatted}`, class: classToApply, date: new Date(dateInfo.value) };
-                }
-            }
-            // Se tutte le date sono completate o non definite, restituisci una data molto lontana nel futuro per il sorting
-            return { text: 'Tutte completate', class: 'date-completed', date: new Date('9999-12-31') }; 
-        }
-
-
         // Funzione per renderizzare le tabelle
         function renderTables() {
             tabellaAttiviBody.innerHTML = '';
             tabellaArchiviatiBody.innerHTML = '';
 
-            // Ordina incarichiAttivi per prossima scadenza
             incarichiAttivi.sort((a, b) => {
-                const scadenzaA = getProssimaScadenza(a).date;
-                const scadenzaB = getProssimaScadenza(b).date;
-                return scadenzaA.getTime() - scadenzaB.getTime();
+                const dateA = a['data-conferimento']?.value ? new Date(a['data-conferimento'].value) : new Date(0);
+                const dateB = b['data-conferimento']?.value ? new Date(b['data-conferimento'].value) : new Date(0);
+                return dateB - dateA;
             });
-
-            // Ordina incarichiArchiviati per data di deposito (più recenti in cima)
             incarichiArchiviati.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
-                return dateB.getTime() - dateA.getTime();
+                return dateB - dateA;
             });
 
 
@@ -930,34 +791,38 @@
         function aggiungiRigaTabella(incarico, targetTableBody) {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
-            newRow.addEventListener('click', (e) => {
-                if (e.target.closest('.action-button')) {
-                    return;
-                }
-                modificaIncarico(incarico.id);
-            });
 
             const statoGenerale = getStatoIncarico(incarico);
-            const paymentSummary = getPaymentStatusSummary(incarico.pagamenti);
-            const prossimaScadenza = getProssimaScadenza(incarico);
+            const { totaleIncassato, totaleRichiesto, saldoResiduo } = calcolaTotaliPagamenti(incarico.pagamenti);
 
             newRow.innerHTML = `
-                <td data-label="ID:">${incarico.id === null || incarico.id === undefined ? 'N/A' : incarico.id}</td>
+                <td data-label="ID:">${incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
-                <td data-label="Parti:">${incarico.parti || ''}</td>
                 <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Pagamenti:"><span class="date-cell-content ${paymentSummary.class}">
-                    ${paymentSummary.text}
-                </span></td>
+                <td data-label="Conf. Incarico:" class="${getDateClass(incarico['data-conferimento']?.value, incarico['data-conferimento']?.done)}">
+                    ${incarico['data-conferimento']?.value || ''}
+                </td>
+                <td data-label="Inizio Op.:" class="${getDateClass(incarico['data-inizio-operazioni']?.value, incarico['data-inizio-operazioni']?.done)}">
+                    ${incarico['data-inizio-operazioni']?.value || ''}
+                </td>
+                <td data-label="Invio Bozza:" class="${getDateClass(incarico['data-invio-bozza']?.value, incarico['data-invio-bozza']?.done)}">
+                    ${incarico['data-invio-bozza']?.value || ''}
+                </td>
+                <td data-label="Ricez. Oss.:" class="${getDateClass(incarico['data-ricezione-osservazioni']?.value, incarico['data-ricezione-osservazioni']?.done)}">
+                    ${incarico['data-ricezione-osservazioni']?.value || ''}
+                </td>
+                <td data-label="Deposito Finale:" class="${getDateClass(incarico['data-deposito']?.value, incarico['data-deposito']?.done)}">
+                    ${incarico['data-deposito']?.value || ''}
+                </td>
+                <td data-label="Tot. Incassato:">${totaleIncassato.toFixed(2)} €</td>
+                <td data-label="Tot. Richiesto:">${totaleRichiesto.toFixed(2)} €</td>
+                <td data-label="Saldo Residuo:">${saldoResiduo.toFixed(2)} €</td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
                 <td data-label="Azioni:">
-                    <button class="action-button" title="Modifica Incarico">✏️</button> 
+                    <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
                 </td>
-                <td data-label="Prossima Scadenza:"><span class="date-cell-content ${prossimaScadenza.class}">
-                    ${prossimaScadenza.text}
-                </span></td>
             `;
         }
 
@@ -990,49 +855,56 @@
             `;
             paymentsList.appendChild(paymentItem);
 
-            paymentItem.querySelector('.remove-payment-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
+            // Aggiungi event listener per il pulsante di rimozione
+            paymentItem.querySelector('.remove-payment-btn').addEventListener('click', () => {
                 paymentsList.removeChild(paymentItem);
             });
         }
 
+        // Funzione per popolare il form da un oggetto incarico (usata anche da modificaIncarico)
+        function populateForm(incarico) {
+            incaricoIdField.value = incarico.id || '';
+            
+            // Popola i campi descrizione (checkboxes)
+            descCheckboxes.forEach(checkboxInfo => {
+                const checkbox = document.getElementById(checkboxInfo.id);
+                checkbox.checked = incarico.descrizione && incarico.descrizione.includes(checkboxInfo.value);
+            });
+
+            document.getElementById('tipo-incarico').value = incarico['tipo-incarico'] || 'Civile';
+            document.getElementById('giudice').value = incarico.giudice || '';
+            document.getElementById('rif-procedura').value = incarico['rif-procedura'] || '';
+            document.getElementById('note').value = incarico.note || '';
+
+            // Popola i campi data e le checkbox
+            dateFields.forEach(field => {
+                const dateInput = document.getElementById(field.id);
+                const doneCheckbox = document.getElementById(field.doneId);
+                if (incarico[field.id]) {
+                    dateInput.value = incarico[field.id].value || '';
+                    doneCheckbox.checked = incarico[field.id].done || false;
+                } else {
+                    dateInput.value = '';
+                    doneCheckbox.checked = false;
+                }
+            });
+
+            // Popola la sezione pagamenti
+            paymentsList.innerHTML = '';
+            if (incarico.pagamenti && incarico.pagamenti.length > 0) {
+                incarico.pagamenti.forEach(payment => addPaymentField(payment));
+            } else {
+                addPaymentField(); // Aggiungi un campo vuoto se non ci sono pagamenti
+            }
+
+            submitButton.textContent = incarico.id ? 'Salva Modifiche' : 'Aggiungi Incarico';
+        }
+
         // Funzione per popolare il modulo con i dati dell'incarico da modificare
         function modificaIncarico(id) {
-            const incaricoToEdit = incarichiAttivi.find(i => i.id == id) || incarichiArchiviati.find(i => i.id == id);
+            const incaricoToEdit = incarichiAttivi.find(i => i.id === id) || incarichiArchiviati.find(i => i.id === id);
             if (incaricoToEdit) {
-                incaricoIdField.value = incaricoToEdit.id;
-                
-                descCheckboxes.forEach(checkboxInfo => {
-                    const checkbox = document.getElementById(checkboxInfo.id);
-                    checkbox.checked = Array.isArray(incaricoToEdit.descrizione) && incaricoToEdit.descrizione.includes(checkboxInfo.value);
-                });
-
-                document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'];
-                document.getElementById('giudice').value = incaricoToEdit.giudice;
-                document.getElementById('rif-procedura').value = incaricoToEdit['rif-procedura'];
-                document.getElementById('parti').value = incaricoToEdit.parti || '';
-                document.getElementById('note').value = incaricoToEdit.note;
-
-                dateFields.forEach(field => {
-                    const dateInput = document.getElementById(field.id);
-                    const doneCheckbox = document.getElementById(field.doneId);
-                    if (incaricoToEdit[field.id]) {
-                        dateInput.value = incaricoToEdit[field.id].value || '';
-                        doneCheckbox.checked = incaricoToEdit[field.id].done || false;
-                    } else {
-                        dateInput.value = '';
-                        doneCheckbox.checked = false;
-                    }
-                });
-
-                paymentsList.innerHTML = '';
-                if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
-                    incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
-                } else {
-                    addPaymentField();
-                }
-
-                submitButton.textContent = 'Salva Modifiche';
+                populateForm(incaricoToEdit);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
@@ -1043,6 +915,7 @@
 
             const idInModifica = incaricoIdField.value;
 
+            // Raccogli i valori selezionati per la descrizione dalle checkbox
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
                 if (document.getElementById(checkboxInfo.id).checked) {
@@ -1050,6 +923,7 @@
                 }
             });
 
+            // Raccogli i dati dei pagamenti
             const currentPayments = [];
             document.querySelectorAll('.payment-item').forEach(item => {
                 const type = item.querySelector('.payment-type').value;
@@ -1058,6 +932,7 @@
                 currentPayments.push({ tipo: type, stato: status, importo: amount });
             });
 
+            // Raccogli i dati delle date e delle checkbox
             const dateData = {};
             dateFields.forEach(field => {
                 const dateValue = document.getElementById(field.id).value;
@@ -1070,69 +945,69 @@
             });
 
             let incaricoData = {
-                descrizione: selectedDescriptions,
+                descrizione: selectedDescriptions, // Ora è un array di stringhe dalle checkbox
                 'tipo-incarico': document.getElementById('tipo-incarico').value,
                 giudice: document.getElementById('giudice').value,
                 'rif-procedura': document.getElementById('rif-procedura').value,
-                parti: document.getElementById('parti').value,
                 note: document.getElementById('note').value,
                 pagamenti: currentPayments,
+                // Inserisci qui le date come raccolte da dateData
                 'data-conferimento': dateData['data-conferimento'],
                 'data-inizio-operazioni': dateData['data-inizio-operazioni'],
                 'data-invio-bozza': dateData['data-invio-bozza'],
                 'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
-                'data-deposito': dateData['data-deposito'],
-                'data-udienza': dateData['data-udienza'],
-                timestamp: Date.now() // Aggiungi/aggiorna il timestamp
+                'data-deposito': dateData['data-deposito']
             };
 
             const statoGenerale = getStatoIncarico(incaricoData);
             const isCompleted = (statoGenerale.text === 'Completato');
 
-            let incaricoFoundAndRemoved = false;
+            if (idInModifica) {
+                let targetArray = null;
+                let targetIndex = -1;
 
-            // Rimuovi l'incarico esistente da entrambi gli array se presente
-            let idxAttivi = incarichiAttivi.findIndex(i => i.id == idInModifica);
-            if (idxAttivi !== -1) {
-                incarichiAttivi.splice(idxAttivi, 1);
-                incaricoFoundAndRemoved = true;
-            }
-            
-            let idxArchiviati = incarichiArchiviati.findIndex(i => i.id == idInModifica);
-            if (idxArchiviati !== -1) {
-                incarichiArchiviati.splice(idxArchiviati, 1);
-                incaricoFoundAndRemoved = true;
-            }
+                // Rimuovi l'incarico da entrambi gli array se presente
+                const idxActive = incarichiAttivi.findIndex(i => i.id == idInModifica);
+                if (idxActive !== -1) incarichiAttivi.splice(idxActive, 1);
+                
+                const idxArchived = incarichiArchiviati.findIndex(i => i.id == idInModifica);
+                if (idxArchived !== -1) incarichiArchiviati.splice(idxArchived, 1);
 
-            if (incaricoFoundAndRemoved) {
-                // Se era una modifica, conserva l'ID originale
-                incaricoData.id = parseInt(idInModifica); 
+                // Determina in quale array va l'incarico e aggiungilo
+                incaricoData.id = parseInt(idInModifica);
+                if (isCompleted) {
+                    incarichiArchiviati.push(incaricoData);
+                } else {
+                    incarichiAttivi.push(incaricoData);
+                }
+
             } else {
-                // Se è un nuovo incarico, assegna un nuovo ID unico
-                // Ricalcola il max ID dopo le eventuali rimozioni
-                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
-                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
-                incaricoData.id = maxId + 1;
-            }
+                const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+                const newId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
+                incaricoData.id = newId;
 
-            // Aggiungi l'incarico (nuovo o modificato) all'array corretto
-            if (isCompleted) {
-                incarichiArchiviati.push(incaricoData);
-            } else {
-                incarichiAttivi.push(incaricoData);
+                if (isCompleted) {
+                    incarichiArchiviati.push(incaricoData);
+                } else {
+                    incarichiAttivi.push(incaricoData);
+                }
             }
 
             salvaIncarichi();
             renderTables();
-            form.reset();
+            
+            // Resetta il form e gli elementi correlati
+            form.reset(); 
             incaricoIdField.value = '';
             submitButton.textContent = 'Aggiungi Incarico';
-            paymentsList.innerHTML = '';
-            addPaymentField();
+            paymentsList.innerHTML = ''; 
+            addPaymentField(); 
 
+            // Resetta le checkbox della descrizione
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
+            jsonInput.value = ''; // Pulisci anche il campo JSON
         });
 
         // Gestione del pulsante "Nuovo Incarico"
@@ -1144,13 +1019,53 @@
             addPaymentField();
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
+            // Resetta le checkbox della descrizione
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
+            jsonInput.value = ''; // Pulisci il campo JSON al reset
         });
 
         // Event listener per il pulsante "+ Aggiungi Pagamento"
         addPaymentBtn.addEventListener('click', () => addPaymentField());
+
+        // Funzione per caricare i dati da JSON
+        loadJsonBtn.addEventListener('click', () => {
+            const jsonText = jsonInput.value.trim();
+            if (!jsonText) {
+                alert('Per favore, incolla un JSON valido nell\'area di testo.');
+                return;
+            }
+
+            try {
+                const incaricoFromJson = JSON.parse(jsonText);
+
+                // Applica il reset del form prima di popolare per assicurare pulizia
+                form.reset();
+                incaricoIdField.value = '';
+                paymentsList.innerHTML = '';
+                addPaymentField(); // Assicura almeno un campo pagamento
+                descCheckboxes.forEach(checkboxInfo => {
+                    document.getElementById(checkboxInfo.id).checked = false;
+                });
+
+                // Popola il form con i dati del JSON
+                populateForm(incaricoFromJson);
+
+                submitButton.textContent = 'Aggiungi Incarico (da JSON)'; // Cambia testo per chiarezza
+                alert('Dati JSON caricati nel form. Puoi modificarli e poi cliccare "Aggiungi Incarico".');
+
+            } catch (e) {
+                alert('Errore nel parsing del JSON. Assicurati che il formato sia corretto.\nErrore: ' + e.message);
+                console.error('Errore JSON:', e);
+            }
+        });
+
+        // Event listener per il pulsante "Pulisci JSON"
+        clearJsonBtn.addEventListener('click', () => {
+            jsonInput.value = '';
+        });
+
 
         // Carica gli incarichi all'avvio della pagina e inizializza un campo pagamento
         caricaIncarichi();
