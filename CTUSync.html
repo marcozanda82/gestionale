@@ -982,31 +982,279 @@
                 paymentsList.removeChild(paymentItem);
             });
         }
-        // *** FINE FUNZIONI DI UTILITÀ ***
 
+        // Funzione per popolare il modulo con i dati dell'incarico da modificare
+        async function modificaIncarico(id) {
+            try {
+                // Recupera il documento usando l'ID convertito a stringa, come Firestore si aspetta
+                const doc = await incarichiCollection.doc(String(id)).get();
+                if (doc.exists) {
+                    const incaricoToEdit = doc.data();
+                    incaricoIdField.value = incaricoToEdit.id; // Assicurati che l'ID sia nel campo nascosto
+                    
+                    descCheckboxes.forEach(checkboxInfo => {
+                        const checkbox = document.getElementById(checkboxInfo.id);
+                        if (checkbox) checkbox.checked = Array.isArray(incaricoToEdit.descrizione) && incaricoToEdit.descrizione.includes(checkboxInfo.value);
+                    });
 
-        const form = document.getElementById('form-incarico');
-        const submitButton = document.getElementById('submit-button');
-        const resetButton = document.getElementById('reset-button');
-        const incaricoIdField = document.getElementById('incarico-id');
-        const addPaymentBtn = document.getElementById('add-payment-btn');
-        const paymentsList = document.getElementById('payments-list');
+                    if (document.getElementById('tipo-incarico')) document.getElementById('tipo-incarico').value = incaricoToEdit['tipo-incarico'] || '';
+                    if (document.getElementById('giudice')) document.getElementById('giudice').value = incaricoToEdit.giudice || '';
+                    if (document.getElementById('rif-procedura')) document.getElementById('rif-procedura').value = incaricoToEdit['rif-procedura'] || '';
+                    if (document.getElementById('parti')) document.getElementById('parti').value = incaricoToEdit.parti || '';
+                    if (document.getElementById('note')) document.getElementById('note').value = incaricoToEdit.note || '';
 
-        const massInputString = document.getElementById('mass-input-string');
-        const processStringBtn = document.getElementById('process-string-btn');
-        const clearStringInputBtn = document.getElementById('clear-string-input-btn');
+                    paymentsList.innerHTML = '';
+                    if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
+                        incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
+                    } else {
+                        addPaymentField(); // Aggiungi almeno un campo pagamento se non ce ne sono
+                    }
 
-        const descCheckboxes = [
-            { id: 'desc-stima', value: 'Stima' },
-            { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
-            { id: 'desc-compatibilita', value: 'Compatibilità' },
-            { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
-        ];
+                    dateFields.forEach(field => {
+                        const dateInput = document.getElementById(field.id);
+                        const doneCheckbox = document.getElementById(field.doneId);
+                        if (dateInput && doneCheckbox) {
+                            if (incaricoToEdit[field.id]) {
+                                dateInput.value = incaricoToEdit[field.id].value || '';
+                                doneCheckbox.checked = incaricoToEdit[field.id].done || false;
+                            } else {
+                                dateInput.value = '';
+                                doneCheckbox.checked = false;
+                            }
+                        }
+                    });
 
-        const tabellaAttiviBody = document.querySelector('#tabella-incarichi-attivi tbody');
-        const tabellaArchiviatiBody = document.querySelector('#tabella-incarichi-archiviati tbody');
-        const noActiveMessage = document.getElementById('no-active-incarichi');
-        const noArchivedMessage = document.getElementById('no-archived-incarichi');
+                    submitButton.textContent = 'Salva Modifiche';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    console.warn("Incarico non trovato in Firebase per la modifica:", id);
+                    alert("La pratica selezionata non è stata trovata.");
+                }
+            } catch (e) {
+                console.error("Errore durante il recupero dell'incarico per la modifica:", e);
+                alert("Errore durante il caricamento della pratica per la modifica. Controlla la console.");
+            }
+        }
+
+        // Funzione per aggiungere un singolo incarico (nuovo o modificato) A FIREBASE
+        async function addOrUpdateIncarico(incaricoData) {
+            console.log("Tentativo di aggiungere/aggiornare incarico:", incaricoData);
+            
+            let docIdToUse = String(incaricoData.id); // L'ID del documento Firestore sarà sempre una stringa
+
+            if (!incaricoData.id || isNaN(parseInt(incaricoData.id))) {
+                // Se è un nuovo incarico o l'ID non è valido, genera un nuovo ID numerico progressivo
+                try {
+                    const maxIdSnapshot = await incarichiCollection.orderBy('id', 'desc').limit(1).get();
+                    let maxExistingId = 0;
+                    if (!maxIdSnapshot.empty) {
+                        maxExistingId = maxIdSnapshot.docs[0].data().id;
+                    }
+                    incaricoData.id = maxExistingId + 1; // Assegna il nuovo ID numerico al campo 'id' dell'oggetto
+                    docIdToUse = String(incaricoData.id); // Usa la versione stringa per l'ID del documento Firebase
+                    console.log("Assegnato nuovo ID numerico all'incarico:", incaricoData.id, "e ID documento Firebase:", docIdToUse);
+                } catch (e) {
+                    console.error("Errore nel recupero del massimo ID per nuovo incarico:", e);
+                    // Fallback se il recupero del max ID fallisce: usa un timestamp come ID del documento Firestore
+                    docIdToUse = `temp_${Date.now()}`;
+                    incaricoData.id = docIdToUse; // Salva l'ID temporaneo anche nel campo 'id' dell'oggetto
+                    alert("Errore nella generazione dell'ID. La pratica potrebbe avere un ID temporaneo.");
+                }
+            } else {
+                // Se l'ID è valido, assicurati che sia un numero per l'oggetto e una stringa per il documento Firestore
+                incaricoData.id = parseInt(incaricoData.id); 
+                docIdToUse = String(incaricoData.id);
+            }
+
+            incaricoData.timestamp = Date.now(); // Aggiorna il timestamp per la risoluzione dei conflitti
+
+            try {
+                await incarichiCollection.doc(docIdToUse).set(incaricoData);
+                console.log(`Incarico ${incaricoData.id} (Firestore ID: ${docIdToUse}) salvato/aggiornato su Firebase.`);
+            } catch (e) {
+                console.error(`Errore durante il salvataggio dell'incarico ${incaricoData.id} su Firebase:`, e);
+                alert("Errore durante il salvataggio della pratica su Firebase. Controlla la console.");
+            }
+        }
+
+        // --- VARIABILI GLOBALI E INIZIALIZZAZIONE DOM ---
+        let form, submitButton, resetButton, incaricoIdField, addPaymentBtn, paymentsList;
+        let massInputString, processStringBtn, clearStringInputBtn;
+        let descCheckboxes;
+        let tabellaAttiviBody, tabellaArchiviatiBody, noActiveMessage, noArchivedMessage;
+        let prevActiveBtn, nextActiveBtn, pageInfoActive, prevArchivedBtn, nextArchivedBtn, pageInfoArchived;
+        let deleteSelectedActiveBtn, deleteSelectedArchivedBtn;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Assegnazione degli elementi DOM dopo che il documento è pronto
+            form = document.getElementById('form-incarico');
+            submitButton = document.getElementById('submit-button');
+            resetButton = document.getElementById('reset-button');
+            incaricoIdField = document.getElementById('incarico-id');
+            addPaymentBtn = document.getElementById('add-payment-btn');
+            paymentsList = document.getElementById('payments-list');
+
+            massInputString = document.getElementById('mass-input-string');
+            processStringBtn = document.getElementById('process-string-btn');
+            clearStringInputBtn = document.getElementById('clear-string-input-btn');
+
+            descCheckboxes = [
+                { id: 'desc-stima', value: 'Stima' },
+                { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
+                { id: 'desc-compatibilita', value: 'Compatibilità' },
+                { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
+            ];
+
+            tabellaAttiviBody = document.querySelector('#tabella-incarichi-attivi tbody');
+            tabellaArchiviatiBody = document.querySelector('#tabella-incarichi-archiviati tbody');
+            noActiveMessage = document.getElementById('no-active-incarichi');
+            noArchivedMessage = document.getElementById('no-archived-incarichi');
+
+            prevActiveBtn = document.getElementById('prev-active-btn');
+            nextActiveBtn = document.getElementById('next-active-btn');
+            pageInfoActive = document.getElementById('page-info-active');
+
+            prevArchivedBtn = document.getElementById('prev-archived-btn');
+            nextArchivedBtn = document.getElementById('next-archived-btn');
+            pageInfoArchived = document.getElementById('page-info-archived');
+
+            deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
+            deleteSelectedArchivedBtn = document.getElementById('delete-selected-archived-btn');
+
+            // Event Listeners che dipendono dal DOM pronto
+            if (form) {
+                form.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+
+                    const idInModifica = incaricoIdField.value;
+
+                    const selectedDescriptions = [];
+                    descCheckboxes.forEach(checkboxInfo => {
+                        const checkbox = document.getElementById(checkboxInfo.id);
+                        if (checkbox && checkbox.checked) {
+                            selectedDescriptions.push(checkboxInfo.value);
+                        }
+                    });
+
+                    const currentPayments = [];
+                    document.querySelectorAll('.payment-item').forEach(item => {
+                        const type = item.querySelector('.payment-type').value;
+                        const status = item.querySelector('.payment-status').value;
+                        const amount = item.querySelector('.payment-amount').value;
+                        currentPayments.push({ tipo: type, stato: status, importo: amount });
+                    });
+
+                    const dateData = {};
+                    dateFields.forEach(field => {
+                        const dateInput = document.getElementById(field.id);
+                        const doneCheckbox = document.getElementById(field.doneId);
+                        if (dateInput && doneCheckbox) {
+                            if (dateInput.value) {
+                                dateData[field.id] = { value: dateInput.value, done: doneCheckbox.checked };
+                            } else {
+                                dateData[field.id] = null;
+                            }
+                        }
+                    });
+
+                    let incaricoData = {
+                        descrizione: selectedDescriptions,
+                        'tipo-incarico': document.getElementById('tipo-incarico').value,
+                        giudice: document.getElementById('giudice').value,
+                        'rif-procedura': document.getElementById('rif-procedura').value,
+                        parti: document.getElementById('parti').value,
+                        note: document.getElementById('note').value,
+                        pagamenti: currentPayments,
+                        'data-conferimento': dateData['data-conferimento'],
+                        'data-inizio-operazioni': dateData['data-inizio-operazioni'],
+                        'data-invio-bozza': dateData['data-invio-bozza'],
+                        'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
+                        'data-deposito': dateData['data-deposito'],
+                        'data-udienza': dateData['data-udienza'],
+                    };
+
+                    if (idInModifica) {
+                        incaricoData.id = idInModifica;
+                    }
+
+                    await addOrUpdateIncarico(incaricoData);
+
+                    form.reset();
+                    incaricoIdField.value = '';
+                    submitButton.textContent = 'Aggiungi Incarico';
+                    paymentsList.innerHTML = '';
+                    addPaymentField();
+
+                    descCheckboxes.forEach(checkboxInfo => {
+                        const checkbox = document.getElementById(checkboxInfo.id);
+                        if (checkbox) checkbox.checked = false;
+                    });
+                });
+            }
+
+            if (resetButton) {
+                resetButton.addEventListener('click', () => {
+                    form.reset();
+                    incaricoIdField.value = '';
+                    submitButton.textContent = 'Aggiungi Incarico';
+                    paymentsList.innerHTML = '';
+                    addPaymentField();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    descCheckboxes.forEach(checkboxInfo => {
+                        const checkbox = document.getElementById(checkboxInfo.id);
+                        if (checkbox) checkbox.checked = false;
+                    });
+                });
+            }
+
+            if (addPaymentBtn) addPaymentBtn.addEventListener('click', () => addPaymentField());
+            if (processStringBtn) processStringBtn.addEventListener('click', processInputString);
+            if (clearStringInputBtn) clearStringInputBtn.addEventListener('click', () => {
+                if (massInputString) massInputString.value = '';
+            });
+
+            // Event Listeners per i pulsanti di eliminazione
+            if (deleteSelectedActiveBtn) deleteSelectedActiveBtn.addEventListener('click', () => deleteSelectedIncarichi('active'));
+            if (deleteSelectedArchivedBtn) deleteSelectedArchivedBtn.addEventListener('click', () => deleteSelectedIncarichi('archived'));
+
+            // Event Listener per le checkbox "Seleziona Tutto"
+            document.querySelectorAll('.select-all-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const tableType = e.target.dataset.table;
+                    const isChecked = e.target.checked;
+                    document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox`).forEach(rowCheckbox => {
+                        rowCheckbox.checked = isChecked;
+                    });
+                    updateDeleteButtonState(tableType); 
+                    e.target.indeterminate = false;
+                });
+            });
+
+            // Aggiungi event listener a tutti i campi di filtro
+            document.querySelectorAll('.column-filter').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const tableType = e.target.closest('table').id.includes('attivi') ? 'active' : 'archived';
+                    applyTableFilters(tableType);
+                });
+            });
+
+            // Listener per i pulsanti di paginazione
+            if (prevActiveBtn) prevActiveBtn.addEventListener('click', () => loadActivePage('prev'));
+            if (nextActiveBtn) nextActiveBtn.addEventListener('click', () => loadActivePage('next'));
+
+            if (prevArchivedBtn) prevArchivedBtn.addEventListener('click', () => loadArchivedPage('prev'));
+            if (nextArchivedBtn) nextArchivedBtn.addEventListener('click', () => loadArchivedPage('next'));
+
+            // Assicurati che un campo pagamento sia presente all'avvio
+            if (paymentsList && paymentsList.children.length === 0) {
+                addPaymentField(); 
+            }
+
+            // Inizializza l'app caricando i dati
+            initializeApp();
+        });
+
 
         // Paginazione - Variabili di stato per la tabella Attivi
         const itemsPerPage = 10; 
@@ -1021,33 +1269,26 @@
         let currentPageArchived = 1;
         let currentArchivedDocs = []; 
 
-        // Elementi UI per la paginazione
-        const prevActiveBtn = document.getElementById('prev-active-btn');
-        const nextActiveBtn = document.getElementById('next-active-btn');
-        const pageInfoActive = document.getElementById('page-info-active');
-
-        const prevArchivedBtn = document.getElementById('prev-archived-btn');
-        const nextArchivedBtn = document.getElementById('next-archived-btn');
-        const pageInfoArchived = document.getElementById('page-info-archived');
-
-        // Elementi per l'eliminazione
-        const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
-        const deleteSelectedArchivedBtn = document.getElementById('delete-selected-archived-btn');
 
         // Funzione per renderizzare le tabelle
         function renderTable(targetTableBody, data, noDataMessageElement, tableType) {
+            // Effettua la cancellazione e l'aggiunta di righe solo se l'elemento è presente
+            if (!targetTableBody) {
+                console.warn(`renderTable: targetTableBody per ${tableType} non trovato. Skippando rendering.`);
+                return;
+            }
+
             targetTableBody.innerHTML = ''; 
 
             if (data.length === 0) {
-                noDataMessageElement.style.display = 'block';
+                if (noDataMessageElement) noDataMessageElement.style.display = 'block';
             } else {
-                noDataMessageElement.style.display = 'none';
+                if (noDataMessageElement) noDataMessageElement.style.display = 'none';
                 data.forEach(incarico => aggiungiRigaTabella(incarico, targetTableBody, tableType));
             }
             
             updatePaginationControls(tableType, data.length);
             
-            // Re-inizializza la checkbox "seleziona tutto" e il pulsante di eliminazione
             const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
             if (selectAllCheckbox) {
                 selectAllCheckbox.checked = false;
@@ -1055,17 +1296,15 @@
             }
             updateDeleteButtonState(tableType);
 
-            // Applica i filtri esistenti dopo il rendering.
-            // Utilizziamo un piccolo timeout per dare al browser il tempo di "disegnare" le righe.
-            setTimeout(() => {
+            // Applica i filtri esistenti dopo il rendering usando requestAnimationFrame
+            requestAnimationFrame(() => {
                 applyTableFilters(tableType);
-            }, 0); // Un ritardo di 0ms significa "esegui non appena lo stack è vuoto"
+            });
         }
 
         // Funzione per aggiungere una riga alla tabella specificata
         function aggiungiRigaTabella(incarico, targetTableBody, tableType) {
             const newRow = targetTableBody.insertRow();
-            // Assicurati che l'ID sia trattato come stringa per l'attributo dataset
             newRow.dataset.id = String(incarico.id); 
             newRow.addEventListener('click', (e) => {
                 if (e.target.closest('.action-button') || e.target.type === 'checkbox') {
@@ -1123,7 +1362,7 @@
                 pageInfo = pageInfoActive;
                 currentPage = currentPageActive;
                 hasMore = currentActiveDocs.length === itemsPerPage; 
-            } else { // archived
+            } else { 
                 prevBtn = prevArchivedBtn;
                 nextBtn = nextArchivedBtn;
                 pageInfo = pageInfoArchived;
@@ -1189,7 +1428,7 @@
             try {
                 const batch = db.batch(); 
                 idsToDelete.forEach(id => {
-                    const docRef = incarichiCollection.doc(String(id)); // Assicurati che l'ID sia una stringa per doc()
+                    const docRef = incarichiCollection.doc(String(id)); 
                     batch.delete(docRef);
                 });
                 await batch.commit();
@@ -1212,25 +1451,6 @@
                 alert("Errore durante l'eliminazione delle pratiche. Controlla la console per i dettagli.");
             }
         }
-
-        // Event Listeners per i pulsanti di eliminazione
-        if (deleteSelectedActiveBtn) deleteSelectedActiveBtn.addEventListener('click', () => deleteSelectedIncarichi('active'));
-        if (deleteSelectedArchivedBtn) deleteSelectedArchivedBtn.addEventListener('click', () => deleteSelectedIncarichi('archived'));
-
-
-        // Event Listener per le checkbox "Seleziona Tutto"
-        document.querySelectorAll('.select-all-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const tableType = e.target.dataset.table;
-                const isChecked = e.target.checked;
-                // Seleziona/deseleziona solo le checkbox delle righe VISIBILI
-                document.querySelectorAll(`#tabella-incarichi-${tableType} tbody tr[style*="display:"] .row-select-checkbox`).forEach(rowCheckbox => {
-                    rowCheckbox.checked = isChecked;
-                });
-                updateDeleteButtonState(tableType); 
-                e.target.indeterminate = false;
-            });
-        });
 
         // --- FUNZIONALITÀ DI FILTRO PER COLONNA ---
         function applyTableFilters(tableType) {
@@ -1268,24 +1488,13 @@
             updateDeleteButtonState(tableType);
         }
 
-        // Aggiungi event listener a tutti i campi di filtro
-        document.querySelectorAll('.column-filter').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const tableType = e.target.closest('table').id.includes('attivi') ? 'active' : 'archived';
-                applyTableFilters(tableType);
-            });
-        });
-
-
         // Funzione per caricare gli incarichi paginati da Firestore
         async function fetchIncarichiPaginated(queryBuilder, limitVal, startAfterDoc, direction, historyArray, isArchived) {
             let query = queryBuilder;
             
             if (isArchived) {
-                // Necessita indice: data-deposito.value (desc), id (desc)
                 query = query.orderBy('data-deposito.value', 'desc').orderBy('id', 'desc');
             } else {
-                // Necessita indice: timestamp (desc)
                 query = query.orderBy('timestamp', 'desc'); 
             }
 
@@ -1296,7 +1505,6 @@
                 if (prevCursor) {
                     query = query.startAt(prevCursor);
                 }
-                // Invertiamo l'ordinamento per il recupero dei dati all'indietro e poi li invertiamo
                 if (isArchived) {
                      query = query.orderBy('data-deposito.value', 'asc').orderBy('id', 'asc');
                 } else {
@@ -1316,7 +1524,6 @@
                 const data = doc.data();
                 // Assicurati che l'ID sia trattato come numero interno, ma Firebase lo memorizza come stringa
                 if (data.id === undefined || data.id === null || (typeof data.id === 'string' && data.id.startsWith('temp_')) || isNaN(parseInt(data.id))) {
-                    // Tenta di usare doc.id (stringa di Firebase) convertito a int, altrimenti un fallback
                     data.id = parseInt(doc.id) || doc.id; 
                 }
                 incarichi.push(data);
@@ -1362,7 +1569,12 @@
 
             lastVisibleActive = lastVisible; 
 
-            renderTable(tabellaAttiviBody, currentActiveDocs, noActiveMessage, 'active');
+            if (tabellaAttiviBody) { // Aggiunto controllo null
+                renderTable(tabellaAttiviBody, currentActiveDocs, noActiveMessage, 'active');
+            } else {
+                console.warn("tabellaAttiviBody è null, impossibile renderizzare.");
+            }
+            
 
             if (prevActiveBtn) prevActiveBtn.disabled = currentPageActive === 1;
             if (nextActiveBtn) nextActiveBtn.disabled = !hasMore; 
@@ -1402,20 +1614,16 @@
 
             lastVisibleArchived = lastVisible;
 
-            renderTable(tabellaArchiviatiBody, currentArchivedDocs, noArchivedMessage, 'archived');
+            if (tabellaArchiviatiBody) { // Aggiunto controllo null
+                renderTable(tabellaArchiviatiBody, currentArchivedDocs, noArchivedMessage, 'archived');
+            } else {
+                console.warn("tabellaArchiviatiBody è null, impossibile renderizzare.");
+            }
 
             if (prevArchivedBtn) prevArchivedBtn.disabled = currentPageArchived === 1;
             if (nextArchivedBtn) nextArchivedBtn.disabled = !hasMore;
             if (pageInfoArchived) pageInfoArchived.textContent = `Pagina ${currentPageArchived}`;
         }
-
-
-        // Listener per i pulsanti di paginazione
-        if (prevActiveBtn) prevActiveBtn.addEventListener('click', () => loadActivePage('prev'));
-        if (nextActiveBtn) nextActiveBtn.addEventListener('click', () => loadActivePage('next'));
-
-        if (prevArchivedBtn) prevArchivedBtn.addEventListener('click', () => loadArchivedPage('prev'));
-        if (nextArchivedBtn) nextArchivedBtn.addEventListener('click', () => loadArchivedPage('next'));
 
 
         // Inizializzazione: Carica da Firebase e imposta listener
@@ -1429,17 +1637,21 @@
                 console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Ricaricamento pagina corrente...");
                 
                 // Ricarica la pagina corrente di entrambe le tabelle per riflettere le modifiche esterne
-                if (tabellaAttiviBody) {
-                    await loadActivePage('reload'); 
-                } else {
-                    console.warn("tabellaAttiviBody non trovato durante l'aggiornamento da Firebase.");
-                }
-                
-                if (tabellaArchiviatiBody) {
-                    await loadArchivedPage('reload');
-                } else {
-                    console.warn("tabellaArchiviatiBody non trovato durante l'aggiornamento da Firebase.");
-                }
+                // Aggiunta la verifica sull'esistenza di tbody per prevenire errori di "null"
+                // e l'uso di requestAnimationFrame per garantire il DOM sia pronto
+                requestAnimationFrame(async () => {
+                    if (tabellaAttiviBody) {
+                        await loadActivePage('reload'); 
+                    } else {
+                        console.warn("tabellaAttiviBody non trovato durante l'aggiornamento da Firebase.");
+                    }
+                    
+                    if (tabellaArchiviatiBody) {
+                        await loadArchivedPage('reload');
+                    } else {
+                        console.warn("tabellaArchiviatiBody non trovato durante l'aggiornamento da Firebase.");
+                    }
+                });
 
             }, (error) => {
                 console.error("Errore nel listener Firebase:", error);
@@ -1450,14 +1662,7 @@
             await loadActivePage('first');
             await loadArchivedPage('first');
         }
-        initializeApp();
-
-        // Questa parte assicura che addPaymentField sia chiamata dopo che il DOM è pronto
-        document.addEventListener('DOMContentLoaded', () => {
-            if (paymentsList && paymentsList.children.length === 0) {
-                addPaymentField(); 
-            }
-        });
+        
     </script>
 
 </body>
