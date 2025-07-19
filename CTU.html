@@ -415,9 +415,9 @@
             /* Specific column labels for mobile */
             td:nth-of-type(1):before { content: "ID:"; }
             td:nth-of-type(2):before { content: "Descrizione:"; }
-            td:nth-of-type(3):before { content: "Parti:"; } /* NUOVO POSIZIONAMENTO */
-            td:nth-of-type(4):before { content: "Rif. Procedura:"; } /* NUOVO POSIZIONAMENTO */
-            td:nth-of-type(5):before { content: "Giudice:"; } /* NUOVO POSIZIONAMENTO */
+            td:nth-of-type(3):before { content: "Parti:"; }
+            td:nth-of-type(4):before { content: "Rif. Procedura:"; }
+            td:nth-of-type(5):before { content: "Giudice:"; }
             td:nth-of-type(6):before { content: "Pagamenti:"; }
             td:nth-of-type(7):before { content: "Stato:"; }
             td:nth-of-type(8):before { content: "Scadenza:"; } 
@@ -509,6 +509,7 @@
                         <label for="parti">Parti (separate da virgola o a capo):</label>
                         <textarea id="parti" name="parti" rows="2"></textarea>
                     </div>
+                    
                     <div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
@@ -551,6 +552,7 @@
                             <input type="checkbox" id="data-udienza-done" name="data-udienza-done" title="Completato">
                         </div>
                     </div>
+
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="note">Note:</label>
                         <textarea id="note" name="note" rows="3"></textarea>
@@ -593,7 +595,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th>Parti</th> <th>Rif. Procedura</th> <th>Giudice</th> <th>Tipo</th>
+                        <th style="width: 18%;">Parti</th> <th style="width: 10%;">Rif. Procedura</th> <th>Giudice</th>
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 80px;">Stato</th>
                         <th style="width: 120px;">Scadenza</th> 
@@ -613,7 +615,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th>Parti</th> <th>Rif. Procedura</th> <th>Giudice</th> <th>Tipo</th>
+                        <th style="width: 18%;">Parti</th> <th style="width: 10%;">Rif. Procedura</th> <th>Giudice</th>
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 80px;">Stato</th>
                         <th style="width: 120px;">Scadenza</th> 
@@ -701,10 +703,10 @@
             if (depositoDone) {
                 return { text: 'Completato', class: 'stato-completato' };
             }
-            if (dataUdienzaDone) { // Se l'udienza è stata completata
-                return { text: 'Udienza Svolta', class: 'stato-completato' }; // Potrebbe essere anche "chiuso" se non c'è deposito
+            if (dataUdienzaDone) { 
+                return { text: 'Udienza Svolta', class: 'stato-completato' }; 
             }
-            if (invioBozzaDone) { // Se la bozza è stata inviata e il deposito non è completato
+            if (invioBozzaDone) { 
                 return { text: 'Bozza Inviata', class: 'stato-in-corso' };
             }
             if (deposito && deposito < today) {
@@ -852,7 +854,9 @@
             newRow.innerHTML = `
                 <td data-label="ID:">${incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
-                <td data-label="Parti:">${incarico.parti || ''}</td> <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td> <td data-label="Giudice:">${incarico.giudice || ''}</td> <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
+                <td data-label="Parti:">${incarico.parti || ''}</td>
+                <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
+                <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Pagamenti:" class="${paymentStatus.class}">
                     ${paymentStatus.text}
                 </td>
@@ -1030,10 +1034,9 @@
             };
 
             const statoGenerale = getStatoIncarico(incaricoData);
-            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text === 'Udienza Svolta'); // Considera anche l'udienza svolta come completamento ai fini dell'archiviazione
+            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text === 'Udienza Svolta'); 
 
             if (idInModifica) {
-                // Rimuovi l'incarico da entrambi gli array se presente prima di riaggiungerlo
                 const idxActive = incarichiAttivi.findIndex(i => i.id == idInModifica);
                 if (idxActive !== -1) incarichiAttivi.splice(idxActive, 1);
                 
@@ -1063,18 +1066,16 @@
             salvaIncarichi();
             renderTables();
             
-            // Resetta il form e gli elementi correlati
             form.reset(); 
             incaricoIdField.value = '';
             submitButton.textContent = 'Aggiungi Incarico';
             paymentsList.innerHTML = ''; 
             addPaymentField(); 
 
-            // Resetta le checkbox della descrizione
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
-            jsonInput.value = ''; // Pulisci anche il campo JSON
+            jsonInput.value = ''; 
         });
 
         // Gestione del pulsante "Nuovo Incarico"
@@ -1086,11 +1087,10 @@
             addPaymentField();
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Resetta le checkbox della descrizione
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
-            jsonInput.value = ''; // Pulisci il campo JSON al reset
+            jsonInput.value = ''; 
         });
 
         // Event listener per il pulsante "+ Aggiungi Pagamento"
@@ -1107,7 +1107,6 @@
             try {
                 const incaricoFromJson = JSON.parse(jsonText);
 
-                // Applica il reset del form prima di popolare per assicurare pulizia
                 form.reset();
                 incaricoIdField.value = '';
                 paymentsList.innerHTML = '';
@@ -1116,7 +1115,6 @@
                     document.getElementById(checkboxInfo.id).checked = false;
                 });
 
-                // Popola il form con i dati del JSON
                 populateForm(incaricoFromJson);
 
                 submitButton.textContent = 'Aggiungi Incarico (da JSON)'; 
