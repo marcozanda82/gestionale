@@ -1051,21 +1051,22 @@
             const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
             if (selectAllCheckbox) {
                 selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false; // Resetta lo stato indeterminate
+                selectAllCheckbox.indeterminate = false; 
             }
             updateDeleteButtonState(tableType);
 
-            // Applica i filtri esistenti dopo il rendering. Assicurati che i campi filtro esistano.
-            const filterInputs = document.querySelectorAll(`#tabella-incarichi-${tableType} thead .column-filter`);
-            if (filterInputs.length > 0) {
-                applyTableFilters(tableType); 
-            }
+            // Applica i filtri esistenti dopo il rendering.
+            // Utilizziamo un piccolo timeout per dare al browser il tempo di "disegnare" le righe.
+            setTimeout(() => {
+                applyTableFilters(tableType);
+            }, 0); // Un ritardo di 0ms significa "esegui non appena lo stack è vuoto"
         }
 
         // Funzione per aggiungere una riga alla tabella specificata
         function aggiungiRigaTabella(incarico, targetTableBody, tableType) {
             const newRow = targetTableBody.insertRow();
-            newRow.dataset.id = incarico.id;
+            // Assicurati che l'ID sia trattato come stringa per l'attributo dataset
+            newRow.dataset.id = String(incarico.id); 
             newRow.addEventListener('click', (e) => {
                 if (e.target.closest('.action-button') || e.target.type === 'checkbox') {
                     return;
@@ -1087,7 +1088,7 @@
 
 
             newRow.innerHTML = `
-                <td><input type="checkbox" class="row-select-checkbox" data-id="${incarico.id}" data-table="${tableType}"></td>
+                <td><input type="checkbox" class="row-select-checkbox" data-id="${String(incarico.id)}" data-table="${tableType}"></td>
                 <td data-label="ID:">${incarico.id === null || incarico.id === undefined ? 'N/A' : incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
                 <td data-label="Parti:">${incarico.parti || ''}</td>
@@ -1121,13 +1122,13 @@
                 nextBtn = nextActiveBtn;
                 pageInfo = pageInfoActive;
                 currentPage = currentPageActive;
-                hasMore = currentActiveDocs.length === itemsPerPage; // Modificato: hasMore se il numero di documenti è uguale al limite
+                hasMore = currentActiveDocs.length === itemsPerPage; 
             } else { // archived
                 prevBtn = prevArchivedBtn;
                 nextBtn = nextArchivedBtn;
                 pageInfo = pageInfoArchived;
                 currentPage = currentPageArchived;
-                hasMore = currentArchivedDocs.length === itemsPerPage; // Modificato
+                hasMore = currentArchivedDocs.length === itemsPerPage; 
             }
 
             if (prevBtn) prevBtn.disabled = currentPage === 1;
@@ -1188,19 +1189,17 @@
             try {
                 const batch = db.batch(); 
                 idsToDelete.forEach(id => {
-                    const docRef = incarichiCollection.doc(String(id));
+                    const docRef = incarichiCollection.doc(String(id)); // Assicurati che l'ID sia una stringa per doc()
                     batch.delete(docRef);
                 });
                 await batch.commit();
                 alert(`Eliminate ${idsToDelete.length} pratiche con successo.`);
                 
-                // Dopo l'eliminazione, ricarica la pagina corrente per mostrare lo stato aggiornato
                 if (tableType === 'active') {
                     await loadActivePage('reload'); 
                 } else {
                     await loadArchivedPage('reload');
                 }
-                // Resetta lo stato delle checkbox dopo l'operazione (viene già fatto in renderTable, ma per sicurezza)
                 const selectAllCheckbox = document.querySelector(`.select-all-checkbox[data-table="${tableType}"]`);
                 if (selectAllCheckbox) {
                     selectAllCheckbox.checked = false;
@@ -1265,7 +1264,6 @@
                 row.style.display = showRow ? '' : 'none';
             });
 
-            // Dopo aver applicato i filtri, aggiorna lo stato della checkbox "seleziona tutto" e del pulsante elimina
             updateSelectAllCheckboxState(tableType);
             updateDeleteButtonState(tableType);
         }
@@ -1306,19 +1304,19 @@
                 }
             }
             
-            const snapshot = await query.limit(limitVal + 1).get(); // Prendi uno in più per hasMore
+            const snapshot = await query.limit(limitVal + 1).get(); 
             let docs = snapshot.docs;
 
             if (direction === 'prev' && historyArray.length > 1) {
-                docs.reverse(); // Inverti per ottenere l'ordine corretto per la visualizzazione
+                docs.reverse(); 
             }
 
             const incarichi = [];
-            // Slice the docs to ensure we only process 'limitVal' docs, relevant for 'prev'
             docs.slice(0, limitVal).forEach(doc => { 
                 const data = doc.data();
-                // Ensure ID is properly parsed, use doc.id if data.id is missing or invalid
+                // Assicurati che l'ID sia trattato come numero interno, ma Firebase lo memorizza come stringa
                 if (data.id === undefined || data.id === null || (typeof data.id === 'string' && data.id.startsWith('temp_')) || isNaN(parseInt(data.id))) {
+                    // Tenta di usare doc.id (stringa di Firebase) convertito a int, altrimenti un fallback
                     data.id = parseInt(doc.id) || doc.id; 
                 }
                 incarichi.push(data);
@@ -1355,9 +1353,7 @@
                 collectionRef, itemsPerPage, startDoc, direction, historyActive, false
             );
             
-            // Filtra localmente solo gli incarichi non completati
             currentActiveDocs = docs.filter(incarico => getStatoIncarico(incarico).text !== 'Completato');
-            // Ordina localmente per prossima scadenza
             currentActiveDocs.sort((a, b) => {
                 const scadenzaA = getProssimaScadenza(a).date;
                 const scadenzaB = getProssimaScadenza(b).date;
@@ -1375,7 +1371,6 @@
 
         async function loadArchivedPage(direction = 'first') {
             console.log(`Caricamento pagina archiviati: ${direction}`);
-            // Filtra lato Firebase: solo gli incarichi dove data-deposito.done è true
             const collectionRef = incarichiCollection.where('data-deposito.done', '==', true); 
             let startDoc = null;
 
@@ -1399,7 +1394,6 @@
             );
             
             currentArchivedDocs = docs;
-            // Ordina localmente per data-deposito (decrescente)
             currentArchivedDocs.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
@@ -1435,7 +1429,6 @@
                 console.log("Cambiamenti da Firebase rilevati (da altro dispositivo/server). Ricaricamento pagina corrente...");
                 
                 // Ricarica la pagina corrente di entrambe le tabelle per riflettere le modifiche esterne
-                // Aggiunta la verifica sull'esistenza di tbody per prevenire errori di "null"
                 if (tabellaAttiviBody) {
                     await loadActivePage('reload'); 
                 } else {
