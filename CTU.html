@@ -614,7 +614,8 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Pagamenti</th> <th>Stato</th>
+                        <th>Pagamenti</th>
+                        <th>Stato</th>
                         <th>Azioni</th>
                         <th>Prossima Scadenza</th>
                     </tr>
@@ -636,7 +637,8 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Pagamenti</th> <th>Stato</th>
+                        <th>Pagamenti</th>
+                        <th>Stato</th>
                         <th>Azioni</th>
                         <th>Prossima Scadenza</th>
                     </tr>
@@ -776,6 +778,15 @@
             }
         }
 
+        // Funzione per formattare una data nel formato gg-mm
+        function formatDataggmm(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Mesi da 0 a 11
+            return `${day}-${month}`;
+        }
+
         // Funzione per trovare la prossima data non completata
         function getProssimaScadenza(incarico) {
             const today = new Date();
@@ -795,9 +806,9 @@
                 const prossimaScadenza = incompleteDates.find(d => d.date >= today) || incompleteDates[0]; 
 
                 if (prossimaScadenza) {
-                    const dateString = prossimaScadenza.date.toISOString().split('T')[0];
-                    const classToApply = getDateClass(dateString, false);
-                    return { text: `${prossimaScadenza.label}: ${dateString}`, class: classToApply };
+                    const dateStringFormatted = formatDataggmm(prossimaScadenza.date.toISOString().split('T')[0]); // Formatta per gg-mm
+                    const classToApply = getDateClass(prossimaScadenza.date.toISOString().split('T')[0], false); // Usa la data completa per la classe
+                    return { text: `${prossimaScadenza.label}: ${dateStringFormatted}`, class: classToApply };
                 }
             }
             
