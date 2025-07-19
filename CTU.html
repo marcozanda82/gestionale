@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Fix Bug Duplicati)</title>
+    <title>Gestionale Incarichi CTU (Fix Definitivo Duplicati)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -698,7 +698,7 @@
             { id: 'data-udienza', doneId: 'data-udienza-done', label: 'Udienza' }
         ];
 
-        // Funzione per caricare gli incarichi dal localStorage e deduplicare
+        // Funzione per caricare gli incarichi dal localStorage e deduplicare/pulire ID
         function caricaIncarichi() {
             let loadedAttivi = [];
             let loadedArchiviati = [];
@@ -723,40 +723,56 @@
                 loadedArchiviati = [];
             }
 
-            // Unisci tutti gli incarichi per la deduplicazione
             let allIncarichi = [...loadedAttivi, ...loadedArchiviati];
             const uniqueIncarichiMap = new Map();
+            let tempIdCounter = -1; // Per assegnare ID temporanei negativi
 
             allIncarichi.forEach(incarico => {
-                // Assicurati che l'ID sia un numero valido
-                const id = parseInt(incarico.id);
-                if (isNaN(id)) {
-                    console.warn("Incarico con ID non valido trovato, verrà ignorato:", incarico);
-                    return;
+                let currentId = incarico.id;
+
+                // Se l'ID è nullo, undefined o non numerico, assegna un ID temporaneo
+                if (currentId === null || currentId === undefined || isNaN(parseInt(currentId))) {
+                    currentId = `temp_${tempIdCounter--}`; // ID temporaneo stringa
+                    console.warn(`Incarico con ID non valido/nullo, assegnato ID temporaneo: ${currentId}`, incarico);
+                } else {
+                    currentId = parseInt(currentId); // Assicurati che sia un numero per la Map
                 }
 
-                // Se l'incarico non ha un timestamp, assegnane uno vecchio per essere sovrascritto
-                if (!incarico.timestamp) {
-                    incarico.timestamp = 0; 
+                // Assicurati che il timestamp esista per il confronto
+                if (incarico.timestamp === undefined || incarico.timestamp === null) {
+                    incarico.timestamp = 0; // Assegna 0 per considerare le versioni senza timestamp come le più vecchie
                 }
 
-                if (uniqueIncarichiMap.has(id)) {
-                    // Se esiste già un incarico con questo ID, confronta i timestamp
-                    const existingIncarico = uniqueIncarichiMap.get(id);
+                if (uniqueIncarichiMap.has(currentId)) {
+                    const existingIncarico = uniqueIncarichiMap.get(currentId);
                     if (incarico.timestamp > existingIncarico.timestamp) {
-                        // Mantieni la versione più recente
-                        uniqueIncarichiMap.set(id, incarico);
+                        uniqueIncarichiMap.set(currentId, incarico); // Mantieni la versione più recente
                     }
                 } else {
-                    // Aggiungi il primo incarico con questo ID
-                    uniqueIncarichiMap.set(id, incarico);
+                    uniqueIncarichiMap.set(currentId, incarico); // Aggiungi il primo incarico con questo ID
                 }
             });
 
-            // Ricostruisci gli array attivi e archiviati dai valori unici
+            // Ricostruisci gli array attivi e archiviati e riassegna ID numerici definitivi
             incarichiAttivi = [];
             incarichiArchiviati = [];
+            let maxExistingId = 0; // Trova il massimo ID numerico esistente
+
+            // Primo giro per trovare il max ID tra quelli validi
             uniqueIncarichiMap.forEach(incarico => {
+                if (typeof incarico.id === 'number' && incarico.id > maxExistingId) {
+                    maxExistingId = incarico.id;
+                }
+            });
+
+            // Secondo giro per assegnare nuovi ID e popolare gli array
+            uniqueIncarichiMap.forEach(incarico => {
+                // Se l'ID è temporaneo o non numerico (originale), assegna un nuovo ID definitivo
+                if (typeof incarico.id !== 'number' || incarico.id < 1) { // <1 per coprire temp_IDs o 0 se mai generato
+                    maxExistingId++;
+                    incarico.id = maxExistingId;
+                }
+
                 const statoGenerale = getStatoIncarico(incarico);
                 const isCompleted = (statoGenerale.text === 'Completato');
                 if (isCompleted) {
@@ -765,8 +781,8 @@
                     incarichiAttivi.push(incarico);
                 }
             });
-
-            salvaIncarichi(); // Salva lo stato pulito nel localStorage
+            
+            salvaIncarichi(); // Salva lo stato pulito e con ID validi nel localStorage
             renderTables();
         }
 
@@ -1089,8 +1105,9 @@
                 incaricoData.id = parseInt(idInModifica); 
             } else {
                 // Se è un nuovo incarico, assegna un nuovo ID unico
-                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; // Ricolleziona dopo le splice
-                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => i.id || 0)) : 0; // Gestisci ID nulli/undefined con || 0
+                // Ricalcola il max ID dopo le eventuali rimozioni
+                const allIncarichiCombined = [...incarichiAttivi, ...incarichiArchiviati]; 
+                const maxId = allIncarichiCombined.length > 0 ? Math.max(...allIncarichiCombined.map(i => typeof i.id === 'number' ? i.id : 0)) : 0; 
                 incaricoData.id = maxId + 1;
             }
 
