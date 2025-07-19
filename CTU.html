@@ -595,10 +595,11 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th style="width: 18%;">Parti</th> <th style="width: 10%;">Rif. Procedura</th> <th>Giudice</th>
+                        <th style="width: 18%;">Parti</th>
+                        <th style="width: 10%;">Rif. Procedura</th>
+                        <th>Giudice</th>
                         <th style="width: 120px;">Pagamenti</th>
-                        <th style="width: 80px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> 
+                        <th style="width: 120px;">Stato</th> <th style="width: 120px;">Scadenza</th> 
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -615,10 +616,11 @@
                     <tr>
                         <th>ID</th>
                         <th>Descrizione</th>
-                        <th style="width: 18%;">Parti</th> <th style="width: 10%;">Rif. Procedura</th> <th>Giudice</th>
+                        <th style="width: 18%;">Parti</th>
+                        <th style="width: 10%;">Rif. Procedura</th>
+                        <th>Giudice</th>
                         <th style="width: 120px;">Pagamenti</th>
-                        <th style="width: 80px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> 
+                        <th style="width: 120px;">Stato</th> <th style="width: 120px;">Scadenza</th> 
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -656,14 +658,14 @@
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
 
-        // Mappa dei campi data e relative checkbox con priorità
+        // Mappa dei campi data e relative checkbox con priorità e nomi leggibili per lo stato
         const dateFields = [
-            { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1 },
-            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', priority: 2 },
-            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', priority: 3 },
-            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', priority: 4 },
-            { id: 'data-deposito', doneId: 'data-deposito-done', priority: 5 },
-            { id: 'data-udienza', doneId: 'data-udienza-done', priority: 6 } // Data Udienza è l'ultima in priorità
+            { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1, name: 'Conferimento' },
+            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', priority: 2, name: 'Inizio Operazioni Peritali' },
+            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', priority: 3, name: 'Invio Bozza' },
+            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', priority: 4, name: 'Ricezione Osservazioni' },
+            { id: 'data-deposito', doneId: 'data-deposito-done', priority: 5, name: 'Deposito Finale' },
+            { id: 'data-udienza', doneId: 'data-udienza-done', priority: 6, name: 'Udienza' }
         ];
 
         // Funzione per caricare gli incarichi dal localStorage
@@ -691,43 +693,53 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            const deposito = incarico['data-deposito'] && incarico['data-deposito'].value ? new Date(incarico['data-deposito'].value) : null;
-            const depositoDone = incarico['data-deposito'] && incarico['data-deposito'].done;
+            let statoText = 'In attesa';
+            let statoClass = '';
 
-            const invioBozza = incarico['data-invio-bozza'] && incarico['data-invio-bozza'].value ? new Date(incarico['data-invio-bozza'].value) : null;
-            const invioBozzaDone = incarico['data-invio-bozza'] && incarico['data-invio-bozza'].done;
+            // Ordina i campi data per priorità (dalla più alta alla più bassa)
+            const sortedDateFields = [...dateFields].sort((a, b) => a.priority - b.priority);
 
-            const dataUdienza = incarico['data-udienza'] && incarico['data-udienza'].value ? new Date(incarico['data-udienza'].value) : null;
-            const dataUdienzaDone = incarico['data-udienza'] && incarico['data-udienza'].done;
+            let firstUncompletedActivity = null;
 
-            if (depositoDone) {
-                return { text: 'Completato', class: 'stato-completato' };
-            }
-            if (dataUdienzaDone) { 
-                return { text: 'Udienza Svolta', class: 'stato-completato' }; 
-            }
-            if (invioBozzaDone) { 
-                return { text: 'Bozza Inviata', class: 'stato-in-corso' };
-            }
-            if (deposito && deposito < today) {
-                return { text: 'Deposito Scaduto', class: 'stato-in-scadenza' };
-            }
-            if (invioBozza && invioBozza < today && !invioBozzaDone) {
-                return { text: 'Invio Bozza Scaduto', class: 'stato-in-scadenza' };
-            }
-            if (dataUdienza && dataUdienza < today && !dataUdienzaDone) {
-                return { text: 'Udienza Scaduta', class: 'stato-in-scadenza' };
+            // Trova la prima attività non completata in ordine di priorità
+            for (const field of sortedDateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    firstUncompletedActivity = {
+                        name: field.name,
+                        date: new Date(dateInfo.value),
+                        done: dateInfo.done
+                    };
+                    break;
+                }
             }
 
-            // Se ci sono date future o non scadute, è in corso
-            if (deposito || invioBozza || dataUdienza) {
-                return { text: 'In Corso', class: 'stato-in-corso' };
-            }
-            if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
-                return { text: 'Conferito', class: 'stato-da-iniziare' };
+            // Se tutte le attività sono completate, lo stato è "Completato"
+            const allCompleted = sortedDateFields.every(field => {
+                const dateInfo = incarico[field.id];
+                return !dateInfo || (dateInfo.value && dateInfo.done);
+            });
+
+            if (allCompleted) {
+                 statoText = 'Completato';
+                 statoClass = 'stato-completato';
+            } else if (firstUncompletedActivity) {
+                // Se c'è un'attività non completata, valuta il suo stato
+                if (firstUncompletedActivity.date < today) {
+                    statoText = `${firstUncompletedActivity.name} Scaduta`;
+                    statoClass = 'stato-in-scadenza';
+                } else {
+                    statoText = `${firstUncompletedActivity.name} in Corso`;
+                    statoClass = 'stato-in-corso';
+                }
+            } else if (incarico['data-conferimento'] && incarico['data-conferimento'].value && !incarico['data-conferimento'].done) {
+                // Caso specifico: Incarico conferito ma nessuna altra data impostata/scaduta
+                statoText = 'Conferito (Da Iniziare)';
+                statoClass = 'stato-da-iniziare';
             }
 
-            return { text: 'In attesa', class: '' };
+
+            return { text: statoText, class: statoClass };
         }
 
         // Funzione per determinare la classe CSS per una data specifica
