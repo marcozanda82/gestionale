@@ -350,6 +350,26 @@
             cursor: pointer;
         }
 
+        /* Stile per i filtri */
+        .filter-input {
+            width: calc(100% - 10px); /* Larghezza leggermente inferiore al 100% per il padding */
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        .filter-cell {
+            vertical-align: top; /* Allinea il filtro in alto nella cella */
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        /* Allineamento checkbox in thead */
+        th input[type="checkbox"] {
+            margin: 0 auto; /* Centra la checkbox se è l'unico contenuto */
+            display: block; /* La rende un blocco per centrarla con margin auto */
+        }
+
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -399,15 +419,16 @@
                 color: var(--primary-dark);
             }
             /* Specific column labels for mobile */
-            td:nth-of-type(1):before { content: "ID:"; }
-            td:nth-of-type(2):before { content: "Descrizione:"; }
-            td:nth-of-type(3):before { content: "Parti:"; }
-            td:nth-of-type(4):before { content: "Rif. Procedura:"; }
-            td:nth-of-type(5):before { content: "Giudice:"; }
-            td:nth-of-type(6):before { content: "Pagamenti:"; }
-            td:nth-of-type(7):before { content: "Stato:"; }
-            td:nth-of-type(8):before { content: "Scadenza:"; } 
-            td:nth-of-type(9):before { content: "Azioni:"; }
+            td:nth-of-type(1):before { content: "Seleziona:"; } /* Nuovo data-label per checkbox */
+            td:nth-of-type(2):before { content: "ID:"; }
+            td:nth-of-type(3):before { content: "Descrizione:"; }
+            td:nth-of-type(4):before { content: "Parti:"; }
+            td:nth-of-type(5):before { content: "Rif. Procedura:"; }
+            td:nth-of-type(6):before { content: "Giudice:"; }
+            td:nth-of-type(7):before { content: "Pagamenti:"; }
+            td:nth-of-type(8):before { content: "Stato:"; }
+            td:nth-of-type(9):before { content: "Scadenza:"; } 
+            td:nth-of-type(10):before { content: "Azioni:"; }
 
             /* Adjust payment item layout for small screens */
             .payment-item {
@@ -437,6 +458,11 @@
             }
             .checkbox-group {
                 align-items: flex-start;
+            }
+
+            /* Responsive adjustment for filter inputs */
+            .filter-input {
+                width: calc(100% - 20px); /* Adjust width for mobile padding */
             }
         }
     </style>
@@ -579,14 +605,17 @@
             <table id="tabella-incarichi-attivi">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Descrizione</th>
-                        <th style="width: 18%;">Parti</th>
-                        <th style="width: 10%;">Rif. Procedura</th>
-                        <th>Giudice</th>
-                        <th style="width: 120px;">Pagamenti</th>
-                        <th style="width: 120px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> 
+                        <th class="filter-cell" style="width: 30px;">
+                            <input type="checkbox" id="select-all-active">
+                        </th>
+                        <th>ID<input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
+                        <th>Descrizione<input type="text" class="filter-input" data-filter-col="1" placeholder="Filtra Desc."></th>
+                        <th style="width: 18%;">Parti<input type="text" class="filter-input" data-filter-col="2" placeholder="Filtra Parti"></th>
+                        <th style="width: 10%;">Rif. Procedura<input type="text" class="filter-input" data-filter-col="3" placeholder="Filtra Rif. Proc."></th>
+                        <th>Giudice<input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
+                        <th style="width: 120px;">Pagamenti<input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
+                        <th style="width: 120px;">Stato<input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
+                        <th style="width: 120px;">Scadenza<input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -594,6 +623,9 @@
                     </tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
+            <div class="button-group" style="justify-content: flex-start; margin-top: 20px;">
+                <button type="button" id="delete-selected-active-btn" class="btn btn-danger">Elimina Selezionati (Attivi)</button>
+            </div>
         </div>
 
         <div class="archivio-section">
@@ -601,14 +633,17 @@
             <table id="tabella-incarichi-archiviati">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Descrizione</th>
-                        <th style="width: 18%;">Parti</th>
-                        <th style="width: 10%;">Rif. Procedura</th>
-                        <th>Giudice</th>
-                        <th style="width: 120px;">Pagamenti</th>
-                        <th style="width: 120px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> 
+                        <th class="filter-cell" style="width: 30px;">
+                            <input type="checkbox" id="select-all-archived">
+                        </th>
+                        <th>ID<input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
+                        <th>Descrizione<input type="text" class="filter-input" data-filter-col="1" placeholder="Filtra Desc."></th>
+                        <th style="width: 18%;">Parti<input type="text" class="filter-input" data-filter-col="2" placeholder="Filtra Parti"></th>
+                        <th style="width: 10%;">Rif. Procedura<input type="text" class="filter-input" data-filter-col="3" placeholder="Filtra Rif. Proc."></th>
+                        <th>Giudice<input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
+                        <th style="width: 120px;">Pagamenti<input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
+                        <th style="width: 120px;">Stato<input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
+                        <th style="width: 120px;">Scadenza<input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -616,6 +651,9 @@
                     </tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
+            <div class="button-group" style="justify-content: flex-start; margin-top: 20px;">
+                <button type="button" id="delete-selected-archived-btn" class="btn btn-danger">Elimina Selezionati (Archiviati)</button>
+            </div>
         </div>
 
         <div class="form-section" style="margin-top: 40px;">
@@ -640,10 +678,14 @@
         const loadJsonBtn = document.getElementById('load-json-btn');
         const clearJsonBtn = document.getElementById('clear-json-btn');
 
-        // Pulsanti e input per il backup
         const backupDataBtn = document.getElementById('backup-data-btn');
         const uploadBackupBtn = document.getElementById('upload-backup-btn');
         const uploadBackupFile = document.getElementById('upload-backup-file');
+
+        const selectAllActiveCheckbox = document.getElementById('select-all-active');
+        const selectAllArchivedCheckbox = document.getElementById('select-all-archived');
+        const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
+        const deleteSelectedArchivedBtn = document.getElementById('delete-selected-archived-btn');
 
 
         const descCheckboxes = [
@@ -661,7 +703,6 @@
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
 
-        // Mappa dei campi data e relative checkbox con priorità e nomi leggibili per lo stato
         const dateFields = [
             { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1, name: 'Conferimento' },
             { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', priority: 2, name: 'Inizio Op. Peritali' },
@@ -671,21 +712,18 @@
             { id: 'data-udienza', doneId: 'data-udienza-done', priority: 6, name: 'Udienza' }
         ];
 
-        // Funzione per formattare una data da 'YYYY-MM-DD' a 'DD-MM-YYYY'
         function formatDateToDDMMYYYY(dateString) {
             if (!dateString) return '';
             const [year, month, day] = dateString.split('-');
             return `${day}-${month}-${year}`;
         }
         
-        // Funzione per formattare una data da 'YYYY-MM-DD' a 'DD-MM'
         function formatDateToDDMM(dateString) {
             if (!dateString) return '';
             const [year, month, day] = dateString.split('-');
             return `${day}-${month}`;
         }
 
-        // Funzione per caricare gli incarichi dal localStorage
         function caricaIncarichi() {
             const attiviSalvati = localStorage.getItem('incarichiCTU_attivi');
             const archiviatiSalvati = localStorage.getItem('incarichiCTU_archiviati');
@@ -699,13 +737,11 @@
             renderTables();
         }
 
-        // Funzione per salvare gli incarichi nel localStorage
         function salvaIncarichi() {
             localStorage.setItem('incarichiCTU_attivi', JSON.stringify(incarichiAttivi));
             localStorage.setItem('incarichiCTU_archiviati', JSON.stringify(incarichiArchiviati));
         }
 
-        // Funzione per determinare lo stato dell'incarico generale
         function getStatoIncarico(incarico) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -713,12 +749,10 @@
             let statoText = 'In attesa';
             let statoClass = '';
 
-            // Ordina i campi data per priorità (dalla più alta alla più bassa)
             const sortedDateFields = [...dateFields].sort((a, b) => a.priority - b.priority);
 
             let firstUncompletedActivity = null;
 
-            // Trova la prima attività non completata in ordine di priorità
             for (const field of sortedDateFields) {
                 const dateInfo = incarico[field.id];
                 if (dateInfo && dateInfo.value && !dateInfo.done) {
@@ -731,10 +765,8 @@
                 }
             }
 
-            // Se tutte le attività sono completate, lo stato è "Completato"
             const allCompleted = sortedDateFields.every(field => {
                 const dateInfo = incarico[field.id];
-                // Un'attività è considerata completata se non esiste (non rilevante per l'incarico) o se ha un valore e done=true
                 return !dateInfo || (dateInfo.value && dateInfo.done);
             });
 
@@ -742,7 +774,6 @@
                  statoText = 'Completato';
                  statoClass = 'stato-completato';
             } else if (firstUncompletedActivity) {
-                // Se c'è un'attività non completata, valuta il suo stato
                 if (firstUncompletedActivity.date < today) {
                     statoText = `${firstUncompletedActivity.name} Scaduta`;
                     statoClass = 'stato-in-scadenza';
@@ -751,7 +782,6 @@
                     statoClass = 'stato-in-corso';
                 }
             } else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
-                // Se non ci sono attività future ma c'è una data di conferimento (non completata implicitamente se siamo qui)
                 statoText = 'Conferito (Da Iniziare)';
                 statoClass = 'stato-da-iniziare';
             }
@@ -760,7 +790,6 @@
             return { text: statoText, class: statoClass };
         }
 
-        // Funzione per determinare la classe CSS per una data specifica
         function getDateClass(dateStr, isDone) {
             if (!dateStr) return 'date-normal';
 
@@ -782,7 +811,6 @@
             return 'date-normal';
         }
 
-        // Funzione per calcolare i totali dei pagamenti e lo stato
         function getPaymentStatus(pagamenti) {
             let totaleIncassato = 0;
             let totaleRichiesto = 0;
@@ -805,40 +833,32 @@
             }
         }
 
-        // Funzione per renderizzare le tabelle
         function renderTables() {
             tabellaAttiviBody.innerHTML = '';
             tabellaArchiviatiBody.innerHTML = '';
 
-            // Ordina incarichiAttivi per urgenza (scadenza più vicina o già scaduta)
             incarichiAttivi.sort((a, b) => {
                 const scadenzaA = getScadenzaCorrente(a);
                 const scadenzaB = getScadenzaCorrente(b);
 
-                // Assegna una data molto lontana nel futuro se non c'è una scadenza definita (o è già completata)
                 const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01'); 
                 const dateB = scadenzaB.value ? new Date(scadenzaB.value) : new Date('2999-01-01');
 
                 const today = new Date();
                 today.setHours(0,0,0,0);
 
-                // Criterio di ordinamento:
-                // 1. Scadenze passate vengono prima (più vecchie per prime)
                 if (dateA < today && dateB < today) {
                     return dateA.getTime() - dateB.getTime();
                 }
-                // 2. Se solo una è scaduta, quella scaduta viene prima
                 if (dateA < today && dateB >= today) {
                     return -1;
                 }
                 if (dateA >= today && dateB < today) {
                     return 1;
                 }
-                // 3. Entrambe non scadute o nessuna scadenza: ordina per data (più vicina per prima)
                 return dateA.getTime() - dateB.getTime();
             });
 
-            // Gli incarichi archiviati possono rimanere ordinati per data di deposito più recente
             incarichiArchiviati.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
@@ -850,18 +870,23 @@
                 noActiveMessage.style.display = 'block';
             } else {
                 noActiveMessage.style.display = 'none';
-                incarichiAttivi.forEach(incarico => aggiungiRigaTabella(incarico, tabellaAttiviBody));
+                incarichiAttivi.forEach(incarico => aggiungiRigaTabella(incarico, tabellaAttiviBody, 'active'));
             }
 
             if (incarichiArchiviati.length === 0) {
                 noArchivedMessage.style.display = 'block';
             } else {
                 noArchivedMessage.style.display = 'none';
-                incarichiArchiviati.forEach(incarico => aggiungiRigaTabella(incarico, tabellaArchiviatiBody));
+                incarichiArchiviati.forEach(incarico => aggiungiRigaTabella(incarico, tabellaArchiviatiBody, 'archived'));
             }
+
+            // Dopo aver renderizzato, applica i filtri e resetta le checkbox "seleziona tutto"
+            applyFilters('active');
+            applyFilters('archived');
+            selectAllActiveCheckbox.checked = false;
+            selectAllArchivedCheckbox.checked = false;
         }
 
-        // FUNZIONE: Calcola la scadenza corrente (la prima data non completata secondo priorità)
         function getScadenzaCorrente(incarico) {
             let scadenza = { value: '', class: 'date-normal', display: '' };
             
@@ -870,15 +895,13 @@
             for (const field of sortedDateFields) {
                 const dateInfo = incarico[field.id];
                 if (dateInfo && dateInfo.value && !dateInfo.done) {
-                    scadenza.value = dateInfo.value; // Data completa YYYY-MM-DD
+                    scadenza.value = dateInfo.value;
                     scadenza.class = getDateClass(dateInfo.value, false);
                     
-                    // Formatta la data per la visualizzazione nella cella
                     const dateObj = new Date(dateInfo.value);
                     const today = new Date();
                     today.setHours(0,0,0,0);
 
-                    // Se è scaduta o in scadenza, mostra l'anno completo. Altrimenti solo gg-mm.
                     if (dateObj < today || dateObj <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)) {
                         scadenza.display = formatDateToDDMMYYYY(dateInfo.value);
                     } else {
@@ -889,16 +912,15 @@
             }
 
             if (scadenza.value === '') {
-                // Se non ci sono scadenze non completate
                 if (incarico['data-deposito'] && incarico['data-deposito'].done) {
                     scadenza.value = incarico['data-deposito'].value;
                     scadenza.class = getDateClass(incarico['data-deposito'].value, true);
-                    scadenza.display = formatDateToDDMMYYYY(scadenza.value); // Data completa per le date completate
+                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
                 } 
                 else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
                     scadenza.value = incarico['data-conferimento'].value;
                     scadenza.class = getDateClass(incarico['data-conferimento'].value, incarico['data-conferimento'].done);
-                    scadenza.display = formatDateToDDMMYYYY(scadenza.value); // Data completa per conferimento se non ci sono altre scadenze
+                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
                 }
             }
             
@@ -906,8 +928,8 @@
         }
 
 
-        // Funzione per aggiungere una riga alla tabella specificata
-        function aggiungiRigaTabella(incarico, targetTableBody) {
+        // Modificato per includere la checkbox di selezione e l'ID della tabella (active/archived)
+        function aggiungiRigaTabella(incarico, targetTableBody, tableType) {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
 
@@ -916,6 +938,7 @@
             const scadenzaCorrente = getScadenzaCorrente(incarico);
 
             newRow.innerHTML = `
+                <td data-label="Seleziona:"><input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}"></td>
                 <td data-label="ID:">${incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
                 <td data-label="Parti:">${incarico.parti || ''}</td>
@@ -935,7 +958,6 @@
             `;
         }
 
-        // Funzione per aggiungere un set di campi per un pagamento
         function addPaymentField(payment = { tipo: 'Fondo Spese', stato: 'Non Pagato', importo: '' }) {
             const paymentItem = document.createElement('div');
             paymentItem.className = 'payment-item';
@@ -964,17 +986,14 @@
             `;
             paymentsList.appendChild(paymentItem);
 
-            // Aggiungi event listener per il pulsante di rimozione
             paymentItem.querySelector('.remove-payment-btn').addEventListener('click', () => {
                 paymentsList.removeChild(paymentItem);
             });
         }
 
-        // Funzione per popolare il form da un oggetto incarico (usata anche da modificaIncarico)
         function populateForm(incarico) {
             incaricoIdField.value = incarico.id || '';
             
-            // Popola i campi descrizione (checkboxes)
             descCheckboxes.forEach(checkboxInfo => {
                 const checkbox = document.getElementById(checkboxInfo.id);
                 checkbox.checked = incarico.descrizione && incarico.descrizione.includes(checkboxInfo.value);
@@ -986,7 +1005,6 @@
             document.getElementById('parti').value = incarico.parti || ''; 
             document.getElementById('note').value = incarico.note || '';
 
-            // Popola i campi data e le checkbox
             dateFields.forEach(field => {
                 const dateInput = document.getElementById(field.id);
                 const doneCheckbox = document.getElementById(field.doneId);
@@ -999,18 +1017,16 @@
                 }
             });
 
-            // Popola la sezione pagamenti
             paymentsList.innerHTML = '';
             if (incarico.pagamenti && incarico.pagamenti.length > 0) {
                 incarico.pagamenti.forEach(payment => addPaymentField(payment));
             } else {
-                addPaymentField(); // Aggiungi un campo vuoto se non ci sono pagamenti
+                addPaymentField();
             }
 
             submitButton.textContent = incarico.id ? 'Salva Modifiche' : 'Aggiungi Incarico';
         }
 
-        // Funzione per popolare il modulo con i dati dell'incarico da modificare
         function modificaIncarico(id) {
             const incaricoToEdit = incarichiAttivi.find(i => i.id === id) || incarichiArchiviati.find(i => i.id === id);
             if (incaricoToEdit) {
@@ -1019,18 +1035,14 @@
             }
         }
 
-        // FUNZIONE: Elimina Incarico
         function eliminaIncarico(id) {
             if (confirm('Sei sicuro di voler eliminare questa pratica? L\'azione è irreversibile.')) {
-                // Rimuovi dagli incarichi attivi
                 incarichiAttivi = incarichiAttivi.filter(incarico => incarico.id !== id);
-                // Rimuovi dagli incarichi archiviati
                 incarichiArchiviati = incarichiArchiviati.filter(incarico => incarico.id !== id);
 
                 salvaIncarichi();
                 renderTables();
                 
-                // Se l'incarico eliminato era quello in modifica, resetta il form
                 if (incaricoIdField.value == id) {
                     form.reset();
                     incaricoIdField.value = '';
@@ -1045,13 +1057,11 @@
             }
         }
 
-        // Gestione dell'invio del modulo
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
             const idInModifica = incaricoIdField.value;
 
-            // Raccogli i valori selezionati per la descrizione dalle checkbox
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
                 if (document.getElementById(checkboxInfo.id).checked) {
@@ -1059,7 +1069,6 @@
                 }
             });
 
-            // Raccogli i dati dei pagamenti
             const currentPayments = [];
             document.querySelectorAll('.payment-item').forEach(item => {
                 const type = item.querySelector('.payment-type').value;
@@ -1068,7 +1077,6 @@
                 currentPayments.push({ tipo: type, stato: status, importo: amount });
             });
 
-            // Raccogli i dati delle date e delle checkbox
             const dateData = {};
             dateFields.forEach(field => {
                 const dateValue = document.getElementById(field.id).value;
@@ -1142,7 +1150,6 @@
             jsonInput.value = ''; 
         });
 
-        // Gestione del pulsante "Nuovo Incarico"
         resetButton.addEventListener('click', () => {
             form.reset();
             incaricoIdField.value = '';
@@ -1157,10 +1164,8 @@
             jsonInput.value = ''; 
         });
 
-        // Event listener per il pulsante "+ Aggiungi Pagamento"
         addPaymentBtn.addEventListener('click', () => addPaymentField());
 
-        // Funzione per caricare i dati da JSON
         loadJsonBtn.addEventListener('click', () => {
             const jsonText = jsonInput.value.trim();
             if (!jsonText) {
@@ -1190,20 +1195,18 @@
             }
         });
 
-        // Event listener per il pulsante "Pulisci JSON"
         clearJsonBtn.addEventListener('click', () => {
             jsonInput.value = '';
         });
 
         // --- Funzioni di Backup e Ripristino ---
 
-        // Funzione per eseguire il backup dei dati
         backupDataBtn.addEventListener('click', () => {
             const dataToBackup = {
                 incarichiAttivi: incarichiAttivi,
                 incarichiArchiviati: incarichiArchiviati
             };
-            const jsonString = JSON.stringify(dataToBackup, null, 2); // Formatta JSON con indentazione per leggibilità
+            const jsonString = JSON.stringify(dataToBackup, null, 2);
             const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1216,12 +1219,10 @@
             alert('Backup dei dati scaricato con successo!');
         });
 
-        // Trigger per l'input file quando si clicca il pulsante "Carica Backup"
         uploadBackupBtn.addEventListener('click', () => {
             uploadBackupFile.click();
         });
 
-        // Gestione del caricamento del file di backup
         uploadBackupFile.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) {
@@ -1249,8 +1250,103 @@
                 }
             };
             reader.readAsText(file);
-            // Resetta l'input file per permettere di caricare lo stesso file più volte
-            event.target.value = '';
+            event.target.value = ''; // Resetta l'input file per permettere di caricare lo stesso file più volte
+        });
+
+        // --- Funzionalità Filtri ---
+
+        const filterInputsActive = document.querySelectorAll('#tabella-incarichi-attivi .filter-input');
+        const filterInputsArchived = document.querySelectorAll('#tabella-incarichi-archiviati .filter-input');
+
+        function applyFilters(tableType) {
+            const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
+            const filterInputs = tableType === 'active' ? filterInputsActive : filterInputsArchived;
+
+            const filters = {};
+            filterInputs.forEach(input => {
+                filters[input.dataset.filterCol] = input.value.toLowerCase();
+            });
+
+            Array.from(tableBody.rows).forEach(row => {
+                let rowVisible = true;
+                // Partiamo dalla colonna 1 perché la colonna 0 è la checkbox di selezione
+                for (let i = 1; i < row.cells.length -1; i++) { // Escludiamo l'ultima colonna "Azioni" dal filtraggio
+                    const cellContent = row.cells[i].textContent.toLowerCase();
+                    const filterValue = filters[i -1]; // Mappa l'indice della cella all'indice del filtro (poiché saltiamo la prima colonna)
+
+                    if (filterValue && !cellContent.includes(filterValue)) {
+                        rowVisible = false;
+                        break;
+                    }
+                }
+                row.style.display = rowVisible ? '' : 'none';
+            });
+        }
+
+        filterInputsActive.forEach(input => {
+            input.addEventListener('keyup', () => applyFilters('active'));
+        });
+        filterInputsArchived.forEach(input => {
+            input.addEventListener('keyup', () => applyFilters('archived'));
+        });
+
+
+        // --- Funzionalità Selezione Multipla ---
+
+        // Funzione per selezionare/deselezionare tutte le checkbox
+        function toggleSelectAll(masterCheckbox, tableType) {
+            const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
+            const checkboxes = tableBody.querySelectorAll('.select-row-checkbox[data-table-type="' + tableType + '"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = masterCheckbox.checked;
+            });
+        }
+
+        // Event listener per la checkbox "seleziona tutto" della tabella Attivi
+        selectAllActiveCheckbox.addEventListener('change', (event) => {
+            toggleSelectAll(event.target, 'active');
+        });
+
+        // Event listener per la checkbox "seleziona tutto" della tabella Archiviati
+        selectAllArchivedCheckbox.addEventListener('change', (event) => {
+            toggleSelectAll(event.target, 'archived');
+        });
+
+        // Funzione per eliminare gli incarichi selezionati
+        function deleteSelected(tableType) {
+            const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
+            const checkboxes = tableBody.querySelectorAll('.select-row-checkbox:checked[data-table-type="' + tableType + '"]');
+            
+            if (checkboxes.length === 0) {
+                alert('Nessuna pratica selezionata per l\'eliminazione.');
+                return;
+            }
+
+            if (!confirm(`Sei sicuro di voler eliminare ${checkboxes.length} pratica/he selezionata/e? L'azione è irreversibile.`)) {
+                return;
+            }
+
+            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.dataset.incaricoId));
+
+            if (tableType === 'active') {
+                incarichiAttivi = incarichiAttivi.filter(incarico => !idsToDelete.includes(incarico.id));
+            } else {
+                incarichiArchiviati = incarichiArchiviati.filter(incarico => !idsToDelete.includes(incarico.id));
+            }
+
+            salvaIncarichi();
+            renderTables(); // Ricarica le tabelle con gli elementi rimasti
+            alert(`${idsToDelete.length} pratica/he eliminata/e con successo.`);
+        }
+
+        // Event listener per il pulsante "Elimina Selezionati (Attivi)"
+        deleteSelectedActiveBtn.addEventListener('click', () => {
+            deleteSelected('active');
+        });
+
+        // Event listener per il pulsante "Elimina Selezionati (Archiviati)"
+        deleteSelectedArchivedBtn.addEventListener('click', () => {
+            deleteSelected('archived');
         });
 
 
