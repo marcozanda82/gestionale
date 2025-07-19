@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Incarichi CTU (Ottimizzato Date/Layout)</title>
+    <title>Gestionale Incarichi CTU (Visualizzazione Semplificata)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,9 +28,8 @@
             --date-due-soon-color: #ffc107; /* Giallo */
 
             /* Colori Semaforo Pagamenti */
-            --payment-due-soon-color: #ffc107; /* Arancione per fondo spese in scadenza */
-            --payment-overdue-color: #dc3545; /* Rosso per fondo spese scaduto o saldo non pagato */
-            --payment-paid-color: #28a745; /* Verde per pagato */
+            --payment-summary-paid: #28a745; /* Verde per pagato */
+            --payment-summary-unpaid: #dc3545; /* Rosso per mancante */
         }
 
         body {
@@ -182,7 +181,7 @@
             border: 1px solid var(--border-color);
             padding: 15px;
             text-align: left;
-            vertical-align: middle;
+            vertical-align: middle; /* Ensure vertical alignment */
             font-size: 0.9em;
             color: var(--text-dark);
             word-wrap: break-word; /* Allow long text to wrap */
@@ -197,24 +196,16 @@
 
         /* Column Width Adjustments */
         th:nth-child(1), td:nth-child(1) { width: 40px; text-align: center; } /* ID */
-        th:nth-child(2), td:nth-child(2) { width: 12%; } /* Descrizione */
-        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Parti - Aumentato */
+        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Descrizione */
+        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Parti */
         th:nth-child(4), td:nth-child(4) { width: 80px; } /* Tipo */
         th:nth-child(5), td:nth-child(5) { width: 100px; } /* Giudice */
-        th:nth-child(6), td:nth-child(6) { width: 8%; } /* Rif. Procedura - Ridotto */
-        /* Date columns (7-11) will share remaining space */
-        th:nth-child(7), td:nth-child(7),
-        th:nth-child(8), td:nth-child(8),
-        th:nth-child(9), td:nth-child(9),
-        th:nth-child(10), td:nth-child(10),
-        th:nth-child(11), td:nth-child(11),
-        th:nth-child(12), td:nth-child(12) { width: 6.5%; text-align: center;} /* Date and Tot. Incassato/Richiesto/Saldo */
-        th:nth-child(13), td:nth-child(13),
-        th:nth-child(14), td:nth-child(14) { width: 7%; text-align: center;} /* Tot. Incassato, Richiesto, Saldo Residuo */
-        th:nth-child(15), td:nth-child(15) { width: 7%; text-align: center; } /* Stato */
-        th:nth-child(16), td:nth-child(16) { width: 60px; text-align: center; } /* Azioni */
-        th:nth-child(17), td:nth-child(17) { width: 9%; text-align: center; } /* Prossima Scadenza */
-
+        th:nth-child(6), td:nth-child(6) { width: 8%; } /* Rif. Procedura */
+        th:nth-child(7), td:nth-child(7) { width: 9%; text-align: center; } /* Pagamenti */
+        th:nth-child(8), td:nth-child(8) { width: 9%; text-align: center; } /* Stato */
+        th:nth-child(9), td:nth-child(9) { width: 60px; text-align: center; } /* Azioni */
+        th:nth-child(10), td:nth-child(10) { width: 15%; text-align: center; } /* Prossima Scadenza (increased width) */
+        
         tr {
             cursor: pointer; /* Indica che la riga è cliccabile */
         }
@@ -241,7 +232,7 @@
             padding: 0;
             margin: 0;
             transition: color 0.2s ease, transform 0.2s ease;
-            display: inline-flex; /* Use inline-flex for centering */
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 30px;
@@ -268,7 +259,7 @@
             margin-top: 20px;
         }
 
-        /* Pagamenti Section Styling */
+        /* Pagamenti Section Styling (Form) */
         .payments-section-container {
             grid-column: 1 / -1;
             margin-top: 20px;
@@ -345,7 +336,7 @@
             border-radius: 4px;
             font-weight: bold;
             text-align: center;
-            white-space: nowrap; /* Prevent wrapping of date text */
+            white-space: nowrap;
         }
         .date-completed {
             background-color: var(--date-completed-color);
@@ -365,26 +356,13 @@
             font-weight: normal;
         }
         
-        /* Payment Amount Highlighting */
-        .payment-amount-paid {
-            color: var(--payment-paid-color);
+        /* Payment Summary Highlighting (Table Cell) */
+        .payment-summary-paid {
+            color: var(--payment-summary-paid);
             font-weight: bold;
         }
-        .payment-amount-fund-due-soon {
-            color: var(--payment-due-soon-color);
-            font-weight: bold;
-        }
-        .payment-amount-fund-overdue,
-        .payment-amount-balance-unpaid {
-            color: var(--payment-overdue-color);
-            font-weight: bold;
-        }
-        .payment-status-unpaid-summary {
-            color: var(--danger-color);
-            font-weight: bold;
-        }
-        .payment-status-paid-summary {
-            color: var(--success-color);
+        .payment-summary-unpaid {
+            color: var(--payment-summary-unpaid);
             font-weight: bold;
         }
 
@@ -425,10 +403,10 @@
                 width: 100%;
             }
             table {
-                table-layout: auto; /* Revert to auto on small screens */
+                table-layout: auto;
             }
             th, td {
-                width: auto !important; /* Override fixed widths on small screens */
+                width: auto !important;
                 display: block;
             }
             thead tr {
@@ -463,24 +441,17 @@
                 font-weight: bold;
                 color: var(--primary-dark);
             }
-            /* Specific column labels for mobile (Updated for all columns) */
+            /* Specific column labels for mobile (Updated for simplified table) */
             td:nth-of-type(1):before { content: "ID:"; }
             td:nth-of-type(2):before { content: "Descrizione:"; }
             td:nth-of-type(3):before { content: "Parti:"; }
             td:nth-of-type(4):before { content: "Tipo:"; }
             td:nth-of-type(5):before { content: "Giudice:"; }
             td:nth-of-type(6):before { content: "Rif. Proc.:"; }
-            td:nth-of-type(7):before { content: "Conf. Inc.:"; }
-            td:nth-of-type(8):before { content: "Inizio Op.:"; }
-            td:nth-of-type(9):before { content: "Invio Bozza:"; }
-            td:nth-of-type(10):before { content: "Ricez. Oss.:"; }
-            td:nth-of-type(11):before { content: "Deposito:"; }
-            td:nth-of-type(12):before { content: "Tot. Incassato:"; }
-            td:nth-of-type(13):before { content: "Tot. Richiesto:"; }
-            td:nth-of-type(14):before { content: "Saldo Residuo:"; }
-            td:nth-of-type(15):before { content: "Stato:"; }
-            td:nth-of-type(16):before { content: "Azioni:"; }
-            td:nth-of-type(17):before { content: "Prossima Scadenza:"; }
+            td:nth-of-type(7):before { content: "Pagamenti:"; } /* New label */
+            td:nth-of-type(8):before { content: "Stato:"; }
+            td:nth-of-type(9):before { content: "Azioni:"; }
+            td:nth-of-type(10):before { content: "Prossima Scadenza:"; }
 
 
             /* Adjust payment item layout for small screens */
@@ -643,17 +614,10 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Conf. Incarico</th>
-                        <th>Inizio Op.</th>
-                        <th>Invio Bozza</th>
-                        <th>Ricez. Oss.</th>
-                        <th>Deposito Finale</th>
-                        <th>Tot. Incassato</th>
-                        <th>Tot. Richiesto</th>
-                        <th>Saldo Residuo</th>
-                        <th>Stato</th>
+                        <th>Pagamenti</th> <th>Stato</th>
                         <th>Azioni</th>
-                        <th>Prossima Scadenza</th> </tr>
+                        <th>Prossima Scadenza</th>
+                    </tr>
                 </thead>
                 <tbody>
                     </tbody>
@@ -672,17 +636,10 @@
                         <th>Tipo</th>
                         <th>Giudice</th>
                         <th>Rif. Procedura</th>
-                        <th>Conf. Incarico</th>
-                        <th>Inizio Op.</th>
-                        <th>Invio Bozza</th>
-                        <th>Ricez. Oss.</th>
-                        <th>Deposito Finale</th>
-                        <th>Tot. Incassato</th>
-                        <th>Tot. Richiesto</th>
-                        <th>Saldo Residuo</th>
-                        <th>Stato</th>
+                        <th>Pagamenti</th> <th>Stato</th>
                         <th>Azioni</th>
-                        <th>Prossima Scadenza</th> </tr>
+                        <th>Prossima Scadenza</th>
+                    </tr>
                 </thead>
                 <tbody>
                     </tbody>
@@ -717,7 +674,7 @@
 
         // Mappa dei campi data e relative checkbox (Ord. Cronologico per prossima scadenza)
         const dateFields = [
-            { id: 'data-conferimento', doneId: 'data-conferimento-done', label: 'Conferimento' },
+            { id: 'data-conferimento', doneId: 'data-conferimento-done', label: 'Conf. Incarico' },
             { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', label: 'Inizio Op.' },
             { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', label: 'Invio Bozza' },
             { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', label: 'Ricez. Oss.' },
@@ -790,11 +747,10 @@
             return 'date-normal';
         }
 
-        // Funzione per calcolare i totali dei pagamenti e le classi di stato
+        // Funzione per calcolare i totali dei pagamenti
         function calcolaTotaliPagamenti(pagamenti) {
             let totaleIncassato = 0;
             let totaleRichiesto = 0;
-            let saldoResiduoClass = '';
 
             if (pagamenti && pagamenti.length > 0) {
                 pagamenti.forEach(p => {
@@ -806,50 +762,46 @@
                 });
             }
             const saldoResiduo = totaleRichiesto - totaleIncassato;
+            return { totaleIncassato, totaleRichiesto, saldoResiduo };
+        }
 
-            const saldoPayments = pagamenti.filter(p => p.tipo === 'Saldo');
-            const allSaldoPaid = saldoPayments.length > 0 && saldoPayments.every(p => p.stato === 'Pagato');
-            const anySaldoUnpaid = saldoPayments.some(p => p.stato === 'Non Pagato');
+        // Nuova funzione per ottenere lo stato riassuntivo dei pagamenti
+        function getPaymentStatusSummary(pagamenti) {
+            const { totaleIncassato, totaleRichiesto, saldoResiduo } = calcolaTotaliPagamenti(pagamenti);
 
-            if (allSaldoPaid) {
-                saldoResiduoClass = 'payment-status-paid-summary';
-            } else if (anySaldoUnpaid) {
-                saldoResiduoClass = 'payment-status-unpaid-summary';
+            if (saldoResiduo <= 0) { // Se saldo residuo è zero o negativo (incassato di più)
+                return { text: 'Pagato', class: 'payment-summary-paid' };
+            } else {
+                return { text: `${saldoResiduo.toFixed(2)} €`, class: 'payment-summary-unpaid' };
             }
-
-            return { totaleIncassato, totaleRichiesto, saldoResiduo, saldoResiduoClass };
         }
 
         // Funzione per trovare la prossima data non completata
         function getProssimaScadenza(incarico) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            let prossimaScadenza = null;
-            let prossimaScadenzaClass = 'date-normal';
-            let prossimaScadenzaLabel = '';
-
-            // Filtra solo le date non completate e valide
+            
             const incompleteDates = dateFields.filter(field => 
                 incarico[field.id] && incarico[field.id].value && !incarico[field.id].done
             ).map(field => ({
                 date: new Date(incarico[field.id].value),
                 label: field.label,
-                originalField: field.id // Aggiungi l'ID originale per riferimento
+                originalField: field.id
             })).sort((a, b) => a.date - b.date); // Ordina cronologicamente
 
             if (incompleteDates.length > 0) {
                 // Trova la prima data non completata a partire da oggi o futura
-                prossimaScadenza = incompleteDates.find(d => d.date >= today) || incompleteDates[0]; // Se tutte sono passate, prendi la prima scaduta
+                // Se tutte sono passate, prendi la prima scaduta (che sarà la prima dopo l'ordinamento)
+                const prossimaScadenza = incompleteDates.find(d => d.date >= today) || incompleteDates[0]; 
 
                 if (prossimaScadenza) {
-                    prossimaScadenzaClass = getDateClass(prossimaScadenza.date.toISOString().split('T')[0], false); // Usa la classe della singola data
-                    prossimaScadenzaLabel = `${prossimaScadenza.label}: ${prossimaScadenza.date.toISOString().split('T')[0]}`;
+                    const dateString = prossimaScadenza.date.toISOString().split('T')[0];
+                    const classToApply = getDateClass(dateString, false);
+                    return { text: `${prossimaScadenza.label}: ${dateString}`, class: classToApply };
                 }
-            } else {
-                return { text: 'Tutte completate', class: 'date-completed' };
             }
             
-            return { text: prossimaScadenzaLabel, class: prossimaScadenzaClass };
+            return { text: 'Tutte completate', class: 'date-completed' };
         }
 
 
@@ -893,10 +845,7 @@
             newRow.addEventListener('click', () => modificaIncarico(incarico.id));
 
             const statoGenerale = getStatoIncarico(incarico);
-            const inizioOperazioniDate = incarico['data-inizio-operazioni']?.value;
-            const inizioOperazioniDone = incarico['data-inizio-operazioni']?.done;
-
-            const { totaleIncassato, totaleRichiesto, saldoResiduo, saldoResiduoClass } = calcolaTotaliPagamenti(incarico.pagamenti);
+            const paymentSummary = getPaymentStatusSummary(incarico.pagamenti);
             const prossimaScadenza = getProssimaScadenza(incarico);
 
             newRow.innerHTML = `
@@ -906,28 +855,9 @@
                 <td data-label="Tipo:">${incarico['tipo-incarico']}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
-                <td data-label="Conf. Incarico:"><span class="date-cell-content ${getDateClass(incarico['data-conferimento']?.value, incarico['data-conferimento']?.done)}">
-                    ${incarico['data-conferimento']?.done ? 'Completata' : (incarico['data-conferimento']?.value || '')}
+                <td data-label="Pagamenti:"><span class="date-cell-content ${paymentSummary.class}">
+                    ${paymentSummary.text}
                 </span></td>
-                <td data-label="Inizio Op.:"><span class="date-cell-content ${getDateClass(inizioOperazioniDate, inizioOperazioniDone)}">
-                    ${inizioOperazioniDone ? 'Completata' : (inizioOperazioniDate || '')}
-                </span></td>
-                <td data-label="Invio Bozza:"><span class="date-cell-content ${getDateClass(incarico['data-invio-bozza']?.value, incarico['data-invio-bozza']?.done)}">
-                    ${incarico['data-invio-bozza']?.done ? 'Completata' : (incarico['data-invio-bozza']?.value || '')}
-                </span></td>
-                <td data-label="Ricez. Oss.:"><span class="date-cell-content ${getDateClass(incarico['data-ricezione-osservazioni']?.value, incarico['data-ricezione-osservazioni']?.done)}">
-                    ${incarico['data-ricezione-osservazioni']?.done ? 'Completata' : (incarico['data-ricezione-osservazioni']?.value || '')}
-                </span></td>
-                <td data-label="Deposito Finale:"><span class="date-cell-content ${getDateClass(incarico['data-deposito']?.value, incarico['data-deposito']?.done)}">
-                    ${incarico['data-deposito']?.done ? 'Completata' : (incarico['data-deposito']?.value || '')}
-                </span></td>
-                <td data-label="Tot. Incassato:">
-                    <span class="${totaleIncassato > 0 ? 'payment-amount-paid' : ''}">${totaleIncassato.toFixed(2)} €</span>
-                </td>
-                <td data-label="Tot. Richiesto:">${totaleRichiesto.toFixed(2)} €</td>
-                <td data-label="Saldo Residuo:">
-                    <span class="${saldoResiduoClass}">${saldoResiduo.toFixed(2)} €</span>
-                </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
                 <td data-label="Azioni:">
                     <button class="action-button" title="Modifica Incarico">✏️</button> </td>
@@ -968,7 +898,7 @@
 
             // Aggiungi event listener per il pulsante di rimozione
             paymentItem.querySelector('.remove-payment-btn').addEventListener('click', (e) => {
-                e.stopPropagation(); // Previeni il click sulla riga se il bottone è all'interno di una riga cliccabile
+                e.stopPropagation();
                 paymentsList.removeChild(paymentItem);
             });
         }
@@ -979,7 +909,6 @@
             if (incaricoToEdit) {
                 incaricoIdField.value = incaricoToEdit.id;
                 
-                // Popola i campi descrizione (checkboxes)
                 descCheckboxes.forEach(checkboxInfo => {
                     const checkbox = document.getElementById(checkboxInfo.id);
                     checkbox.checked = Array.isArray(incaricoToEdit.descrizione) && incaricoToEdit.descrizione.includes(checkboxInfo.value);
@@ -991,7 +920,6 @@
                 document.getElementById('parti').value = incaricoToEdit.parti || '';
                 document.getElementById('note').value = incaricoToEdit.note;
 
-                // Popola i campi data e le checkbox
                 dateFields.forEach(field => {
                     const dateInput = document.getElementById(field.id);
                     const doneCheckbox = document.getElementById(field.doneId);
@@ -1004,7 +932,6 @@
                     }
                 });
 
-                // Popola la sezione pagamenti
                 paymentsList.innerHTML = '';
                 if (incaricoToEdit.pagamenti && incaricoToEdit.pagamenti.length > 0) {
                     incaricoToEdit.pagamenti.forEach(payment => addPaymentField(payment));
@@ -1023,7 +950,6 @@
 
             const idInModifica = incaricoIdField.value;
 
-            // Raccogli i valori selezionati per la descrizione dalle checkbox
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
                 if (document.getElementById(checkboxInfo.id).checked) {
@@ -1031,7 +957,6 @@
                 }
             });
 
-            // Raccogli i dati dei pagamenti
             const currentPayments = [];
             document.querySelectorAll('.payment-item').forEach(item => {
                 const type = item.querySelector('.payment-type').value;
@@ -1040,7 +965,6 @@
                 currentPayments.push({ tipo: type, stato: status, importo: amount });
             });
 
-            // Raccogli i dati delle date e delle checkbox
             const dateData = {};
             dateFields.forEach(field => {
                 const dateValue = document.getElementById(field.id).value;
@@ -1114,7 +1038,6 @@
             paymentsList.innerHTML = '';
             addPaymentField();
 
-            // Resetta le checkbox della descrizione
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
@@ -1129,7 +1052,6 @@
             addPaymentField();
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Resetta le checkbox della descrizione
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
