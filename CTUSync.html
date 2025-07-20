@@ -691,18 +691,17 @@
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDjX0BhHWiWaVl9obEFypAgiA52fc-zR3c",
-  authDomain: "mioctuapp.firebaseapp.com",
-  projectId: "mioctuapp",
-  storageBucket: "mioctuapp.firebasestorage.app",
-  messagingSenderId: "587141315273",
-  appId: "1:587141315273:web:bb83e5bf5d3c01e5686b18"
-};
-
+        // Firebase Configuration (provided by the user)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjX0BhHWWaVl9obEFypAgiA52fc-zR3c", // Corrected API Key
+            authDomain: "mioctuapp.firebaseapp.com",
+            projectId: "mioctuapp",
+            storageBucket: "mioctuapp.firebasestorage.app",
+            messagingSenderId: "587141315273",
+            appId: "1:587141315273:web:bb83e5bf5d3c01e5686b18"
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -785,7 +784,7 @@ const firebaseConfig = {
 
             // Ascolta i cambiamenti in tempo reale
             onSnapshot(incarichiCollectionRef, (snapshot) => {
-                const loadedIncarichi = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const loadedIncarichi = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() })); // Salva anche docId
                 
                 incarichiAttivi = loadedIncarichi.filter(inc => {
                     const stato = getStatoIncarico(inc);
@@ -802,9 +801,6 @@ const firebaseConfig = {
                 alert("Errore durante il caricamento dei dati da Firestore: " + error.message);
             });
         }
-
-        // `salvaIncarichi` non è più necessario per Firestore, le modifiche vengono fatte direttamente
-        // tramite addDoc, setDoc, updateDoc, deleteDoc.
 
         function getStatoIncarico(incarico) {
             const today = new Date();
@@ -1054,10 +1050,9 @@ const firebaseConfig = {
             });
         }
 
-        // Modificata per popolare il form per la modifica (ora usa docId per Firestore)
         async function populateForm(incarico) {
             incaricoIdField.value = incarico.id || '';
-            form.dataset.docId = incarico.docId || ''; // Salva l'ID del documento Firestore nel form
+            form.dataset.docId = incarico.docId || '';
 
             descCheckboxes.forEach(checkboxInfo => {
                 const checkbox = document.getElementById(checkboxInfo.id);
@@ -1092,19 +1087,15 @@ const firebaseConfig = {
             submitButton.textContent = incarico.docId ? 'Salva Modifiche' : 'Aggiungi Incarico';
         }
 
-        // Modificata per recuperare l'incarico da Firestore per la modifica
         async function modificaIncarico(id) {
             if (!userId) {
                 alert("Utente non autenticato. Impossibile modificare l'incarico.");
                 return;
             }
 
-            // Trova l'incarico dal tuo array locale (che è già sincronizzato con Firestore)
             const incaricoToEdit = incarichiAttivi.find(i => i.id === id) || incarichiArchiviati.find(i => i.id === id);
             
             if (incaricoToEdit) {
-                // Per la modifica, abbiamo bisogno del docId di Firestore, che abbiamo salvato in `aggiungiRigaTabella`
-                // Aggiungiamo il docId all'oggetto incaricoToEdit per passarlo a populateForm
                 const docRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, incaricoToEdit.docId);
                 try {
                     const docSnap = await getDoc(docRef);
@@ -1123,7 +1114,6 @@ const firebaseConfig = {
             }
         }
 
-        // Modificata per eliminare da Firestore
         async function eliminaIncarico(id) {
             if (!userId) {
                 alert("Utente non autenticato. Impossibile eliminare l'incarico.");
@@ -1131,7 +1121,6 @@ const firebaseConfig = {
             }
 
             if (confirm('Sei sicuro di voler eliminare questa pratica? L\'azione è irreversibile.')) {
-                // Trova il docId dell'incarico da eliminare
                 const incaricoToDelete = incarichiAttivi.find(i => i.id === id) || incarichiArchiviati.find(i => i.id === id);
                 if (!incaricoToDelete || !incaricoToDelete.docId) {
                     alert("ID documento Firestore non trovato per l'incarico.");
@@ -1140,9 +1129,7 @@ const firebaseConfig = {
 
                 try {
                     await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, incaricoToDelete.docId));
-                    // La UI si aggiornerà automaticamente tramite onSnapshot
                     alert('Pratica eliminata con successo da Firestore!');
-                    // Resetta il form se l'incarico eliminato era quello in modifica
                     if (incaricoIdField.value == id) {
                         form.reset();
                         incaricoIdField.value = '';
@@ -1161,7 +1148,6 @@ const firebaseConfig = {
             }
         }
 
-        // Modificata per salvare/aggiornare su Firestore
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
@@ -1170,7 +1156,7 @@ const firebaseConfig = {
                 return;
             }
 
-            const docIdInModifica = form.dataset.docId; // Ottieni il docId dal form
+            const docIdInModifica = form.dataset.docId;
 
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
@@ -1217,28 +1203,23 @@ const firebaseConfig = {
 
             try {
                 if (docIdInModifica) {
-                    // Aggiorna un incarico esistente
-                    const docRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, docIdInModifica);
-                    await setDoc(docRef, incaricoData, { merge: true }); // merge: true per non sovrascrivere l'intero documento
+                    await setDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, docIdInModifica), incaricoData, { merge: true });
                     alert('Incarico aggiornato con successo su Firestore!');
                 } else {
-                    // Aggiungi un nuovo incarico
-                    const newId = (incarichiAttivi.length > 0 ? Math.max(...incarichiAttivi.map(i => i.id)) : 0) + 
-                                  (incarichiArchiviati.length > 0 ? Math.max(...incarichiArchiviati.map(i => i.id)) : 0) + 1;
-                    incaricoData.id = newId; // Assegna un ID numerico locale per l'ordinamento
+                    const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+                    const newId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
+                    incaricoData.id = newId;
                     const docRef = await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`), incaricoData);
                     alert('Incarico aggiunto con successo a Firestore! ID: ' + docRef.id);
                 }
-                // La UI si aggiornerà automaticamente tramite onSnapshot
             } catch (error) {
                 console.error("Error saving document:", error);
                 alert("Errore durante il salvataggio dell'incarico: " + error.message);
             }
             
-            // Resetta il form dopo il salvataggio/aggiornamento
             form.reset(); 
             incaricoIdField.value = '';
-            form.dataset.docId = ''; // Pulisci il docId dal form
+            form.dataset.docId = '';
             submitButton.textContent = 'Aggiungi Incarico';
             paymentsList.innerHTML = ''; 
             addPaymentField(); 
@@ -1252,7 +1233,7 @@ const firebaseConfig = {
         resetButton.addEventListener('click', () => {
             form.reset();
             incaricoIdField.value = '';
-            form.dataset.docId = ''; // Pulisci il docId dal form
+            form.dataset.docId = '';
             submitButton.textContent = 'Aggiungi Incarico';
             paymentsList.innerHTML = '';
             addPaymentField();
@@ -1278,7 +1259,7 @@ const firebaseConfig = {
 
                 form.reset();
                 incaricoIdField.value = '';
-                form.dataset.docId = ''; // Assicurati che il docId sia pulito per un nuovo inserimento da JSON
+                form.dataset.docId = '';
                 paymentsList.innerHTML = '';
                 addPaymentField(); 
                 descCheckboxes.forEach(checkboxInfo => {
@@ -1331,34 +1312,28 @@ const firebaseConfig = {
             }
 
             const reader = new FileReader();
-            reader.onload = async (e) => { // Aggiunto async qui
+            reader.onload = async (e) => {
                 try {
                     const loadedData = JSON.parse(e.target.result);
                     if (loadedData.incarichiAttivi && loadedData.incarichiArchiviati) {
                         if (confirm('Caricando il backup sovrascriverai i dati attuali nel tuo browser. Vuoi anche caricarli su Firebase?')) {
-                            // Opzione: Carica su Firebase
                             if (!userId) {
                                 alert("Utente non autenticato. Impossibile caricare il backup su Firebase.");
                                 return;
                             }
                             const incarichiCollectionRef = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`);
                             
-                            // Cancella tutti i dati esistenti su Firebase per l'utente corrente
-                            // ATTENZIONE: Questa operazione è distruttiva!
                             const existingDocs = await getDocs(incarichiCollectionRef);
                             const deletePromises = existingDocs.docs.map(d => deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, d.id)));
                             await Promise.all(deletePromises);
 
-                            // Carica i nuovi dati da backup su Firebase
                             const uploadPromises = [...loadedData.incarichiAttivi, ...loadedData.incarichiArchiviati].map(async (inc) => {
-                                // Rimuovi l'id locale e il docId se presenti, Firebase genererà un nuovo docId
                                 const { id, docId, ...dataToUpload } = inc; 
                                 await addDoc(incarichiCollectionRef, dataToUpload);
                             });
                             await Promise.all(uploadPromises);
                             alert('Backup caricato su Firebase e dati ripristinati nel browser!');
                         } else {
-                            // Solo ripristino locale (senza Firebase)
                             incarichiAttivi = loadedData.incarichiAttivi;
                             incarichiArchiviati = loadedData.incarichiArchiviati;
                             localStorage.setItem('incarichiCTU_attivi', JSON.stringify(incarichiAttivi));
@@ -1437,7 +1412,6 @@ const firebaseConfig = {
             toggleSelectAll(event.target, 'archived');
         });
 
-        // Modificata per eliminare multipli da Firestore
         async function deleteSelected(tableType) {
             if (!userId) {
                 alert("Utente non autenticato. Impossibile eliminare gli incarichi.");
@@ -1449,7 +1423,7 @@ const firebaseConfig = {
             
             const visibleAndCheckedDocIds = Array.from(checkboxes)
                 .filter(cb => cb.closest('tr').style.display !== 'none')
-                .map(cb => cb.dataset.docId); // Ottieni l'ID del documento Firestore
+                .map(cb => cb.dataset.docId);
 
             if (visibleAndCheckedDocIds.length === 0) {
                 alert('Nessuna pratica selezionata e visibile per l\'eliminazione.');
@@ -1466,7 +1440,6 @@ const firebaseConfig = {
                 );
                 await Promise.all(deletePromises);
                 alert(`${visibleAndCheckedDocIds.length} pratica/he eliminata/e con successo da Firestore!`);
-                // La UI si aggiornerà automaticamente tramite onSnapshot
             } catch (error) {
                 console.error("Error deleting selected documents:", error);
                 alert("Errore durante l'eliminazione delle pratiche selezionate: " + error.message);
@@ -1488,15 +1461,14 @@ const firebaseConfig = {
             const isVisible = filterRowElement.style.display === 'table-row';
 
             if (isVisible) {
-                filterRowElement.style.display = 'none'; // Nascondi la riga
-                masterCheckboxElement.closest('th').style.display = 'none'; // Nascondi la cella della checkbox
+                filterRowElement.style.display = 'none';
+                masterCheckboxElement.closest('th').style.display = 'none';
                 toggleButtonElement.textContent = 'Mostra Filtri e Strumenti';
             } else {
-                filterRowElement.style.display = 'table-row'; // Mostra la riga
-                masterCheckboxElement.closest('th').style.display = 'table-cell'; // Mostra la cella della checkbox
+                filterRowElement.style.display = 'table-row';
+                masterCheckboxElement.closest('th').style.display = 'table-cell';
                 toggleButtonElement.textContent = 'Nascondi Filtri e Strumenti';
             }
-            // Applica nuovamente i filtri per assicurare che lo stato delle righe sia corretto
             applyFilters(filterRowElement.closest('table').id.includes('active') ? 'active' : 'archived');
         }
 
@@ -1509,27 +1481,23 @@ const firebaseConfig = {
         });
 
         // --- Inizializzazione all'avvio ---
-        // Autenticazione Firebase e caricamento dati
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userId = user.uid;
                 console.log("Authenticated with Firebase. User ID:", userId);
-                await caricaIncarichiFromFirestore(); // Carica i dati da Firestore una volta autenticato
+                await caricaIncarichiFromFirestore();
             } else {
-                // Se non c'è utente, prova l'autenticazione anonima
                 try {
-                    // Se __initial_auth_token è disponibile (ambiente Canvas), usalo
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
                         userId = userCredential.user.uid;
                         console.log("Signed in with custom token. User ID:", userId);
                     } else {
-                        // Altrimenti, autenticazione anonima
                         const userCredential = await signInAnonymously(auth);
                         userId = userCredential.user.uid;
                         console.log("Signed in anonymously. User ID:", userId);
                     }
-                    await caricaIncarichiFromFirestore(); // Carica i dati dopo l'autenticazione
+                    await caricaIncarichiFromFirestore();
                 } catch (error) {
                     console.error("Firebase authentication failed:", error);
                     alert("Errore di autenticazione Firebase: " + error.message);
@@ -1537,15 +1505,12 @@ const firebaseConfig = {
             }
         });
 
-        // Inizializza la visibilità dei filtri e delle checkbox all'avvio: tutto nascosto
-        // Questi sono già impostati su `display: none` nel CSS, ma è bene ribadirlo per chiarezza
         activeFilterRow.style.display = 'none';
         selectAllActiveCheckbox.closest('th').style.display = 'none';
 
         archivedFilterRow.style.display = 'none';
         selectAllArchivedCheckbox.closest('th').style.display = 'none';
 
-        // Inizializza un campo pagamento vuoto se la lista è vuota (per il form)
         if (paymentsList.children.length === 0) {
             addPaymentField();
         }
