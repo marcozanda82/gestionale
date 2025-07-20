@@ -351,35 +351,24 @@
         }
 
         /* Stile per i filtri e il toggle */
-        .filter-controls {
-            display: none; /* Nascosto per default */
-            flex-wrap: wrap; /* Permetti ai filtri di andare a capo su schermi più piccoli */
-            gap: 10px; /* Spazio tra i filtri */
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed var(--border-color); /* Separatore */
-        }
-        .filter-controls.visible {
-            display: flex;
-        }
-        .filter-input-row { /* Nuova riga per i filtri */
-            display: contents; /* Fa sì che i th con input si comportino come se fossero diretti figli di thead tr */
-        }
-        .filter-input {
-            width: calc(100% - 10px); /* Larghezza leggermente inferiore al 100% per il padding */
-            padding: 5px;
-            margin-top: 5px; /* Spazio tra il titolo della colonna e l'input */
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 0.85em;
+        .filter-input-row { 
+            display: none; /* Controllato da JS */
+            vertical-align: top;
         }
         .filter-cell {
             vertical-align: top;
             padding-top: 0;
             padding-bottom: 0;
         }
-        th.filter-cell .filter-input { /* Regola il margine superiore per non toccare il testo dell'header */
+        .filter-input {
+            width: calc(100% - 10px);
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        th.filter-cell .filter-input {
             margin-top: 8px;
         }
 
@@ -393,7 +382,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            margin-top: 15px; /* Spazio sopra il toggle e il bottone elimina */
+            margin-top: 15px;
         }
 
         /* Responsive adjustments */
@@ -455,14 +444,11 @@
             td:nth-of-type(9):before { content: "Scadenza:"; } 
             td:nth-of-type(10):before { content: "Azioni:"; }
 
-            /* Responsive adjustments for filter inputs */
-            .filter-input {
-                width: calc(100% - 20px);
-            }
-            /* Nascondi i filtri su mobile, verranno gestiti diversamente se necessario */
+            /* Nascondi i filtri su mobile, per ora non gestiti per display block delle righe */
             .filter-input-row {
-                display: none;
+                display: none !important; /* Importante per sovrascrivere display: table-row */
             }
+
             .table-controls-top {
                 flex-direction: column;
                 align-items: stretch;
@@ -615,7 +601,8 @@
             </div>
             <table id="tabella-incarichi-attivi">
                 <thead>
-                    <tr class="filter-input-row" style="display: none;"> <th class="filter-cell" style="width: 30px;">
+                    <tr class="filter-input-row"> 
+                        <th class="filter-cell" style="width: 30px;">
                             <input type="checkbox" id="select-all-active">
                         </th>
                         <th><input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
@@ -644,7 +631,7 @@
                     </tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
-            </div>
+        </div>
 
         <div class="archivio-section">
             <h2>Archivio Incarichi Completati</h2>
@@ -654,7 +641,8 @@
             </div>
             <table id="tabella-incarichi-archiviati">
                 <thead>
-                    <tr class="filter-input-row" style="display: none;"> <th class="filter-cell" style="width: 30px;">
+                    <tr class="filter-input-row"> 
+                        <th class="filter-cell" style="width: 30px;">
                             <input type="checkbox" id="select-all-archived">
                         </th>
                         <th><input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
@@ -683,7 +671,7 @@
                     </tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
-            </div>
+        </div>
 
         <div class="form-section" style="margin-top: 40px;">
             <h2>Gestione Backup</h2>
@@ -731,6 +719,11 @@
         const tabellaArchiviatiBody = document.querySelector('#tabella-incarichi-archiviati tbody');
         const noActiveMessage = document.getElementById('no-active-incarichi');
         const noArchivedMessage = document.getElementById('no-archived-incarichi');
+
+        // Referenze alle righe dei filtri
+        const activeFilterRow = document.querySelector('#tabella-incarichi-attivi thead .filter-input-row');
+        const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati thead .filter-input-row');
+
 
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
@@ -1222,7 +1215,7 @@
 
             } catch (e) {
                 alert('Errore nel parsing del JSON. Assicurati che il formato sia corretto.\nErrore: ' + e.message);
-                console.error('Errore JSON:', e);
+                console.error('ErroJSON:', e);
             }
         });
 
@@ -1265,7 +1258,7 @@
                 try {
                     const loadedData = JSON.parse(e.target.result);
                     if (loadedData.incarichiAttivi && loadedData.incarichiArchiviati) {
-                        if (confirm('Caricando il backup sovrascriverai i dati attuali. Sei sicuro di voler continuare?')) {
+                        if (confirm('Caricando il backup sovrascriverai i dati attuali. Seisicuro di voler continuare?')) {
                             incarichiAttivi = loadedData.incarichiAttivi;
                             incarichiArchiviati = loadedData.incarichiArchiviati;
                             salvaIncarichi();
@@ -1289,10 +1282,7 @@
         const filterInputsActive = document.querySelectorAll('#tabella-incarichi-attivi .filter-input');
         const filterInputsArchived = document.querySelectorAll('#tabella-incarichi-archiviati .filter-input');
 
-        // Referenze alle righe dei filtri
-        const activeFilterRow = document.querySelector('#tabella-incarichi-attivi .filter-input-row');
-        const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati .filter-input-row');
-
+        // Nota: activeFilterRow e archivedFilterRow sono già stati definiti sopra all'inizio dello script.
 
         function applyFilters(tableType) {
             const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
@@ -1300,14 +1290,17 @@
 
             const filters = {};
             filterInputs.forEach((input, index) => {
-                filters[input.dataset.filterCol] = input.value.toLowerCase(); 
+                filters[index] = input.value.toLowerCase();
             });
 
             Array.from(tableBody.rows).forEach(row => {
                 let rowVisible = true;
+                // La prima cella (indice 0) è la checkbox, le celle di testo partono da indice 1.
+                // I data-filter-col degli input di filtro vanno da 0 a 7, corrispondenti alle celle da 1 a 8.
+                // Azioni è la cella finale e non ha filtro.
                 for (let i = 1; i < row.cells.length -1; i++) { 
                     const cellContent = row.cells[i].textContent.toLowerCase();
-                    const filterValue = filters[i -1]; 
+                    const filterValue = filters[i - 1]; 
 
                     if (filterValue && !cellContent.includes(filterValue)) {
                         rowVisible = false;
@@ -1334,7 +1327,10 @@
             const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
             const checkboxes = tableBody.querySelectorAll('.select-row-checkbox[data-table-type="' + tableType + '"]');
             checkboxes.forEach(checkbox => {
-                checkbox.checked = masterCheckbox.checked;
+                // Controlla se la riga genitore della checkbox è visibile (in base ai filtri)
+                if (checkbox.closest('tr').style.display !== 'none') {
+                    checkbox.checked = masterCheckbox.checked;
+                }
             });
         }
 
@@ -1348,28 +1344,32 @@
 
         function deleteSelected(tableType) {
             const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
+            // Seleziona solo le checkbox checked che sono anche in righe visibili
             const checkboxes = tableBody.querySelectorAll('.select-row-checkbox:checked[data-table-type="' + tableType + '"]');
             
-            if (checkboxes.length === 0) {
-                alert('Nessuna pratica selezionata per l\'eliminazione.');
+            // Filtra ulteriormente per assicurarti che solo le righe attualmente visibili e selezionate vengano considerate
+            const visibleAndCheckedIds = Array.from(checkboxes)
+                .filter(cb => cb.closest('tr').style.display !== 'none')
+                .map(cb => parseInt(cb.dataset.incaricoId));
+
+            if (visibleAndCheckedIds.length === 0) {
+                alert('Nessuna pratica selezionata e visibile per l\'eliminazione.');
                 return;
             }
 
-            if (!confirm(`Sei sicuro di voler eliminare ${checkboxes.length} pratica/he selezionata/e? L'azione è irreversibile.`)) {
+            if (!confirm(`Sei sicuro di voler eliminare ${visibleAndCheckedIds.length} pratica/he selezionata/e? L'azione è irreversibile.`)) {
                 return;
             }
-
-            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.dataset.incaricoId));
 
             if (tableType === 'active') {
-                incarichiAttivi = incarichiAttivi.filter(incarico => !idsToDelete.includes(incarico.id));
+                incarichiAttivi = incarichiAttivi.filter(incarico => !visibleAndCheckedIds.includes(incarico.id));
             } else {
-                incarichiArchiviati = incarichiArchiviati.filter(incarico => !idsToDelete.includes(incarico.id));
+                incarichiArchiviati = incarichiArchiviati.filter(incarico => !visibleAndCheckedIds.includes(incarico.id));
             }
 
             salvaIncarichi();
             renderTables(); 
-            alert(`${idsToDelete.length} pratica/he eliminata/e con successo.`);
+            alert(`${visibleAndCheckedIds.length} pratica/he eliminata/e con successo.`);
         }
 
         deleteSelectedActiveBtn.addEventListener('click', () => {
@@ -1382,22 +1382,37 @@
 
 
         // --- Funzionalità Toggle Filtri e Strumenti ---
+
+        // Funzione helper per gestire il toggle di visibilità
+        function toggleFilterVisibility(filterRowElement, masterCheckboxElement, toggleButtonElement) {
+            if (filterRowElement.style.display === 'none' || filterRowElement.style.display === '') {
+                filterRowElement.style.display = 'table-row'; // Mostra la riga
+                masterCheckboxElement.closest('th').style.display = 'table-cell'; // Mostra la cella della checkbox
+                toggleButtonElement.textContent = 'Nascondi Filtri e Strumenti';
+            } else {
+                filterRowElement.style.display = 'none'; // Nascondi la riga
+                masterCheckboxElement.closest('th').style.display = 'none'; // Nascondi la cella della checkbox
+                toggleButtonElement.textContent = 'Mostra Filtri e Strumenti';
+            }
+            // Applica nuovamente i filtri per assicurare che lo stato delle righe sia corretto
+            // Non passiamo tableType qui, assumiamo che renderTables chiami applyFilters
+            applyFilters(filterRowElement.closest('table').id.includes('active') ? 'active' : 'archived');
+        }
+
         toggleFiltersActiveBtn.addEventListener('click', () => {
-            activeFilterRow.classList.toggle('visible');
-            selectAllActiveCheckbox.closest('th').style.display = activeFilterRow.classList.contains('visible') ? '' : 'none';
-            // Il pulsante delete è già visibile/nascosto con l'elemento padre table-controls-top
-            toggleFiltersActiveBtn.textContent = activeFilterRow.classList.contains('visible') ? 'Nascondi Filtri e Strumenti' : 'Mostra Filtri e Strumenti';
+            toggleFilterVisibility(activeFilterRow, selectAllActiveCheckbox, toggleFiltersActiveBtn);
         });
 
         toggleFiltersArchivedBtn.addEventListener('click', () => {
-            archivedFilterRow.classList.toggle('visible');
-            selectAllArchivedCheckbox.closest('th').style.display = archivedFilterRow.classList.contains('visible') ? '' : 'none';
-            toggleFiltersArchivedBtn.textContent = archivedFilterRow.classList.contains('visible') ? 'Nascondi Filtri e Strumenti' : 'Mostra Filtri e Strumenti';
+            toggleFilterVisibility(archivedFilterRow, selectAllArchivedCheckbox, toggleFiltersArchivedBtn);
         });
 
-        // Nascondi le righe dei filtri all'avvio (sono già nascoste dal CSS, ma per sicurezza)
-        activeFilterRow.classList.remove('visible');
-        archivedFilterRow.classList.remove('visible');
+        // Inizializza la visibilità dei filtri e delle checkbox all'avvio: tutto nascosto
+        activeFilterRow.style.display = 'none';
+        selectAllActiveCheckbox.closest('th').style.display = 'none';
+
+        archivedFilterRow.style.display = 'none';
+        selectAllArchivedCheckbox.closest('th').style.display = 'none';
 
 
         // Carica gli incarichi all'avvio della pagina e inizializza un campo pagamento
