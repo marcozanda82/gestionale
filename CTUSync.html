@@ -202,8 +202,8 @@
         .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
         .stato-da-iniziare { color: var(--info-color); }
 
-        .payment-status-paid { color: var(--success-color); font-weight: bold; } /* Verde per pagato */
-        .payment-status-unpaid { color: var(--danger-color); font-weight: bold; } /* Rosso per non pagato */
+        .payment-status-paid { color: var(--success-color); font-weight: bold; }
+        .payment-status-unpaid { color: var(--danger-color); font-weight: bold; }
 
         .action-button {
             background: none;
@@ -230,7 +230,6 @@
         .action-button.delete:hover {
             color: #a71d2a;
         }
-
 
         .archivio-section {
             margin-top: 60px;
@@ -302,16 +301,16 @@
         .date-due-soon,
         .date-normal {
             display: flex;
-            align-items: center; /* Centra verticalmente il contenuto del riquadro */
-            justify-content: center; /* Centra orizzontalmente il contenuto del riquadro */
+            align-items: center;
+            justify-content: center;
             padding: 5px 8px;
             border-radius: 4px;
             font-weight: bold;
-            width: 100%; /* Riempi l'intera larghezza della cella */
-            height: 100%; /* Riempi l'intera altezza della cella */
-            box-sizing: border-box; /* Include padding e border nel calcolo di width/height */
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
             text-align: center;
-            margin: 0; /* Rimuovi margini che potrebbero impedire di riempire la cella */
+            margin: 0;
         }
         .date-completed { background-color: var(--date-completed-color); color: var(--text-light); }
         .date-overdue { background-color: var(--date-overdue-color); color: var(--text-light); }
@@ -319,13 +318,12 @@
         .date-normal { color: var(--text-dark); }
 
         td[data-label="Scadenza:"] {
-            text-align: initial; /* Reset allineamento testo */
-            padding: 0; /* Rimuovi padding dalla cella TD per permettere al div interno di riempire */
+            text-align: initial;
+            padding: 0;
         }
         th:has( + td[data-label="Scadenza:"]) {
             text-align: center;
         }
-
 
         /* Checkbox Group for Description */
         .checkbox-group {
@@ -351,8 +349,8 @@
         }
 
         /* Stile per i filtri e il toggle */
-        .filter-input-row { 
-            display: none; /* Controllato da JS */
+        .filter-input-row {
+            display: none;
             vertical-align: top;
         }
         .filter-cell {
@@ -441,12 +439,12 @@
             td:nth-of-type(6):before { content: "Giudice:"; }
             td:nth-of-type(7):before { content: "Pagamenti:"; }
             td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Scadenza:"; } 
+            td:nth-of-type(9):before { content: "Scadenza:"; }
             td:nth-of-type(10):before { content: "Azioni:"; }
 
             /* Nascondi i filtri su mobile, per ora non gestiti per display block delle righe */
             .filter-input-row {
-                display: none !important; /* Importante per sovrascrivere display: table-row */
+                display: none !important;
             }
 
             .table-controls-top {
@@ -468,7 +466,7 @@
         <div class="form-section">
             <h2>Dettagli Incarico</h2>
             <form id="form-incarico">
-                <input type="hidden" id="incarico-id" value=""> 
+                <input type="hidden" id="incarico-id" value="">
 
                 <div class="form-grid">
                     <div class="form-group" style="grid-column: 1 / -1;">
@@ -514,7 +512,7 @@
                         <label for="parti">Parti (separate da virgola o a capo):</label>
                         <textarea id="parti" name="parti" rows="2"></textarea>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="data-conferimento">Data Conferimento Incarico:</label>
                         <div class="date-input-group">
@@ -569,7 +567,7 @@
                             <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
                         </div>
                         <div id="payments-list">
-                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -584,8 +582,7 @@
             <h2>Carica Incarico da JSON</h2>
             <div class="form-group">
                 <label for="json-input">Incolla qui il codice JSON dell'incarico:</label>
-                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "data-udienza": {"value": "2025-07-20", "done": false}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}
-'></textarea>
+                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "data-udienza": {"value": "2025-07-20", "done": false}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}'></textarea>
             </div>
             <div class="button-group" style="justify-content: flex-start;">
                 <button type="button" id="load-json-btn" class="btn btn-primary">Carica da JSON</button>
@@ -601,7 +598,7 @@
             </div>
             <table id="tabella-incarichi-attivi">
                 <thead>
-                    <tr class="filter-input-row"> 
+                    <tr class="filter-input-row">
                         <th class="filter-cell" style="width: 30px;">
                             <input type="checkbox" id="select-all-active">
                         </th>
@@ -612,9 +609,8 @@
                         <th><input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
-                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
-                        <th style="width: 80px;"></th> <!-- Colonna Azioni -->
-                    </tr>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th>
+                        <th style="width: 80px;"></th> </tr>
                     <tr>
                         <th style="width: 30px;">Sel.</th>
                         <th>ID</th>
@@ -624,12 +620,12 @@
                         <th>Giudice</th>
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 120px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> 
+                        <th style="width: 120px;">Scadenza</th>
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
-                    </tbody>
+                </tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
         </div>
@@ -642,7 +638,7 @@
             </div>
             <table id="tabella-incarichi-archiviati">
                 <thead>
-                    <tr class="filter-input-row"> 
+                    <tr class="filter-input-row">
                         <th class="filter-cell" style="width: 30px;">
                             <input type="checkbox" id="select-all-archived">
                         </th>
@@ -653,9 +649,8 @@
                         <th><input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
-                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
-                        <th style="width: 80px;"></th> <!-- Colonna Azioni -->
-                    </tr>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th>
+                        <th style="width: 80px;"></th> </tr>
                     <tr>
                         <th style="width: 30px;">Sel.</th>
                         <th>ID</th>
@@ -665,17 +660,16 @@
                         <th>Giudice</th>
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 120px;">Stato</th>
-                        <th style="width: 120px;">Scadenza</th> 
+                        <th style="width: 120px;">Scadenza</th>
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
-                    </tbody>
+                </tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
         </div>
 
-        <!-- Sezione per Backup e Ripristino -->
         <div class="form-section" style="margin-top: 40px;">
             <h2>Gestione Backup</h2>
             <div class="button-group" style="justify-content: flex-start;">
@@ -684,34 +678,33 @@
                 <button type="button" id="upload-backup-btn" class="btn btn-secondary">Carica Backup</button>
             </div>
         </div>
-        <!-- Fine Sezione Backup -->
     </div>
 
-    <script type="module">
-        // Firebase Imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Ho corretto il percorso di importazione di firestore.js
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; 
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-        // Firebase Configuration (provided by the user)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFN8dAxH4cAYdrCNfcRchrIyvVN_uW5RU", 
-            authDomain: "ctusync-9ec2b.firebaseapp.com",
-            projectId: "ctusync-9ec2b",
-            storageBucket: "ctusync-9ec2b.firebasestorage.app",
-            messagingSenderId: "509703086690",
-            appId: "1:509703086690:web:331e8fb6114da0ba2a273b"
-        };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    <script>
+        // Tua configurazione Firebase (SOSTITUISCI QUESTI VALORI CON QUELLI DEL TUO PROGETTO!)
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyC9fn33KT8GrEddpdfF_f82v0bAM_kTAhE",
+  authDomain: "ctusync2.firebaseapp.com",
+  projectId: "ctusync2",
+  storageBucket: "ctusync2.firebasestorage.app",
+  messagingSenderId: "741014889524",
+  appId: "1:741014889524:web:3a59f599b93ab414c85661"
+};
 
-        let userId = null; 
 
-        // Elementi DOM esistenti
+        // Inizializza Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Ottieni un riferimento al Realtime Database
+        const database = firebase.database();
+        const incarichiRef = database.ref('incarichi'); // Nodo per gli incarichi attivi
+        const archivedIncarichiRef = database.ref('incarichi_archiviati'); // Nodo per gli incarichi archiviati
+
         const form = document.getElementById('form-incarico');
         const submitButton = document.getElementById('submit-button');
         const resetButton = document.getElementById('reset-button');
@@ -735,6 +728,7 @@
         const toggleFiltersActiveBtn = document.getElementById('toggle-filters-active');
         const toggleFiltersArchivedBtn = document.getElementById('toggle-filters-archived');
 
+
         const descCheckboxes = [
             { id: 'desc-stima', value: 'Stima' },
             { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
@@ -747,8 +741,10 @@
         const noActiveMessage = document.getElementById('no-active-incarichi');
         const noArchivedMessage = document.getElementById('no-archived-incarichi');
 
+        // Referenze alle righe dei filtri
         const activeFilterRow = document.querySelector('#tabella-incarichi-attivi thead .filter-input-row');
         const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati thead .filter-input-row');
+
 
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
@@ -767,49 +763,49 @@
             const [year, month, day] = dateString.split('-');
             return `${day}-${month}-${year}`;
         }
-        
+
         function formatDateToDDMM(dateString) {
             if (!dateString) return '';
             const [year, month, day] = dateString.split('-');
             return `${day}-${month}`;
         }
 
-        async function caricaIncarichiFromFirestore() {
-            if (!userId) {
-                console.error("User not authenticated. Cannot load data from Firestore.");
-                return;
-            }
-
-            const incarichiCollectionRef = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`);
-
-            onSnapshot(incarichiCollectionRef, (snapshot) => {
-                const loadedIncarichi = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                console.log("Loaded incarichi from Firestore:", loadedIncarichi);
-                
-                loadedIncarichi.forEach((inc, index) => {
-                    if (typeof inc.id === 'undefined') {
-                        // Se l'ID numerico non esiste, prova a generarlo in base agli ID esistenti
-                        // Questo è un fallback per dati preesistenti senza 'id' numerico
-                        const allExistingIds = [...incarichiAttivi, ...incarichiArchiviati].map(i => i.id).filter(Boolean);
-                        inc.id = allExistingIds.length > 0 ? Math.max(...allExistingIds) + 1 : (index + 1); // Fallback più robusto
+        function caricaIncarichi() {
+            // Ascolta i cambiamenti negli incarichi attivi da Firebase
+            incarichiRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                incarichiAttivi = [];
+                if (data) {
+                    for (let id in data) {
+                        incarichiAttivi.push({ id: parseInt(id), ...data[id] });
                     }
-                });
-
-                incarichiAttivi = loadedIncarichi.filter(inc => {
-                    const stato = getStatoIncarico(inc);
-                    return stato.text !== 'Completato' && !stato.text.includes('Udienza Svolta');
-                });
-                incarichiArchiviati = loadedIncarichi.filter(inc => {
-                    const stato = getStatoIncarico(inc);
-                    return stato.text === 'Completato' || stato.text.includes('Udienza Svolta');
-                });
-                
+                }
                 renderTables();
+                console.log('Incarichi attivi caricati da Firebase:', incarichiAttivi);
             }, (error) => {
-                console.error("Error listening to Firestore changes:", error);
-                alert("Errore durante il caricamento dei dati da Firestore: " + error.message);
+                console.error("Errore nel caricamento degli incarichi attivi da Firebase:", error);
+            });
+
+            // Ascolta i cambiamenti negli incarichi archiviati da Firebase
+            archivedIncarichiRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                incarichiArchiviati = [];
+                if (data) {
+                    for (let id in data) {
+                        incarichiArchiviati.push({ id: parseInt(id), ...data[id] });
+                    }
+                }
+                renderTables();
+                console.log('Incarichi archiviati caricati da Firebase:', incarichiArchiviati);
+            }, (error) => {
+                console.error("Errore nel caricamento degli incarichi archiviati da Firebase:", error);
             });
         }
+
+        // La funzione salvaIncarichi non è più necessaria in quanto le modifiche vengono spinte direttamente a Firebase
+        // function salvaIncarichi() {
+        //     // Le modifiche vengono gestite direttamente dalle operazioni Firebase set() e remove()
+        // }
 
         function getStatoIncarico(incarico) {
             const today = new Date();
@@ -854,13 +850,12 @@
                 statoText = 'Conferito (Da Iniziare)';
                 statoClass = 'stato-da-iniziare';
             }
-
-
             return { text: statoText, class: statoClass };
         }
 
         function getDateClass(dateStr, isDone) {
-            if (!dateStr) return ''; 
+            if (!dateStr) return 'date-normal';
+
             if (isDone) return 'date-completed';
 
             const date = new Date(dateStr);
@@ -909,7 +904,7 @@
                 const scadenzaA = getScadenzaCorrente(a);
                 const scadenzaB = getScadenzaCorrente(b);
 
-                const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01'); 
+                const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01');
                 const dateB = scadenzaB.value ? new Date(scadenzaB.value) : new Date('2999-01-01');
 
                 const today = new Date();
@@ -956,7 +951,7 @@
 
         function getScadenzaCorrente(incarico) {
             let scadenza = { value: '', class: 'date-normal', display: '' };
-            
+
             const sortedDateFields = [...dateFields].sort((a, b) => a.priority - b.priority);
 
             for (const field of sortedDateFields) {
@@ -964,7 +959,7 @@
                 if (dateInfo && dateInfo.value && !dateInfo.done) {
                     scadenza.value = dateInfo.value;
                     scadenza.class = getDateClass(dateInfo.value, false);
-                    
+
                     const dateObj = new Date(dateInfo.value);
                     const today = new Date();
                     today.setHours(0,0,0,0);
@@ -974,7 +969,7 @@
                     } else {
                         scadenza.display = formatDateToDDMM(dateInfo.value);
                     }
-                    break; 
+                    break;
                 }
             }
 
@@ -983,14 +978,14 @@
                     scadenza.value = incarico['data-deposito'].value;
                     scadenza.class = getDateClass(incarico['data-deposito'].value, true);
                     scadenza.display = formatDateToDDMMYYYY(scadenza.value);
-                } 
+                }
                 else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
                     scadenza.value = incarico['data-conferimento'].value;
                     scadenza.class = getDateClass(incarico['data-conferimento'].value, incarico['data-conferimento'].done);
                     scadenza.display = formatDateToDDMMYYYY(scadenza.value);
                 }
             }
-            
+
             return scadenza;
         }
 
@@ -998,14 +993,13 @@
         function aggiungiRigaTabella(incarico, targetTableBody, tableType) {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
-            newRow.dataset.docId = incarico.docId;
 
             const statoGenerale = getStatoIncarico(incarico);
             const paymentStatus = getPaymentStatus(incarico.pagamenti);
             const scadenzaCorrente = getScadenzaCorrente(incarico);
 
             newRow.innerHTML = `
-                <td data-label="Seleziona:"><input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-doc-id="${incarico.docId}" data-table-type="${tableType}"></td>
+                <td data-label="Seleziona:"><input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}"></td>
                 <td data-label="ID:">${incarico.id}</td>
                 <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
                 <td data-label="Parti:">${incarico.parti || ''}</td>
@@ -1015,7 +1009,7 @@
                     ${paymentStatus.text}
                 </td>
                 <td data-label="Stato:" class="${statoGenerale.class}">${statoGenerale.text}</td>
-                <td data-label="Scadenza:"><div class="${scadenzaCorrente.class}"> 
+                <td data-label="Scadenza:"><div class="${scadenzaCorrente.class}">
                     ${scadenzaCorrente.display || ''}
                 </div></td>
                 <td data-label="Azioni:">
@@ -1058,9 +1052,8 @@
             });
         }
 
-        async function populateForm(incarico) {
+        function populateForm(incarico) {
             incaricoIdField.value = incarico.id || '';
-            form.dataset.docId = incarico.docId || '';
 
             descCheckboxes.forEach(checkboxInfo => {
                 const checkbox = document.getElementById(checkboxInfo.id);
@@ -1070,7 +1063,7 @@
             document.getElementById('tipo-incarico').value = incarico['tipo-incarico'] || 'Civile';
             document.getElementById('giudice').value = incarico.giudice || '';
             document.getElementById('rif-procedura').value = incarico['rif-procedura'] || '';
-            document.getElementById('parti').value = incarico.parti || ''; 
+            document.getElementById('parti').value = incarico.parti || '';
             document.getElementById('note').value = incarico.note || '';
 
             dateFields.forEach(field => {
@@ -1092,80 +1085,49 @@
                 addPaymentField();
             }
 
-            submitButton.textContent = incarico.docId ? 'Salva Modifiche' : 'Aggiungi Incarico';
+            submitButton.textContent = incarico.id ? 'Salva Modifiche' : 'Aggiungi Incarico';
         }
 
-        async function modificaIncarico(id) {
-            if (!userId) {
-                alert("Utente non autenticato. Impossibile modificare l'incarico.");
-                return;
-            }
-
+        function modificaIncarico(id) {
             const incaricoToEdit = incarichiAttivi.find(i => i.id === id) || incarichiArchiviati.find(i => i.id === id);
-            
             if (incaricoToEdit) {
-                const docRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, incaricoToEdit.docId);
-                try {
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        populateForm({ id: incaricoToEdit.id, docId: docSnap.id, ...docSnap.data() }); // Passa l'ID locale esistente
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else {
-                        alert("Incarico non trovato nel database.");
-                    }
-                } catch (error) {
-                    console.error("Error fetching document for edit:", error);
-                    alert("Errore durante il recupero dell'incarico per la modifica: " + error.message);
-                }
-            } else {
-                alert("Incarico non trovato negli elenchi locali.");
+                populateForm(incaricoToEdit);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        async function eliminaIncarico(id) {
-            if (!userId) {
-                alert("Utente non autenticato. Impossibile eliminare l'incarico.");
-                return;
-            }
-
+        function eliminaIncarico(id) {
             if (confirm('Sei sicuro di voler eliminare questa pratica? L\'azione è irreversibile.')) {
-                const incaricoToDelete = incarichiAttivi.find(i => i.id === id) || incarichiArchiviati.find(i => i.id === id);
-                if (!incaricoToDelete || !incaricoToDelete.docId) {
-                    alert("ID documento Firestore non trovato per l'incarico.");
-                    return;
-                }
+                const incaricoId = parseInt(id);
 
-                try {
-                    console.log("Attempting to delete document with docId:", incaricoToDelete.docId);
-                    await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, incaricoToDelete.docId));
-                    alert('Pratica eliminata con successo da Firestore!');
-                    if (incaricoIdField.value == id) {
-                        form.reset();
-                        incaricoIdField.value = '';
-                        submitButton.textContent = 'Aggiungi Incarico';
-                        paymentsList.innerHTML = '';
-                        addPaymentField();
-                        descCheckboxes.forEach(checkboxInfo => {
-                            document.getElementById(checkboxInfo.id).checked = false;
-                        });
-                        jsonInput.value = '';
-                    }
-                } catch (error) {
-                    console.error("Error deleting document:", error);
-                    alert("Errore durante l'eliminazione della pratica: " + error.message);
+                // Tenta di rimuovere da entrambi i percorsi, Firebase gestirà se non esiste
+                incarichiRef.child(incaricoId).remove()
+                    .then(() => console.log('Incarico rimosso dagli attivi (se esisteva):', incaricoId))
+                    .catch(error => console.error('Errore nella rimozione da attivi:', error));
+
+                archivedIncarichiRef.child(incaricoId).remove()
+                    .then(() => console.log('Incarico rimosso dagli archiviati (se esisteva):', incaricoId))
+                    .catch(error => console.error('Errore nella rimozione da archiviati:', error));
+
+                // Pulisci il form se stavi modificando l'incarico eliminato
+                if (incaricoIdField.value == id) {
+                    form.reset();
+                    incaricoIdField.value = '';
+                    submitButton.textContent = 'Aggiungi Incarico';
+                    paymentsList.innerHTML = '';
+                    addPaymentField();
+                    descCheckboxes.forEach(checkboxInfo => {
+                        document.getElementById(checkboxInfo.id).checked = false;
+                    });
+                    jsonInput.value = '';
                 }
             }
         }
 
-        form.addEventListener('submit', async function(event) {
+        form.addEventListener('submit', function(event) {
             event.preventDefault();
 
-            if (!userId) {
-                alert("Utente non autenticato. Impossibile salvare l'incarico.");
-                return;
-            }
-
-            const docIdInModifica = form.dataset.docId;
+            const idInModifica = incaricoIdField.value;
 
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
@@ -1194,63 +1156,77 @@
             });
 
             let incaricoData = {
-                descrizione: selectedDescriptions, 
+                descrizione: selectedDescriptions,
                 'tipo-incarico': document.getElementById('tipo-incarico').value,
                 giudice: document.getElementById('giudice').value,
                 'rif-procedura': document.getElementById('rif-procedura').value,
-                parti: document.getElementById('parti').value, 
+                parti: document.getElementById('parti').value,
                 note: document.getElementById('note').value,
                 pagamenti: currentPayments,
-                
+
                 'data-conferimento': dateData['data-conferimento'],
                 'data-inizio-operazioni': dateData['data-inizio-operazioni'],
                 'data-invio-bozza': dateData['data-invio-bozza'],
                 'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
                 'data-deposito': dateData['data-deposito'],
-                'data-udienza': dateData['data-udienza'] 
+                'data-udienza': dateData['data-udienza']
             };
 
-            try {
-                console.log("Saving incarico to Firestore. User ID:", userId);
-                console.log("Data being sent:", incaricoData);
+            const statoGenerale = getStatoIncarico(incaricoData);
+            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text.includes('Udienza Svolta'));
 
-                if (docIdInModifica) {
-                    console.log("Attempting to update document with docId:", docIdInModifica);
-                    await setDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, docIdInModifica), incaricoData, { merge: true });
-                    alert('Incarico aggiornato con successo su Firestore!');
+            let incaricoId;
+
+            if (idInModifica) {
+                incaricoId = parseInt(idInModifica);
+                incaricoData.id = incaricoId;
+
+                // Rimuovi da entrambi i nodi (attivi e archiviati) per poi riaggiungere in quello corretto
+                incarichiRef.child(incaricoId).remove();
+                archivedIncarichiRef.child(incaricoId).remove();
+
+                if (isCompleted) {
+                    archivedIncarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Incarico modificato e archiviato su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante la modifica incarico e archiviazione:', error));
                 } else {
-                    // Genera un ID numerico locale per l'ordinamento e la visualizzazione
-                    // Questo ID non è persistente su Firestore, ma serve per la logica di modifica/ordinamento locale
-                    const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
-                    const newId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
-                    incaricoData.id = newId; 
-                    console.log("Attempting to add new document with local ID:", newId);
-                    const docRef = await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`), incaricoData);
-                    alert('Incarico aggiunto con successo a Firestore! ID: ' + docRef.id);
+                    incarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Incarico modificato e mantenuto attivo su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante la modifica incarico e mantenimento attivo:', error));
                 }
-            } catch (error) {
-                console.error("Error saving document:", error);
-                alert("Errore durante il salvataggio dell'incarico: " + error.message);
+
+            } else {
+                const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+                incaricoId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
+                incaricoData.id = incaricoId;
+
+                if (isCompleted) {
+                    archivedIncarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Nuovo incarico aggiunto e archiviato su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante l\'aggiunta incarico e archiviazione:', error));
+                } else {
+                    incarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Nuovo incarico aggiunto e mantenuto attivo su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante l\'aggiunta incarico e mantenimento attivo:', error));
+                }
             }
-            
-            form.reset(); 
+
+            form.reset();
             incaricoIdField.value = '';
-            form.dataset.docId = '';
             submitButton.textContent = 'Aggiungi Incarico';
-            paymentsList.innerHTML = ''; 
-            addPaymentField(); 
+            paymentsList.innerHTML = '';
+            addPaymentField();
 
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
-            jsonInput.value = ''; 
+            jsonInput.value = '';
         });
 
         resetButton.addEventListener('click', () => {
             form.reset();
             incaricoIdField.value = '';
-            form.dataset.docId = '';
-            submitButton.textContent = 'Aggiungo Incarico';
+            submitButton.textContent = 'Aggiungi Incarico';
             paymentsList.innerHTML = '';
             addPaymentField();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1258,7 +1234,7 @@
             descCheckboxes.forEach(checkboxInfo => {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
-            jsonInput.value = ''; 
+            jsonInput.value = '';
         });
 
         addPaymentBtn.addEventListener('click', () => addPaymentField());
@@ -1275,21 +1251,20 @@
 
                 form.reset();
                 incaricoIdField.value = '';
-                form.dataset.docId = '';
                 paymentsList.innerHTML = '';
-                addPaymentField(); 
+                addPaymentField();
                 descCheckboxes.forEach(checkboxInfo => {
                     document.getElementById(checkboxInfo.id).checked = false;
                 });
 
                 populateForm(incaricoFromJson);
 
-                submitButton.textContent = 'Aggiungi Incarico (da JSON)'; 
-                alert('Dati JSON caricati nel form. Puoi modificarli e poi cliccare "Aggiungi Incarico".');
+                submitButton.textContent = 'Aggiungi Incarico (da JSON)';
+                alert('Dati JSON caricati nel form. Puoi modificarli e poi cliccare "Aggiungi Incarico" per salvarli su Firebase.');
 
             } catch (e) {
                 alert('Errore nel parsing del JSON. Assicurati che il formato sia corretto.\nErrore: ' + e.message);
-                console.error('Errore JSON:', e);
+                console.error('ErroJSON:', e);
             }
         });
 
@@ -1297,9 +1272,10 @@
             jsonInput.value = '';
         });
 
-        // --- Funzioni di Backup e Ripristino LOCALI (non Firebase) ---
+        // --- Funzioni di Backup e Ripristino ---
 
         backupDataBtn.addEventListener('click', () => {
+            // incarichiAttivi e incarichiArchiviati sono già popolati dai listener di Firebase
             const dataToBackup = {
                 incarichiAttivi: incarichiAttivi,
                 incarichiArchiviati: incarichiArchiviati
@@ -1328,34 +1304,37 @@
             }
 
             const reader = new FileReader();
-            reader.onload = async (e) => {
+            reader.onload = (e) => {
                 try {
                     const loadedData = JSON.parse(e.target.result);
                     if (loadedData.incarichiAttivi && loadedData.incarichiArchiviati) {
-                        if (confirm('Caricando il backup sovrascriverai i dati attuali nel tuo browser. Vuoi anche caricarli su Firebase?')) {
-                            if (!userId) {
-                                alert("Utente non autenticato. Impossibile caricare il backup su Firebase.");
-                                return;
-                            }
-                            const incarichiCollectionRef = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`);
-                            
-                            const existingDocs = await getDocs(incarichiCollectionRef);
-                            const deletePromises = existingDocs.docs.map(d => deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, d.id)));
-                            await Promise.all(deletePromises);
-
-                            const uploadPromises = [...loadedData.incarichiAttivi, ...loadedData.incarichiArchiviati].map(async (inc) => {
-                                const { id, docId, ...dataToUpload } = inc; 
-                                await addDoc(incarichiCollectionRef, dataToUpload);
-                            });
-                            await Promise.all(uploadPromises);
-                            alert('Backup caricato su Firebase e dati ripristinati nel browser!');
-                        } else {
-                            incarichiAttivi = loadedData.incarichiAttivi;
-                            incarichiArchiviati = loadedData.incarichiArchiviati;
-                            localStorage.setItem('incarichiCTU_attivi', JSON.stringify(incarichiAttivi));
-                            localStorage.setItem('incarichiCTU_archiviati', JSON.stringify(incarichiArchiviati));
-                            renderTables();
-                            alert('Backup caricato e dati ripristinati localmente con successo!');
+                        if (confirm('Caricando il backup sovrascriverai i dati attuali nel database Firebase. Sei sicuro di voler continuare?')) {
+                            // Cancella i dati esistenti in Firebase
+                            incarichiRef.remove()
+                                .then(() => {
+                                    console.log('Dati incarichi attivi precedenti eliminati.');
+                                    return archivedIncarichiRef.remove();
+                                })
+                                .then(() => {
+                                    console.log('Dati incarichi archiviati precedenti eliminati.');
+                                    // Invia i nuovi dati a Firebase
+                                    const promises = [];
+                                    loadedData.incarichiAttivi.forEach(item => {
+                                        promises.push(incarichiRef.child(item.id).set(item));
+                                    });
+                                    loadedData.incarichiArchiviati.forEach(item => {
+                                        promises.push(archivedIncarichiRef.child(item.id).set(item));
+                                    });
+                                    return Promise.all(promises);
+                                })
+                                .then(() => {
+                                    alert('Backup caricato e dati ripristinati su Firebase con successo!');
+                                    // renderTables() verrà chiamato dal listener di Firebase
+                                })
+                                .catch(error => {
+                                    alert('Errore durante il ripristino del backup su Firebase: ' + error.message);
+                                    console.error('Errore ripristino backup Firebase:', error);
+                                });
                         }
                     } else {
                         alert('Il file JSON caricato non sembra essere un backup valido. Assicurati che contenga le chiavi "incarichiAttivi" e "incarichiArchiviati".');
@@ -1366,7 +1345,7 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; 
+            event.target.value = '';
         });
 
         // --- Funzionalità Filtri ---
@@ -1380,14 +1359,14 @@
 
             const filters = {};
             filterInputs.forEach((input, index) => {
-                filters[index] = input.value.toLowerCase(); 
+                filters[index] = input.value.toLowerCase();
             });
 
             Array.from(tableBody.rows).forEach(row => {
                 let rowVisible = true;
-                for (let i = 1; i < row.cells.length -1; i++) { 
+                for (let i = 1; i < row.cells.length -1; i++) {
                     const cellContent = row.cells[i].textContent.toLowerCase();
-                    const filterValue = filters[i - 1]; 
+                    const filterValue = filters[i - 1];
 
                     if (filterValue && !cellContent.includes(filterValue)) {
                         rowVisible = false;
@@ -1400,13 +1379,12 @@
 
         filterInputsActive.forEach(input => {
             input.addEventListener('keyup', () => applyFilters('active'));
-            input.addEventListener('change', () => applyFilters('active')); 
+            input.addEventListener('change', () => applyFilters('active'));
         });
         filterInputsArchived.forEach(input => {
             input.addEventListener('keyup', () => applyFilters('archived'));
             input.addEventListener('change', () => applyFilters('archived'));
         });
-
 
         // --- Funzionalità Selezione Multipla ---
 
@@ -1428,39 +1406,38 @@
             toggleSelectAll(event.target, 'archived');
         });
 
-        async function deleteSelected(tableType) {
-            if (!userId) {
-                alert("Utente non autenticato. Impossibile eliminare gli incarichi.");
-                return;
-            }
-
+        function deleteSelected(tableType) {
             const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
             const checkboxes = tableBody.querySelectorAll('.select-row-checkbox:checked[data-table-type="' + tableType + '"]');
-            
-            const visibleAndCheckedDocIds = Array.from(checkboxes)
-                .filter(cb => cb.closest('tr').style.display !== 'none')
-                .map(cb => cb.dataset.docId);
 
-            if (visibleAndCheckedDocIds.length === 0) {
+            const visibleAndCheckedIds = Array.from(checkboxes)
+                .filter(cb => cb.closest('tr').style.display !== 'none')
+                .map(cb => parseInt(cb.dataset.incaricoId));
+
+            if (visibleAndCheckedIds.length === 0) {
                 alert('Nessuna pratica selezionata e visibile per l\'eliminazione.');
                 return;
             }
 
-            if (!confirm(`Sei sicuro di voler eliminare ${visibleAndCheckedDocIds.length} pratica/he selezionata/e? L'azione è irreversibile.`)) {
+            if (!confirm(`Sei sicuro di voler eliminare ${visibleAndCheckedIds.length} pratica/he selezionata/e? L'azione è irreversibile.`)) {
                 return;
             }
 
-            try {
-                console.log("Attempting to delete selected documents with docIds:", visibleAndCheckedDocIds);
-                const deletePromises = visibleAndCheckedDocIds.map(docId => 
-                    deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`, docId))
-                );
-                await Promise.all(deletePromises);
-                alert(`${visibleAndCheckedDocIds.length} pratica/he eliminata/e con successo da Firestore!`);
-            } catch (error) {
-                console.error("Error deleting selected documents:", error);
-                alert("Errore durante l'eliminazione delle pratiche selezionate: " + error.message);
-            }
+            const targetBaseRef = tableType === 'active' ? incarichiRef : archivedIncarichiRef;
+            const promises = [];
+
+            visibleAndCheckedIds.forEach(id => {
+                promises.push(targetBaseRef.child(id).remove());
+            });
+
+            Promise.all(promises)
+                .then(() => {
+                    alert(`${visibleAndCheckedIds.length} pratica/he eliminata/e con successo.`);
+                })
+                .catch(error => {
+                    console.error('Errore durante l\'eliminazione multipla:', error);
+                    alert('Si è verificato un errore durante l\'eliminazione delle pratiche.');
+                });
         }
 
         deleteSelectedActiveBtn.addEventListener('click', () => {
@@ -1471,20 +1448,17 @@
             deleteSelected('archived');
         });
 
-
         // --- Funzionalità Toggle Filtri e Strumenti ---
 
         function toggleFilterVisibility(filterRowElement, masterCheckboxElement, toggleButtonElement) {
-            const isVisible = filterRowElement.style.display === 'table-row';
-
-            if (isVisible) {
-                filterRowElement.style.display = 'none';
-                masterCheckboxElement.closest('th').style.display = 'none';
-                toggleButtonElement.textContent = 'Mostra Filtri e Strumenti';
-            } else {
+            if (filterRowElement.style.display === 'none' || filterRowElement.style.display === '') {
                 filterRowElement.style.display = 'table-row';
                 masterCheckboxElement.closest('th').style.display = 'table-cell';
                 toggleButtonElement.textContent = 'Nascondi Filtri e Strumenti';
+            } else {
+                filterRowElement.style.display = 'none';
+                masterCheckboxElement.closest('th').style.display = 'none';
+                toggleButtonElement.textContent = 'Mostra Filtri e Strumenti';
             }
             applyFilters(filterRowElement.closest('table').id.includes('active') ? 'active' : 'archived');
         }
@@ -1497,39 +1471,16 @@
             toggleFilterVisibility(archivedFilterRow, selectAllArchivedCheckbox, toggleFiltersArchivedBtn);
         });
 
-        // --- Inizializzazione all'avvio ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                console.log("Authenticated with Firebase. User ID:", userId);
-                await caricaIncarichiFromFirestore();
-            } else {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        console.log("Attempting sign-in with custom token...");
-                        const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-                        userId = userCredential.user.uid;
-                        console.log("Signed in with custom token. User ID:", userId);
-                    } else {
-                        console.log("Attempting anonymous sign-in...");
-                        const userCredential = await signInAnonymously(auth);
-                        userId = userCredential.user.uid;
-                        console.log("Signed in anonymously. User ID:", userId);
-                    }
-                    await caricaIncarichiFromFirestore();
-                } catch (error) {
-                    console.error("Firebase authentication failed:", error);
-                    alert("Errore di autenticazione Firebase: " + error.message);
-                }
-            }
-        });
-
+        // Inizializza la visibilità dei filtri e delle checkbox all'avvio: tutto nascosto
         activeFilterRow.style.display = 'none';
         selectAllActiveCheckbox.closest('th').style.display = 'none';
 
         archivedFilterRow.style.display = 'none';
         selectAllArchivedCheckbox.closest('th').style.display = 'none';
 
+
+        // Carica gli incarichi all'avvio della pagina e inizializza un campo pagamento
+        caricaIncarichi();
         if (paymentsList.children.length === 0) {
             addPaymentField();
         }
