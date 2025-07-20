@@ -464,118 +464,122 @@
         <h1 style="text-align: center;">Gestionale Incarichi CTU</h1>
 
         <div class="form-section">
-            <h2>Dettagli Incarico</h2>
-            <form id="form-incarico">
-                <input type="hidden" id="incarico-id" value="">
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                Dettagli Incarico
+                <button type="button" id="toggle-form-btn" class="btn btn-secondary">Espandi Inserimento/Modifica</button>
+            </h2>
+            <div id="incarico-form-content" style="display: none;"> <form id="form-incarico">
+                    <input type="hidden" id="incarico-id" value="">
 
-                <div class="form-grid">
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label>Attività Richieste (Infortunistica Stradale):</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="desc-stima" value="Stima">
-                                <label for="desc-stima">Stima</label>
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Attività Richieste (Infortunistica Stradale):</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-stima" value="Stima">
+                                    <label for="desc-stima">Stima</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-valutazione-commerciale" value="Valutazione Commerciale">
+                                    <label for="desc-valutazione-commerciale">Valutazione Commerciale</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-compatibilita" value="Compatibilità">
+                                    <label for="desc-compatibilita">Compatibilità</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-ricostruzione-sinistro" value="Ricostruzione Sinistro">
+                                    <label for="desc-ricostruzione-sinistro">Ricostruzione Sinistro</label>
+                                </div>
                             </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="desc-valutazione-commerciale" value="Valutazione Commerciale">
-                                <label for="desc-valutazione-commerciale">Valutazione Commerciale</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo-incarico">Tipo Incarico:</label>
+                            <select id="tipo-incarico" name="tipo-incarico">
+                                <option value="Civile">Civile</option>
+                                <option value="Penale">Penale</option>
+                                <option value="Amministrativo">Amministrativo</option>
+                                <option value="Arbitrato">Arbitrato</option>
+                                <option value="Altro">Altro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="giudice">Giudice:</label>
+                            <input type="text" id="giudice" name="giudice">
+                        </div>
+                        <div class="form-group">
+                            <label for="rif-procedura">Riferimento Procedura:</label>
+                            <input type="text" id="rif-procedura" name="rif-procedura">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="parti">Parti (separate da virgola o a capo):</label>
+                            <textarea id="parti" name="parti" rows="2"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="data-conferimento">Data Conferimento Incarico:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-conferimento" name="data-conferimento" required>
+                                <input type="checkbox" id="data-conferimento-done" name="data-conferimento-done" title="Completato">
                             </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="desc-compatibilita" value="Compatibilità">
-                                <label for="desc-compatibilita">Compatibilità</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-inizio-operazioni">Data Inizio Operazioni Peritali:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-inizio-operazioni" name="data-inizio-operazioni">
+                                <input type="checkbox" id="data-inizio-operazioni-done" name="data-inizio-operazioni-done" title="Completato">
                             </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="desc-ricostruzione-sinistro" value="Ricostruzione Sinistro">
-                                <label for="desc-ricostruzione-sinistro">Ricostruzione Sinistro</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-invio-bozza">Data Invio Bozza:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-invio-bozza" name="data-invio-bozza">
+                                <input type="checkbox" id="data-invio-bozza-done" name="data-invio-bozza-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-ricezione-osservazioni">Data Ricezione Osservazioni:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-ricezione-osservazioni" name="data-ricezione-osservazioni">
+                                <input type="checkbox" id="data-ricezione-osservazioni-done" name="data-ricezione-osservazioni-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-deposito">Data Deposito Finale:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-deposito" name="data-deposito">
+                                <input type="checkbox" id="data-deposito-done" name="data-deposito-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-udienza">Data Udienza:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-udienza" name="data-udienza">
+                                <input type="checkbox" id="data-udienza-done" name="data-udienza-done" title="Completato">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="note">Note:</label>
+                            <textarea id="note" name="note" rows="3"></textarea>
+                        </div>
+
+                        <div class="payments-section-container">
+                            <div class="payments-header">
+                                <span>Pagamenti</span>
+                                <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
+                            </div>
+                            <div id="payments-list">
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="tipo-incarico">Tipo Incarico:</label>
-                        <select id="tipo-incarico" name="tipo-incarico">
-                            <option value="Civile">Civile</option>
-                            <option value="Penale">Penale</option>
-                            <option value="Amministrativo">Amministrativo</option>
-                            <option value="Arbitrato">Arbitrato</option>
-                            <option value="Altro">Altro</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="giudice">Giudice:</label>
-                        <input type="text" id="giudice" name="giudice">
-                    </div>
-                    <div class="form-group">
-                        <label for="rif-procedura">Riferimento Procedura:</label>
-                        <input type="text" id="rif-procedura" name="rif-procedura">
-                    </div>
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label for="parti">Parti (separate da virgola o a capo):</label>
-                        <textarea id="parti" name="parti" rows="2"></textarea>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="data-conferimento">Data Conferimento Incarico:</label>
-                        <div class="date-input-group">
-                            <input type="date" id="data-conferimento" name="data-conferimento" required>
-                            <input type="checkbox" id="data-conferimento-done" name="data-conferimento-done" title="Completato">
-                        </div>
+                    <div class="button-group">
+                        <button type="submit" id="submit-button" class="btn btn-primary">Aggiungi Incarico</button>
+                        <button type="button" id="reset-button" class="btn btn-secondary">Nuovo Incarico</button>
                     </div>
-                    <div class="form-group">
-                        <label for="data-inizio-operazioni">Data Inizio Operazioni Peritali:</label>
-                        <div class="date-input-group">
-                            <input type="date" id="data-inizio-operazioni" name="data-inizio-operazioni">
-                            <input type="checkbox" id="data-inizio-operazioni-done" name="data-inizio-operazioni-done" title="Completato">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="data-invio-bozza">Data Invio Bozza:</label>
-                        <div class="date-input-group">
-                            <input type="date" id="data-invio-bozza" name="data-invio-bozza">
-                            <input type="checkbox" id="data-invio-bozza-done" name="data-invio-bozza-done" title="Completato">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="data-ricezione-osservazioni">Data Ricezione Osservazioni:</label>
-                        <div class="date-input-group">
-                            <input type="date" id="data-ricezione-osservazioni" name="data-ricezione-osservazioni">
-                            <input type="checkbox" id="data-ricezione-osservazioni-done" name="data-ricezione-osservazioni-done" title="Completato">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="data-deposito">Data Deposito Finale:</label>
-                        <div class="date-input-group">
-                            <input type="date" id="data-deposito" name="data-deposito">
-                            <input type="checkbox" id="data-deposito-done" name="data-deposito-done" title="Completato">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="data-udienza">Data Udienza:</label>
-                        <div class="date-input-group">
-                            <input type="date" id="data-udienza" name="data-udienza">
-                            <input type="checkbox" id="data-udienza-done" name="data-udienza-done" title="Completato">
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label for="note">Note:</label>
-                        <textarea id="note" name="note" rows="3"></textarea>
-                    </div>
-
-                    <div class="payments-section-container">
-                        <div class="payments-header">
-                            <span>Pagamenti</span>
-                            <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
-                        </div>
-                        <div id="payments-list">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button type="submit" id="submit-button" class="btn btn-primary">Aggiungi Incarico</button>
-                    <button type="button" id="reset-button" class="btn btn-secondary">Nuovo Incarico</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
 
         <div class="form-section" style="margin-top: 40px;">
@@ -686,25 +690,23 @@
 
     <script>
         // Tua configurazione Firebase (SOSTITUISCI QUESTI VALORI CON QUELLI DEL TUO PROGETTO!)
-// Your web app's Firebase configuration
-const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyC9fn33KT8GrEddpdfF_f82v0bAM_kTAhE",
   authDomain: "ctusync2.firebaseapp.com",
   projectId: "ctusync2",
   storageBucket: "ctusync2.firebasestorage.app",
   messagingSenderId: "741014889524",
   appId: "1:741014889524:web:3a59f599b93ab414c85661",
-    databaseURL: "https://ctusync2-default-rtdb.europe-west1.firebasedatabase.app/",
+    databaseURL: "https://ctusync2-default-rtdb.europe-west1.firebasedatabase.app/", // <--- AGGIUNGI QUESTA RIGA CON IL TUO URL
 };
-
 
         // Inizializza Firebase
         firebase.initializeApp(firebaseConfig);
 
         // Ottieni un riferimento al Realtime Database
         const database = firebase.database();
-        const incarichiRef = database.ref('incarichi'); // Nodo per gli incarichi attivi
-        const archivedIncarichiRef = database.ref('incarichi_archiviati'); // Nodo per gli incarichi archiviati
+        const incarichiRef = database.ref('incarichi');
+        const archivedIncarichiRef = database.ref('incarichi_archiviati');
 
         const form = document.getElementById('form-incarico');
         const submitButton = document.getElementById('submit-button');
@@ -729,6 +731,10 @@ const firebaseConfig = {
         const toggleFiltersActiveBtn = document.getElementById('toggle-filters-active');
         const toggleFiltersArchivedBtn = document.getElementById('toggle-filters-archived');
 
+        // Nuovi elementi per il toggle del form
+        const toggleFormBtn = document.getElementById('toggle-form-btn');
+        const incaricoFormContent = document.getElementById('incarico-form-content');
+
 
         const descCheckboxes = [
             { id: 'desc-stima', value: 'Stima' },
@@ -742,7 +748,6 @@ const firebaseConfig = {
         const noActiveMessage = document.getElementById('no-active-incarichi');
         const noArchivedMessage = document.getElementById('no-archived-incarichi');
 
-        // Referenze alle righe dei filtri
         const activeFilterRow = document.querySelector('#tabella-incarichi-attivi thead .filter-input-row');
         const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati thead .filter-input-row');
 
@@ -772,7 +777,6 @@ const firebaseConfig = {
         }
 
         function caricaIncarichi() {
-            // Ascolta i cambiamenti negli incarichi attivi da Firebase
             incarichiRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 incarichiAttivi = [];
@@ -787,7 +791,6 @@ const firebaseConfig = {
                 console.error("Errore nel caricamento degli incarichi attivi da Firebase:", error);
             });
 
-            // Ascolta i cambiamenti negli incarichi archiviati da Firebase
             archivedIncarichiRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 incarichiArchiviati = [];
@@ -802,11 +805,6 @@ const firebaseConfig = {
                 console.error("Errore nel caricamento degli incarichi archiviati da Firebase:", error);
             });
         }
-
-        // La funzione salvaIncarichi non è più necessaria in quanto le modifiche vengono spinte direttamente a Firebase
-        // function salvaIncarichi() {
-        //     // Le modifiche vengono gestite direttamente dalle operazioni Firebase set() e remove()
-        // }
 
         function getStatoIncarico(incarico) {
             const today = new Date();
@@ -1094,6 +1092,7 @@ const firebaseConfig = {
             if (incaricoToEdit) {
                 populateForm(incaricoToEdit);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                toggleFormVisibility(true); // Espandi il form
             }
         }
 
@@ -1101,7 +1100,6 @@ const firebaseConfig = {
             if (confirm('Sei sicuro di voler eliminare questa pratica? L\'azione è irreversibile.')) {
                 const incaricoId = parseInt(id);
 
-                // Tenta di rimuovere da entrambi i percorsi, Firebase gestirà se non esiste
                 incarichiRef.child(incaricoId).remove()
                     .then(() => console.log('Incarico rimosso dagli attivi (se esisteva):', incaricoId))
                     .catch(error => console.error('Errore nella rimozione da attivi:', error));
@@ -1110,7 +1108,6 @@ const firebaseConfig = {
                     .then(() => console.log('Incarico rimosso dagli archiviati (se esisteva):', incaricoId))
                     .catch(error => console.error('Errore nella rimozione da archiviati:', error));
 
-                // Pulisci il form se stavi modificando l'incarico eliminato
                 if (incaricoIdField.value == id) {
                     form.reset();
                     incaricoIdField.value = '';
@@ -1121,6 +1118,7 @@ const firebaseConfig = {
                         document.getElementById(checkboxInfo.id).checked = false;
                     });
                     jsonInput.value = '';
+                    toggleFormVisibility(false); // Comprimi il form dopo l'eliminazione se era quello in modifica
                 }
             }
         }
@@ -1182,7 +1180,6 @@ const firebaseConfig = {
                 incaricoId = parseInt(idInModifica);
                 incaricoData.id = incaricoId;
 
-                // Rimuovi da entrambi i nodi (attivi e archiviati) per poi riaggiungere in quello corretto
                 incarichiRef.child(incaricoId).remove();
                 archivedIncarichiRef.child(incaricoId).remove();
 
@@ -1222,6 +1219,7 @@ const firebaseConfig = {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
             jsonInput.value = '';
+            toggleFormVisibility(false); // Comprimi il form dopo il submit
         });
 
         resetButton.addEventListener('click', () => {
@@ -1236,6 +1234,7 @@ const firebaseConfig = {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
             jsonInput.value = '';
+            toggleFormVisibility(true); // Espandi il form quando si clicca "Nuovo Incarico"
         });
 
         addPaymentBtn.addEventListener('click', () => addPaymentField());
@@ -1262,7 +1261,7 @@ const firebaseConfig = {
 
                 submitButton.textContent = 'Aggiungi Incarico (da JSON)';
                 alert('Dati JSON caricati nel form. Puoi modificarli e poi cliccare "Aggiungi Incarico" per salvarli su Firebase.');
-
+                toggleFormVisibility(true); // Espandi il form quando si carica da JSON
             } catch (e) {
                 alert('Errore nel parsing del JSON. Assicurati che il formato sia corretto.\nErrore: ' + e.message);
                 console.error('ErroJSON:', e);
@@ -1276,7 +1275,6 @@ const firebaseConfig = {
         // --- Funzioni di Backup e Ripristino ---
 
         backupDataBtn.addEventListener('click', () => {
-            // incarichiAttivi e incarichiArchiviati sono già popolati dai listener di Firebase
             const dataToBackup = {
                 incarichiAttivi: incarichiAttivi,
                 incarichiArchiviati: incarichiArchiviati
@@ -1310,7 +1308,6 @@ const firebaseConfig = {
                     const loadedData = JSON.parse(e.target.result);
                     if (loadedData.incarichiAttivi && loadedData.incarichiArchiviati) {
                         if (confirm('Caricando il backup sovrascriverai i dati attuali nel database Firebase. Sei sicuro di voler continuare?')) {
-                            // Cancella i dati esistenti in Firebase
                             incarichiRef.remove()
                                 .then(() => {
                                     console.log('Dati incarichi attivi precedenti eliminati.');
@@ -1318,7 +1315,6 @@ const firebaseConfig = {
                                 })
                                 .then(() => {
                                     console.log('Dati incarichi archiviati precedenti eliminati.');
-                                    // Invia i nuovi dati a Firebase
                                     const promises = [];
                                     loadedData.incarichiAttivi.forEach(item => {
                                         promises.push(incarichiRef.child(item.id).set(item));
@@ -1330,7 +1326,6 @@ const firebaseConfig = {
                                 })
                                 .then(() => {
                                     alert('Backup caricato e dati ripristinati su Firebase con successo!');
-                                    // renderTables() verrà chiamato dal listener di Firebase
                                 })
                                 .catch(error => {
                                     alert('Errore durante il ripristino del backup su Firebase: ' + error.message);
@@ -1471,6 +1466,25 @@ const firebaseConfig = {
         toggleFiltersArchivedBtn.addEventListener('click', () => {
             toggleFilterVisibility(archivedFilterRow, selectAllArchivedCheckbox, toggleFiltersArchivedBtn);
         });
+
+        // Funzione per espandere/comprimere la sezione del form
+        function toggleFormVisibility(expand = null) {
+            if (expand === true) {
+                incaricoFormContent.style.display = 'block';
+                toggleFormBtn.textContent = 'Comprimi Inserimento/Modifica';
+            } else if (expand === false) {
+                incaricoFormContent.style.display = 'none';
+                toggleFormBtn.textContent = 'Espandi Inserimento/Modifica';
+            } else { // Toggle normale (se non specificato expand = true/false)
+                if (incaricoFormContent.style.display === 'none' || incaricoFormContent.style.display === '') {
+                    incaricoFormContent.style.display = 'block';
+                    toggleFormBtn.textContent = 'Comprimi Inserimento/Modifica';
+                } else {
+                    incaricoFormContent.style.display = 'none';
+                    toggleFormBtn.textContent = 'Espandi Inserimento/Modifica';
+                }
+            }
+        }
 
         // Inizializza la visibilità dei filtri e delle checkbox all'avvio: tutto nascosto
         activeFilterRow.style.display = 'none';
