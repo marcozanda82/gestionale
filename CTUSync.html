@@ -1046,7 +1046,7 @@ const firebaseConfig = {
             newRow.innerHTML = `
                 <td data-label="Seleziona:"><input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}"></td>
                 <td data-label="ID:">${incarico.id}</td>
-                <td data-label="Descrizione:">${incarico.descrizione.join(', ')}</td>
+                <td data-label="Descrizione">${Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '')}</td>
                 <td data-label="Parti:">${incarico.parti || ''}</td>
                 <td data-label="Rif. Procedura:">${incarico['rif-procedura'] || ''}</td>
                 <td data-label="Giudice:">${incarico.giudice || ''}</td>
