@@ -77,6 +77,37 @@
             margin-bottom: 40px;
         }
 
+        /* Nuovo stile per l'header della sezione collassabile */
+        .form-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer; /* Indica che è cliccabile */
+            padding-bottom: 10px; /* Spazio sotto il titolo */
+            border-bottom: 1px solid var(--border-color); /* Linea sotto il titolo */
+            margin-bottom: 25px; /* Spazio tra header e contenuto collassabile */
+        }
+        .form-section-header h2 {
+            margin-bottom: 0; /* Rimuovi il margine inferiore predefinito per h2 */
+            border-bottom: none; /* Rimuovi il bordo inferiore predefinito per h2 */
+            text-align: left; /* Allinea il testo a sinistra */
+            flex-grow: 1; /* Permette al titolo di occupare lo spazio disponibile */
+        }
+
+        /* Stile per la freccia */
+        .toggle-arrow {
+            font-size: 1.5em; /* Dimensione della freccia */
+            color: var(--primary-dark); /* Colore della freccia */
+            transition: transform 0.2s ease-in-out; /* Animazione per la rotazione */
+            margin-left: 10px; /* Spazio a sinistra della freccia */
+            user-select: none; /* Impedisce la selezione del testo della freccia */
+        }
+
+        /* Rotazione della freccia quando il contenuto è espanso */
+        .toggle-arrow.expanded {
+            transform: rotate(90deg); /* Ruota di 90 gradi per puntare in basso */
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -464,10 +495,10 @@
         <h1 style="text-align: center;">Gestionale Incarichi CTU</h1>
 
         <div class="form-section">
-            <h2 style="display: flex; justify-content: space-between; align-items: center;">
-                Dettagli Incarico
-                <button type="button" id="toggle-form-btn" class="btn btn-secondary">Espandi Inserimento/Modifica</button>
-            </h2>
+            <div class="form-section-header"> <h2>Dettagli Incarico</h2>
+                <span id="toggle-form-btn" class="toggle-arrow" title="Espandi/Comprimi Form">▶</span>
+            </div>
+
             <div id="incarico-form-content" style="display: none;"> <form id="form-incarico">
                     <input type="hidden" id="incarico-id" value="">
 
@@ -697,7 +728,7 @@ const firebaseConfig = {
   storageBucket: "ctusync2.firebasestorage.app",
   messagingSenderId: "741014889524",
   appId: "1:741014889524:web:3a59f599b93ab414c85661",
-    databaseURL: "https://ctusync2-default-rtdb.europe-west1.firebasedatabase.app/", // <--- AGGIUNGI QUESTA RIGA CON IL TUO URL
+    databaseURL: "https://ctusync2-default-rtdb.europe-west1.firebasedatabase.app/", // <--- AGGIUNGI QUESTA RIGA CON IL TUO URL
 };
 
         // Inizializza Firebase
@@ -731,8 +762,10 @@ const firebaseConfig = {
         const toggleFiltersActiveBtn = document.getElementById('toggle-filters-active');
         const toggleFiltersArchivedBtn = document.getElementById('toggle-filters-archived');
 
-        const toggleFormBtn = document.getElementById('toggle-form-btn');
+        // Aggiornati per riferirsi alla freccia e all'header cliccabile
+        const toggleFormBtn = document.getElementById('toggle-form-btn'); // Questo è ora lo <span> della freccia
         const incaricoFormContent = document.getElementById('incarico-form-content');
+        const formSectionHeader = document.querySelector('.form-section-header'); // Il div che gestisce il click per il toggle
 
 
         const descCheckboxes = [
@@ -1471,17 +1504,17 @@ const firebaseConfig = {
         function toggleFormVisibility(expand = null) {
             if (expand === true) {
                 incaricoFormContent.style.display = 'block';
-                toggleFormBtn.textContent = 'Comprimi Inserimento/Modifica';
+                toggleFormBtn.classList.add('expanded');
             } else if (expand === false) {
                 incaricoFormContent.style.display = 'none';
-                toggleFormBtn.textContent = 'Espandi Inserimento/Modifica';
+                toggleFormBtn.classList.remove('expanded');
             } else { // Toggle normale (se non specificato expand = true/false)
                 if (incaricoFormContent.style.display === 'none' || incaricoFormContent.style.display === '') {
                     incaricoFormContent.style.display = 'block';
-                    toggleFormBtn.textContent = 'Comprimi Inserimento/Modifica';
+                    toggleFormBtn.classList.add('expanded');
                 } else {
                     incaricoFormContent.style.display = 'none';
-                    toggleFormBtn.textContent = 'Espandi Inserimento/Modifica';
+                    toggleFormBtn.classList.remove('expanded');
                 }
             }
         }
