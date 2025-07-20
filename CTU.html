@@ -682,7 +682,6 @@
         const uploadBackupBtn = document.getElementById('upload-backup-btn');
         const uploadBackupFile = document.getElementById('upload-backup-file');
 
-        // Seleziona i nuovi pulsanti per l'eliminazione multipla
         const selectAllActiveCheckbox = document.getElementById('select-all-active');
         const selectAllArchivedCheckbox = document.getElementById('select-all-archived');
         const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
@@ -881,7 +880,6 @@
                 incarichiArchiviati.forEach(incarico => aggiungiRigaTabella(incarico, tabellaArchiviatiBody, 'archived'));
             }
 
-            // Dopo aver renderizzato, applica i filtri e resetta le checkbox "seleziona tutto"
             applyFilters('active');
             applyFilters('archived');
             selectAllActiveCheckbox.checked = false;
@@ -1250,7 +1248,7 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // Resetta l'input file per permettere di caricare lo stesso file più volte
+            event.target.value = ''; 
         });
 
         // --- Funzionalità Filtri ---
@@ -1265,17 +1263,19 @@
             const filters = {};
             filterInputs.forEach((input, index) => {
                 // L'indice del filtro deve corrispondere all'indice della cella nella riga HTML
-                // La checkbox di selezione è la prima cella (index 0), i filtri partono da index 0 per ID etc.
-                // Quindi data-filter-col="0" corrisponde alla cella 1 (ID), data-filter-col="1" alla cella 2 (Descrizione) e così via.
-                filters[index + 1] = input.value.toLowerCase(); 
+                // data-filter-col="0" (ID) corrisponde alla cella 1, data-filter-col="1" (Descrizione) alla cella 2 e così via.
+                // Quindi, filters[colonna_reale_nella_tabella] = valore_filtro
+                filters[input.dataset.filterCol] = input.value.toLowerCase(); 
             });
 
             Array.from(tableBody.rows).forEach(row => {
                 let rowVisible = true;
-                // Itera sulle celle dal secondo indice (indice 1) in poi, perché il primo (indice 0) è la checkbox
-                for (let i = 1; i < row.cells.length -1; i++) { // Escludiamo l'ultima colonna "Azioni" dal filtraggio
+                // Itera sulle celle dal secondo indice (indice 1) in poi per corrispondere ai filtri
+                // La colonna 0 è la checkbox, quindi il filtro per ID (data-filter-col="0") corrisponde a row.cells[1]
+                // row.cells.length - 1 esclude l'ultima colonna "Azioni"
+                for (let i = 1; i < row.cells.length -1; i++) { 
                     const cellContent = row.cells[i].textContent.toLowerCase();
-                    const filterValue = filters[i]; // Usa l'indice della cella come chiave per il filtro
+                    const filterValue = filters[i -1]; // Adatta l'indice del filtro all'indice della colonna data-filter-col
 
                     if (filterValue && !cellContent.includes(filterValue)) {
                         rowVisible = false;
@@ -1288,15 +1288,17 @@
 
         filterInputsActive.forEach(input => {
             input.addEventListener('keyup', () => applyFilters('active'));
+            // Aggiungi anche un event listener per 'change' per catturare il paste con mouse o altri input non keyup
+            input.addEventListener('change', () => applyFilters('active')); 
         });
         filterInputsArchived.forEach(input => {
             input.addEventListener('keyup', () => applyFilters('archived'));
+            input.addEventListener('change', () => applyFilters('archived'));
         });
 
 
         // --- Funzionalità Selezione Multipla ---
 
-        // Funzione per selezionare/deselezionare tutte le checkbox
         function toggleSelectAll(masterCheckbox, tableType) {
             const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
             const checkboxes = tableBody.querySelectorAll('.select-row-checkbox[data-table-type="' + tableType + '"]');
@@ -1305,17 +1307,14 @@
             });
         }
 
-        // Event listener per la checkbox "seleziona tutto" della tabella Attivi
         selectAllActiveCheckbox.addEventListener('change', (event) => {
             toggleSelectAll(event.target, 'active');
         });
 
-        // Event listener per la checkbox "seleziona tutto" della tabella Archiviati
         selectAllArchivedCheckbox.addEventListener('change', (event) => {
             toggleSelectAll(event.target, 'archived');
         });
 
-        // Funzione per eliminare gli incarichi selezionati
         function deleteSelected(tableType) {
             const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
             const checkboxes = tableBody.querySelectorAll('.select-row-checkbox:checked[data-table-type="' + tableType + '"]');
@@ -1338,16 +1337,14 @@
             }
 
             salvaIncarichi();
-            renderTables(); // Ricarica le tabelle con gli elementi rimasti
+            renderTables(); 
             alert(`${idsToDelete.length} pratica/he eliminata/e con successo.`);
         }
 
-        // Event listener per il pulsante "Elimina Selezionati (Attivi)"
         deleteSelectedActiveBtn.addEventListener('click', () => {
             deleteSelected('active');
         });
 
-        // Event listener per il pulsante "Elimina Selezionati (Archiviati)"
         deleteSelectedArchivedBtn.addEventListener('click', () => {
             deleteSelected('archived');
         });
