@@ -1153,49 +1153,44 @@ const firebaseConfig = {
             }
         }
 
-        // NUOVA FUNZIONE PER CREARE LE CARD
-        function creaIncaricoCard(incarico, tableType) {
-            const card = document.createElement('div');
-            card.classList.add('incarico-card');
-            card.setAttribute('data-incarico-id', incarico.id);
-            // Aggiungi un attributo per il tipo di tabella per i filtri
-            card.setAttribute('data-table-type', tableType);
+// NUOVA FUNZIONE PER CREARE LE CARD
+function creaIncaricoCard(incarico, tableType) {
+    const card = document.createElement('div');
+    card.classList.add('incarico-card');
+    card.setAttribute('data-incarico-id', incarico.id);
+    card.setAttribute('data-table-type', tableType);
 
+    // Controlli per i campi che potrebbero essere undefined/null/non-array
+    const descrizione = Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '');
+    // Recupera il campo 'parti' e assicurati che sia una stringa, anche se vuota
+    const partiHeader = incarico.parti || 'Nessuna Parte Specificata'; // Usiamo una variabile diversa per il campo parti nell'header
+    const rifProcedura = incarico['rif-procedura'] || '';
+    const giudice = incarico.giudice || '';
+    const statoGenerale = getStatoIncarico(incarico);
+    const paymentStatus = getPaymentStatus(incarico.pagamenti);
+    const scadenzaCorrente = getScadenzaCorrente(incarico);
 
-            // Controlli per i campi che potrebbero essere undefined/null/non-array
-            const descrizione = Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '');
-            const parti = incarico.parti || '';
-            const rifProcedura = incarico['rif-procedura'] || '';
-            const giudice = incarico.giudice || '';
-            const statoGenerale = getStatoIncarico(incarico);
-            const paymentStatus = getPaymentStatus(incarico.pagamenti);
-            const scadenzaCorrente = getScadenzaCorrente(incarico);
+    // Costruisci il contenuto HTML della card
+    card.innerHTML = `
+        <div class="card-header">
+            <h3 class="card-title">${partiHeader}</h3> <span class="card-id">ID: ${incarico.id}</span> </div>
+        <div class="card-body">
+            <p><strong>Descrizione:</strong> <span data-field="Descrizione">${descrizione}</span></p>
+            <p><strong>Rif. Procedura:</strong> <span data-field="Rif. Procedura">${rifProcedura}</span></p>
+            <p><strong>Giudice:</strong> <span data-field="Giudice">${giudice}</span></p>
+            <p><strong>Pagamenti:</strong> <span data-field="Pagamenti" class="${paymentStatus.class}">${paymentStatus.text}</span></p>
+            <p><strong>Stato:</strong> <span data-field="Stato" class="${statoGenerale.class}">${statoGenerale.text}</span></p>
+            <p><strong>Scadenza:</strong> <span data-field="Scadenza" class="${scadenzaCorrente.class}">${scadenzaCorrente.display || ''}</span></p>
+        </div>
+        <div class="card-footer">
+            <input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}">
+            <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
+            <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
+        </div>
+    `;
 
-            // Costruisci il contenuto HTML della card
-            card.innerHTML = `
-                <div class="card-header">
-                    <h3 class="card-title">${incarico['tipo-incarico'] || 'Tipo Incarico Sconosciuto'} - ID: ${incarico.id}</h3>
-                    <span class="card-id"></span> </div>
-                <div class="card-body">
-                    <p><strong>Descrizione:</strong> <span data-field="Descrizione">${descrizione}</span></p>
-                    <p><strong>Parti:</strong> <span data-field="Parti">${parti}</span></p>
-                    <p><strong>Rif. Procedura:</strong> <span data-field="Rif. Procedura">${rifProcedura}</span></p>
-                    <p><strong>Giudice:</strong> <span data-field="Giudice">${giudice}</span></p>
-                    <p><strong>Pagamenti:</strong> <span data-field="Pagamenti" class="${paymentStatus.class}">${paymentStatus.text}</span></p>
-                    <p><strong>Stato:</strong> <span data-field="Stato" class="${statoGenerale.class}">${statoGenerale.text}</span></p>
-                    <p><strong>Scadenza:</strong> <span data-field="Scadenza" class="${scadenzaCorrente.class}">${scadenzaCorrente.display || ''}</span></p>
-                </div>
-                <div class="card-footer">
-                    <input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}">
-                    <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
-                    <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
-                </div>
-            `;
-
-            return card;
-        }
-
-
+    return card;
+}
         function renderTables() {
             // Pulisci i contenitori delle card
             incarichiInLavorazioneContainer.innerHTML = '';
