@@ -579,18 +579,18 @@
                         <button type="button" id="reset-button" class="btn btn-secondary">Nuovo Incarico</button>
                     </div>
                 </form>
-            </div>
-        </div>
 
-        <div class="form-section" style="margin-top: 40px;">
-            <h2>Carica Incarico da JSON</h2>
-            <div class="form-group">
-                <label for="json-input">Incolla qui il codice JSON dell'incarico:</label>
-                <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "data-udienza": {"value": "2025-07-20", "done": false}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}'></textarea>
-            </div>
-            <div class="button-group" style="justify-content: flex-start;">
-                <button type="button" id="load-json-btn" class="btn btn-primary">Carica da JSON</button>
-                <button type="button" id="clear-json-btn" class="btn btn-secondary">Pulisci JSON</button>
+                <div class="form-section" style="margin-top: 40px; background-color: var(--bg-dark); box-shadow: none; border-top: 1px dashed var(--border-color);">
+                    <h2>Carica Incarico da JSON</h2>
+                    <div class="form-group">
+                        <label for="json-input">Incolla qui il codice JSON dell'incarico:</label>
+                        <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "data-udienza": {"value": "2025-07-20", "done": false}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}'></textarea>
+                    </div>
+                    <div class="button-group" style="justify-content: flex-start;">
+                        <button type="button" id="load-json-btn" class="btn btn-primary">Carica da JSON</button>
+                        <button type="button" id="clear-json-btn" class="btn btn-secondary">Pulisci JSON</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -690,7 +690,7 @@
 
     <script>
         // Tua configurazione Firebase (SOSTITUISCI QUESTI VALORI CON QUELLI DEL TUO PROGETTO!)
-        const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyC9fn33KT8GrEddpdfF_f82v0bAM_kTAhE",
   authDomain: "ctusync2.firebaseapp.com",
   projectId: "ctusync2",
@@ -731,7 +731,6 @@
         const toggleFiltersActiveBtn = document.getElementById('toggle-filters-active');
         const toggleFiltersArchivedBtn = document.getElementById('toggle-filters-archived');
 
-        // Nuovi elementi per il toggle del form
         const toggleFormBtn = document.getElementById('toggle-form-btn');
         const incaricoFormContent = document.getElementById('incarico-form-content');
 
@@ -1118,7 +1117,8 @@
                         document.getElementById(checkboxInfo.id).checked = false;
                     });
                     jsonInput.value = '';
-                    toggleFormVisibility(false); // Comprimi il form dopo l'eliminazione se era quello in modifica
+                    // Non comprimere qui per default, l'utente potrebbe voler inserire un nuovo incarico
+                    // toggleFormVisibility(false); // Comprimi il form dopo l'eliminazione se era quello in modifica
                 }
             }
         }
