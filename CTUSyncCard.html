@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionale Incarichi CTU (Infortunistica Stradale)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --secondary-color: #6c757d;
+            --bg-light: #f8f9fa;
+            --bg-dark: #e9ecef;
+            --text-dark: #343a40;
+            --text-light: #fff;
+            --border-color: #dee2e6;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+
+            /* Colori Semaforo Date */
+            --date-completed-color: #28a745; /* Verde */
+            --date-overdue-color: #dc3545; /* Rosso */
+            --date-due-soon-color: #ffc107; /* Giallo */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--text-light);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow-medium);
+        }
+
+        h1, h2 {
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            display: inline-block;
+            width: auto;
+        }
+
+        /* Il titolo della sezione principale, come "Incarichi in Lavorazione" */
+        h2 {
+            font-size: 1.8em;
+            margin-top: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-section {
+            background-color: var(--bg-dark);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow-light);
+            margin-bottom: 40px;
+        }
+
+        /* Nuovo stile per l'header della sezione collassabile */
+        .form-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer; /* Indica che è cliccabile */
+            padding-bottom: 10px; /* Spazio sotto il titolo */
+            border-bottom: 1px solid var(--border-color); /* Linea sotto il titolo */
+            margin-bottom: 25px; /* Spazio tra header e contenuto collassabile */
+        }
+        .form-section-header h2 {
+            margin-bottom: 0; /* Rimuovi il margine inferiore predefinito per h2 */
+            border-bottom: none; /* Rimuovi il bordo inferiore predefinito per h2 */
+            text-align: left; /* Allinea il testo a sinistra */
+            flex-grow: 1; /* Permette al titolo di occupare lo spazio disponibile */
+        }
+
+        /* Stile per la freccia */
+        .toggle-arrow {
+            font-size: 1.5em; /* Dimensione della freccia */
+            color: var(--primary-dark); /* Colore della freccia */
+            transition: transform 0.2s ease-in-out; /* Animazione per la rotazione */
+            margin-left: 10px; /* Spazio a sinistra della freccia */
+            user-select: none; /* Impedisce la selezione del testo della freccia */
+        }
+
+        /* Rotazione della freccia quando il contenuto è espanso */
+        .toggle-arrow.expanded {
+            transform: rotate(90deg); /* Ruota di 90 gradi per puntare in basso */
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background-color: var(--text-light);
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        /* Rimuovo gli stili di tabella obsoleti */
+        /*
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background-color: var(--text-light);
+            box-shadow: 0 4px 15px var(--shadow-light);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 0.9em;
+            color: var(--text-dark);
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--bg-light);
+        }
+
+        tr:hover {
+            background-color: var(--bg-dark);
+            transition: background-color 0.2s ease;
+        }
+        */
+
+        .stato-completato { color: var(--success-color); font-weight: bold; }
+        .stato-in-corso { color: var(--warning-color); font-weight: bold; }
+        .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
+        .stato-da-iniziare { color: var(--info-color); }
+
+        .payment-status-paid { color: var(--success-color); font-weight: bold; }
+        .payment-status-unpaid { color: var(--danger-color); font-weight: bold; }
+
+        .action-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            color: var(--primary-color);
+            padding: 0;
+            margin: 0;
+            transition: color 0.2s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+        .action-button:hover {
+            color: var(--primary-dark);
+            transform: scale(1.1);
+        }
+        .action-button.delete {
+            color: var(--danger-color);
+        }
+        .action-button.delete:hover {
+            color: #a71d2a;
+        }
+
+        .archivio-section {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-style: italic;
+            background-color: var(--bg-dark);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        /* Pagamenti Section Styling */
+        .payments-section-container {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+        }
+        .payments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+        .payment-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            align-items: center;
+        }
+        .payment-item label {
+            margin-bottom: 5px;
+            font-weight: normal;
+            font-size: 0.9em;
+            color: var(--text-dark);
+        }
+        .payment-item .form-group {
+            margin-bottom: 0;
+        }
+        .remove-payment-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0 5px;
+            transition: color 0.2s ease;
+        }
+        .remove-payment-btn:hover {
+            color: #a71d2a;
+        }
+
+        /* Date Field Specific Styles */
+        .date-completed,
+        .date-overdue,
+        .date-due-soon,
+        .date-normal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            margin: 0;
+        }
+        .date-completed { background-color: var(--date-completed-color); color: var(--text-light); }
+        .date-overdue { background-color: var(--date-overdue-color); color: var(--text-light); }
+        .date-due-soon { background-color: var(--date-due-soon-color); color: var(--text-dark); }
+        .date-normal { color: var(--text-dark); }
+
+        /* Rimossi stili specifici per td/th con data-label scadenza */
+        /*
+        td[data-label="Scadenza:"] {
+            text-align: initial;
+            padding: 0;
+        }
+        th:has( + td[data-label="Scadenza:"]) {
+            text-align: center;
+        }
+        */
+
+        /* Checkbox Group for Description */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--text-light);
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+            color: var(--text-dark);
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Stile per i filtri e il toggle (Adattati per le card) */
+        .filter-controls-container {
+            background-color: var(--bg-dark);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow-light);
+            margin-bottom: 20px;
+            display: none; /* Inizialmente nascosto */
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+            font-weight: normal;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+
+        /* Stile per la checkbox "seleziona tutti" nella sezione filtri */
+        .select-all-checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0px; /* Rimuove il margin-bottom di .form-group */
+            padding-left: 5px;
+        }
+
+        .select-all-checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .select-all-checkbox-container label {
+            margin-bottom: 0;
+            font-weight: bold;
+        }
+
+
+        .table-controls-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            margin-top: 15px;
+        }
+
+        /* Responsive adjustments (specifici per le card) */
+
+        /* Contenitore principale delle card */
+        .incarichi-cards-container {
+            display: flex;
+            flex-wrap: wrap; /* Le card andranno a capo su schermi piccoli */
+            gap: 20px; /* Spazio tra le card */
+            padding: 0px; /* Rimuovi padding generale, è sul container esterno */
+            justify-content: flex-start; /* Allinea le card all'inizio */
+            align-items: flex-start; /* Allinea le card in alto */
+            margin-top: 25px; /* Spazio sopra il blocco di card */
+        }
+
+        /* Stile di ogni singola card */
+        .incarico-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 0px; /* Non necessario con gap sul container */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-width: 280px; /* Larghezza minima per le card su schermi piccoli */
+            flex: 1 1 calc(33.333% - 20px); /* Desktop: 3 colonne (33.333% meno il gap) */
+            box-sizing: border-box; /* Include padding e border nella larghezza */
+        }
+
+        /* Adattamento per schermi medi (es. tablet) */
+        @media (max-width: 1024px) {
+            .incarico-card {
+                flex: 1 1 calc(50% - 20px); /* Tablet: 2 colonne */
+            }
+        }
+
+        /* Adattamento per schermi piccoli (smartphone) */
+        @media (max-width: 600px) {
+            .incarico-card {
+                flex: 1 1 100%; /* Smartphone: 1 colonna */
+                max-width: 100%; /* Assicurati che non ecceda la larghezza */
+            }
+            .incarichi-cards-container {
+                padding: 0px; /* Meno padding sui bordi su mobile */
+                gap: 15px;
+            }
+            .filter-grid {
+                grid-template-columns: 1fr; /* Una colonna per i filtri su mobile */
+            }
+        }
+
+        /* Header della card */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .card-header .card-title {
+            margin: 0;
+            font-size: 1.2em;
+            color: #333;
+            flex-grow: 1; /* Permette al titolo di espandersi */
+            margin-right: 10px; /* Spazio tra titolo e ID */
+        }
+
+        .card-header .card-id {
+            font-size: 0.8em;
+            color: #666;
+            background-color: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap; /* Non far andare a capo l'ID */
+        }
+
+        /* Corpo della card (dettagli) */
+        .card-body p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .card-body strong {
+            color: #555;
+        }
+
+        /* Footer della card (bottoni) */
+        .card-footer {
+            display: flex;
+            justify-content: flex-end; /* Allinea i bottoni a destra */
+            gap: 10px; /* Spazio tra i bottoni */
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+            align-items: center; /* Allinea verticalmente la checkbox con i bottoni */
+        }
+
+        .action-button {
+            /* Mantieni gli stili action-button globali, sono già buoni */
+            font-size: 1em; /* Un po' più piccoli per stare nelle card */
+            width: auto; /* Adatta la larghezza al contenuto */
+            height: auto;
+            padding: 6px 10px; /* Padding per rendere il bottone cliccabile */
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .action-button.delete {
+            background-color: var(--danger-color);
+        }
+        .action-button.delete:hover {
+            background-color: #a71d2a;
+        }
+        .action-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+
+        /* Stile per la checkbox all'interno della card */
+        .select-row-checkbox {
+            margin-right: auto; /* Spinge la checkbox a sinistra */
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Se hai classi per i pagamenti, es: 'pagato', 'da-pagare', 'in-ritardo' */
+        .payment-status-paid {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        .payment-status-unpaid {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        /* Non presente nel CSS originale, aggiunto per completezza */
+        .payment-status-partially-paid {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+
+
+        /* Rimossi responsive adjustments per tabelle */
+        /*
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn {
+                width: 100%;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                border: 1px solid var(--border-color);
+                margin-bottom: 10px;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            td {
+                border: none;
+                border-bottom: 1px solid var(--border-color);
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            td:last-child {
+                border-bottom: none;
+            }
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: calc(50% - 20px);
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: var(--primary-dark);
+            }
+            // Specific column labels for mobile - NON PIÙ NECESSARI CON LE CARD
+            td:nth-of-type(1):before { content: "Seleziona:"; }
+            td:nth-of-type(2):before { content: "ID:"; }
+            td:nth-of-type(3):before { content: "Descrizione:"; }
+            td:nth-of-type(4):before { content: "Parti:"; }
+            td:nth-of-type(5):before { content: "Rif. Procedura:"; }
+            td:nth-of-type(6):before { content: "Giudice:"; }
+            td:nth-of-type(7):before { content: "Pagamenti:"; }
+            td:nth-of-type(8):before { content: "Stato:"; }
+            td:nth-of-type(9):before { content: "Scadenza:"; }
+            td:nth-of-type(10):before { content: "Azioni:"; }
+
+            // Nascondi i filtri su mobile, per ora non gestiti per display block delle righe - NON PIÙ NECESSARI CON LE CARD
+            .filter-input-row {
+                display: none !important;
+            }
+
+            .table-controls-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .table-controls-top .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 style="text-align: center;">Gestionale Incarichi CTU</h1>
+
+        <div class="form-section">
+            <div class="form-section-header"> <h2>Dettagli Incarico</h2>
+                <span id="toggle-form-btn" class="toggle-arrow" title="Espandi/Comprimi Form">▶</span>
+            </div>
+
+            <div id="incarico-form-content" style="display: none;"> <form id="form-incarico">
+                    <input type="hidden" id="incarico-id" value="">
+
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Attività Richieste (Infortunistica Stradale):</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-stima" value="Stima">
+                                    <label for="desc-stima">Stima</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-valutazione-commerciale" value="Valutazione Commerciale">
+                                    <label for="desc-valutazione-commerciale">Valutazione Commerciale</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-compatibilita" value="Compatibilità">
+                                    <label for="desc-compatibilita">Compatibilità</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="desc-ricostruzione-sinistro" value="Ricostruzione Sinistro">
+                                    <label for="desc-ricostruzione-sinistro">Ricostruzione Sinistro</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo-incarico">Tipo Incarico:</label>
+                            <select id="tipo-incarico" name="tipo-incarico">
+                                <option value="Civile">Civile</option>
+                                <option value="Penale">Penale</option>
+                                <option value="Amministrativo">Amministrativo</option>
+                                <option value="Arbitrato">Arbitrato</option>
+                                <option value="Altro">Altro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="giudice">Giudice:</label>
+                            <input type="text" id="giudice" name="giudice">
+                        </div>
+                        <div class="form-group">
+                            <label for="rif-procedura">Riferimento Procedura:</label>
+                            <input type="text" id="rif-procedura" name="rif-procedura">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="parti">Parti (separate da virgola o a capo):</label>
+                            <textarea id="parti" name="parti" rows="2"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="data-conferimento">Data Conferimento Incarico:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-conferimento" name="data-conferimento" required>
+                                <input type="checkbox" id="data-conferimento-done" name="data-conferimento-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-inizio-operazioni">Data Inizio Operazioni Peritali:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-inizio-operazioni" name="data-inizio-operazioni">
+                                <input type="checkbox" id="data-inizio-operazioni-done" name="data-inizio-operazioni-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-invio-bozza">Data Invio Bozza:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-invio-bozza" name="data-invio-bozza">
+                                <input type="checkbox" id="data-invio-bozza-done" name="data-invio-bozza-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-ricezione-osservazioni">Data Ricezione Osservazioni:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-ricezione-osservazioni" name="data-ricezione-osservazioni">
+                                <input type="checkbox" id="data-ricezione-osservazioni-done" name="data-ricezione-osservazioni-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-deposito">Data Deposito Finale:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-deposito" name="data-deposito">
+                                <input type="checkbox" id="data-deposito-done" name="data-deposito-done" title="Completato">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-udienza">Data Udienza:</label>
+                            <div class="date-input-group">
+                                <input type="date" id="data-udienza" name="data-udienza">
+                                <input type="checkbox" id="data-udienza-done" name="data-udienza-done" title="Completato">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="note">Note:</label>
+                            <textarea id="note" name="note" rows="3"></textarea>
+                        </div>
+
+                        <div class="payments-section-container">
+                            <div class="payments-header">
+                                <span>Pagamenti</span>
+                                <button type="button" id="add-payment-btn" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">+ Aggiungi Pagamento</button>
+                            </div>
+                            <div id="payments-list">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" id="submit-button" class="btn btn-primary">Aggiungi Incarico</button>
+                        <button type="button" id="reset-button" class="btn btn-secondary">Nuovo Incarico</button>
+                    </div>
+                </form>
+
+                <div class="form-section" style="margin-top: 40px; background-color: var(--bg-dark); box-shadow: none; border-top: 1px dashed var(--border-color);">
+                    <h2>Carica Incarico da JSON</h2>
+                    <div class="form-group">
+                        <label for="json-input">Incolla qui il codice JSON dell'incarico:</label>
+                        <textarea id="json-input" rows="10" placeholder='Es: {"descrizione": ["Stima", "Compatibilità"], "tipo-incarico": "Civile", "giudice": "Rossi", "rif-procedura": "RG 123/2024", "parti": "Ricorrente: Mario Rossi, Resistente: Ass. XYZ", "data-conferimento": {"value": "2024-01-15", "done": true}, "data-udienza": {"value": "2025-07-20", "done": false}, "pagamenti": [{"tipo": "Fondo Spese", "stato": "Pagato", "importo": "500.00"}, {"tipo": "Saldo", "stato": "Non Pagato", "importo": "1000.00"}]}'></textarea>
+                    </div>
+                    <div class="button-group" style="justify-content: flex-start;">
+                        <button type="button" id="load-json-btn" class="btn btn-primary">Carica da JSON</button>
+                        <button type="button" id="clear-json-btn" class="btn btn-secondary">Pulisci JSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <h2>Incarichi in Lavorazione</h2>
+            <div class="table-controls-top">
+                <button type="button" id="toggle-filters-active" class="btn btn-secondary" style="margin-top: 0;">Mostra Filtri e Strumenti</button>
+                <button type="button" id="delete-selected-active-btn" class="btn btn-danger">Elimina Selezionati</button>
+            </div>
+
+            <div id="active-filter-controls-container" class="filter-controls-container">
+                <div class="filter-grid">
+                    <div class="filter-group select-all-checkbox-container">
+                        <input type="checkbox" id="select-all-active">
+                        <label for="select-all-active">Seleziona Tutti</label>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-id">Filtra ID:</label>
+                        <input type="text" class="filter-input" data-filter-col="ID" id="filter-active-id" placeholder="Filtra ID">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-desc">Filtra Descrizione:</label>
+                        <input type="text" class="filter-input" data-filter-col="Descrizione" id="filter-active-desc" placeholder="Filtra Desc.">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-parti">Filtra Parti:</label>
+                        <input type="text" class="filter-input" data-filter-col="Parti" id="filter-active-parti" placeholder="Filtra Parti">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-rifproc">Filtra Rif. Procedura:</label>
+                        <input type="text" class="filter-input" data-filter-col="Rif. Procedura" id="filter-active-rifproc" placeholder="Filtra Rif. Proc.">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-giudice">Filtra Giudice:</label>
+                        <input type="text" class="filter-input" data-filter-col="Giudice" id="filter-active-giudice" placeholder="Filtra Giudice">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-pagamenti">Filtra Pagamenti:</label>
+                        <input type="text" class="filter-input" data-filter-col="Pagamenti" id="filter-active-pagamenti" placeholder="Filtra Pagamenti">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-stato">Filtra Stato:</label>
+                        <input type="text" class="filter-input" data-filter-col="Stato" id="filter-active-stato" placeholder="Filtra Stato">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-active-scadenza">Filtra Scadenza:</label>
+                        <input type="text" class="filter-input" data-filter-col="Scadenza" id="filter-active-scadenza" placeholder="Filtra Scadenza">
+                    </div>
+                </div>
+            </div>
+
+            <div id="incarichi_in_lavorazione_container" class="incarichi-cards-container">
+                </div>
+            <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
+        </div>
+
+        <div class="archivio-section">
+            <h2>Archivio Incarichi Completati</h2>
+            <div class="table-controls-top">
+                <button type="button" id="toggle-filters-archived" class="btn btn-secondary" style="margin-top: 0;">Mostra Filtri e Strumenti</button>
+                <button type="button" id="delete-selected-archived-btn" class="btn btn-danger">Elimina Selezionati</button>
+            </div>
+
+            <div id="archived-filter-controls-container" class="filter-controls-container">
+                <div class="filter-grid">
+                     <div class="filter-group select-all-checkbox-container">
+                        <input type="checkbox" id="select-all-archived">
+                        <label for="select-all-archived">Seleziona Tutti</label>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-id">Filtra ID:</label>
+                        <input type="text" class="filter-input" data-filter-col="ID" id="filter-archived-id" placeholder="Filtra ID">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-desc">Filtra Descrizione:</label>
+                        <input type="text" class="filter-input" data-filter-col="Descrizione" id="filter-archived-desc" placeholder="Filtra Desc.">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-parti">Filtra Parti:</label>
+                        <input type="text" class="filter-input" data-filter-col="Parti" id="filter-archived-parti" placeholder="Filtra Parti">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-rifproc">Filtra Rif. Procedura:</label>
+                        <input type="text" class="filter-input" data-filter-col="Rif. Procedura" id="filter-archived-rifproc" placeholder="Filtra Rif. Proc.">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-giudice">Filtra Giudice:</label>
+                        <input type="text" class="filter-input" data-filter-col="Giudice" id="filter-archived-giudice" placeholder="Filtra Giudice">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-pagamenti">Filtra Pagamenti:</label>
+                        <input type="text" class="filter-input" data-filter-col="Pagamenti" id="filter-archived-pagamenti" placeholder="Filtra Pagamenti">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-stato">Filtra Stato:</label>
+                        <input type="text" class="filter-input" data-filter-col="Stato" id="filter-archived-stato" placeholder="Filtra Stato">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-scadenza">Filtra Scadenza:</label>
+                        <input type="text" class="filter-input" data-filter-col="Scadenza" id="filter-archived-scadenza" placeholder="Filtra Scadenza">
+                    </div>
+                </div>
+            </div>
+
+            <div id="incarichi_archiviati_container" class="incarichi-cards-container">
+                </div>
+            <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
+        </div>
+
+        <div class="form-section" style="margin-top: 40px;">
+            <h2>Gestione Backup</h2>
+            <div class="button-group" style="justify-content: flex-start;">
+                <button type="button" id="backup-data-btn" class="btn btn-primary">Scarica Backup</button>
+                <input type="file" id="upload-backup-file" accept=".json" style="display: none;">
+                <button type="button" id="upload-backup-btn" class="btn btn-secondary">Carica Backup</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+
+    <script>
+        // Tua configurazione Firebase (SOSTITUISCI QUESTI VALORI CON QUELLI DEL TUO PROGETTO!)
+const firebaseConfig = {
+  apiKey: "AIzaSyC9fn33KT8GrEddpdfF_f82v0bAM_kTAhE",
+  authDomain: "ctusync2.firebaseapp.com",
+  projectId: "ctusync2",
+  storageBucket: "ctusync2.firebasestorage.app",
+  messagingSenderId: "741014889524",
+  appId: "1:741014889524:web:3a59f599b93ab414c85661",
+    databaseURL: "https://ctusync2-default-rtdb.europe-west1.firebasedatabase.app/", // <--- AGGIUNGI QUESTA RIGA CON IL TUO URL
+};
+
+        // Inizializza Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Ottieni un riferimento al Realtime Database
+        const database = firebase.database();
+        const incarichiRef = database.ref('incarichi');
+        const archivedIncarichiRef = database.ref('incarichi_archiviati');
+
+        const form = document.getElementById('form-incarico');
+        const submitButton = document.getElementById('submit-button');
+        const resetButton = document.getElementById('reset-button');
+        const incaricoIdField = document.getElementById('incarico-id');
+        const addPaymentBtn = document.getElementById('add-payment-btn');
+        const paymentsList = document.getElementById('payments-list');
+
+        const jsonInput = document.getElementById('json-input');
+        const loadJsonBtn = document.getElementById('load-json-btn');
+        const clearJsonBtn = document.getElementById('clear-json-btn');
+
+        const backupDataBtn = document.getElementById('backup-data-btn');
+        const uploadBackupBtn = document.getElementById('upload-backup-btn');
+        const uploadBackupFile = document.getElementById('upload-backup-file');
+
+        // Modificati per puntare ai nuovi id delle checkbox e dei contenitori dei filtri
+        const selectAllActiveCheckbox = document.getElementById('select-all-active');
+        const selectAllArchivedCheckbox = document.getElementById('select-all-archived');
+        const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
+        const deleteSelectedArchivedBtn = document.getElementById('delete-selected-archived-btn');
+
+        const toggleFiltersActiveBtn = document.getElementById('toggle-filters-active');
+        const toggleFiltersArchivedBtn = document.getElementById('toggle-filters-archived');
+
+        // Nuovi elementi per i contenitori dei filtri
+        const activeFilterControlsContainer = document.getElementById('active-filter-controls-container');
+        const archivedFilterControlsContainer = document.getElementById('archived-filter-controls-container');
+
+
+        // Aggiornati per riferirsi alla freccia e all'header cliccabile
+        const toggleFormBtn = document.getElementById('toggle-form-btn'); // Questo è ora lo <span> della freccia
+        const incaricoFormContent = document.getElementById('incarico-form-content');
+        const formSectionHeader = document.querySelector('.form-section-header'); // Il div che gestisce il click per il toggle
+
+
+        const descCheckboxes = [
+            { id: 'desc-stima', value: 'Stima' },
+            { id: 'desc-valutazione-commerciale', value: 'Valutazione Commerciale' },
+            { id: 'desc-compatibilita', value: 'Compatibilità' },
+            { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
+        ];
+
+        // Nuovi riferimenti ai contenitori delle card
+        const incarichiInLavorazioneContainer = document.getElementById('incarichi_in_lavorazione_container');
+        const incarichiArchiviatiContainer = document.getElementById('incarichi_archiviati_container');
+
+        const noActiveMessage = document.getElementById('no-active-incarichi');
+        const noArchivedMessage = document.getElementById('no-archived-incarichi');
+
+        // Vecchi riferimenti alle righe dei filtri, non più usati come table-row
+        // const activeFilterRow = document.querySelector('#tabella-incarichi-attivi thead .filter-input-row');
+        // const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati thead .filter-input-row');
+
+
+        let incarichiAttivi = [];
+        let incarichiArchiviati = [];
+
+        const dateFields = [
+            { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1, name: 'Conferimento' },
+            { id: 'data-inizio-operazioni', doneId: 'data-inizio-operazioni-done', priority: 2, name: 'Inizio Op. Peritali' },
+            { id: 'data-invio-bozza', doneId: 'data-invio-bozza-done', priority: 3, name: 'Invio Bozza' },
+            { id: 'data-ricezione-osservazioni', doneId: 'data-ricezione-osservazioni-done', priority: 4, name: 'Ricezione Osservazioni' },
+            { id: 'data-deposito', doneId: 'data-deposito-done', priority: 5, name: 'Deposito Finale' },
+            { id: 'data-udienza', doneId: 'data-udienza-done', priority: 6, name: 'Udienza' }
+        ];
+
+        function formatDateToDDMMYYYY(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}-${year}`;
+        }
+
+        function formatDateToDDMM(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}`;
+        }
+
+        function caricaIncarichi() {
+            incarichiRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                incarichiAttivi = [];
+                if (data) {
+                    for (let id in data) {
+                        incarichiAttivi.push({ id: parseInt(id), ...data[id] });
+                    }
+                }
+                renderTables();
+                console.log('Incarichi attivi caricati da Firebase:', incarichiAttivi);
+            }, (error) => {
+                console.error("Errore nel caricamento degli incarichi attivi da Firebase:", error);
+            });
+
+            archivedIncarichiRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                incarichiArchiviati = [];
+                if (data) {
+                    for (let id in data) {
+                        incarichiArchiviati.push({ id: parseInt(id), ...data[id] });
+                    }
+                }
+                renderTables();
+                console.log('Incarichi archiviati caricati da Firebase:', incarichiArchiviati);
+            }, (error) => {
+                console.error("Errore nel caricamento degli incarichi archiviati da Firebase:", error);
+            });
+        }
+
+        function getStatoIncarico(incarico) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let statoText = 'In attesa';
+            let statoClass = '';
+
+            const sortedDateFields = [...dateFields].sort((a, b) => a.priority - b.priority);
+
+            let firstUncompletedActivity = null;
+
+            for (const field of sortedDateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    firstUncompletedActivity = {
+                        name: field.name,
+                        date: new Date(dateInfo.value),
+                        done: dateInfo.done
+                    };
+                    break;
+                }
+            }
+
+            const allCompleted = sortedDateFields.every(field => {
+                const dateInfo = incarico[field.id];
+                return !dateInfo || (dateInfo.value && dateInfo.done);
+            });
+
+            if (allCompleted) {
+                 statoText = 'Completato';
+                 statoClass = 'stato-completato';
+            } else if (firstUncompletedActivity) {
+                if (firstUncompletedActivity.date < today) {
+                    statoText = `${firstUncompletedActivity.name} Scaduta`;
+                    statoClass = 'stato-in-scadenza';
+                } else {
+                    statoText = `${firstUncompletedActivity.name} in Corso`;
+                    statoClass = 'stato-in-corso';
+                }
+            } else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+                statoText = 'Conferito (Da Iniziare)';
+                statoClass = 'stato-da-iniziare';
+            }
+            return { text: statoText, class: statoClass };
+        }
+
+        function getDateClass(dateStr, isDone) {
+            if (!dateStr) return 'date-normal';
+
+            if (isDone) return 'date-completed';
+
+            const date = new Date(dateStr);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const sevenDaysFromNow = new Date();
+            sevenDaysFromNow.setDate(today.getDate() + 7);
+            sevenDaysFromNow.setHours(0, 0, 0, 0);
+
+            if (date < today) {
+                return 'date-overdue';
+            }
+            if (date <= sevenDaysFromNow) {
+                return 'date-due-soon';
+            }
+            return 'date-normal';
+        }
+
+        function getPaymentStatus(pagamenti) {
+            let totaleIncassato = 0;
+            let totaleRichiesto = 0;
+
+            if (pagamenti && Array.isArray(pagamenti) && pagamenti.length > 0) {
+                pagamenti.forEach(p => {
+                    const importo = parseFloat(p.importo) || 0;
+                    totaleRichiesto += importo;
+                    if (p.stato === 'Pagato') {
+                        totaleIncassato += importo;
+                    }
+                });
+            }
+            const saldoResiduo = totaleRichiesto - totaleIncassato;
+
+            if (saldoResiduo <= 0 && totaleRichiesto > 0) { // Pagato solo se c'era qualcosa da pagare
+                return { text: 'Pagato', class: 'payment-status-paid' };
+            } else if (saldoResiduo > 0 && totaleIncassato > 0) { // Parzialmente pagato
+                return { text: `${saldoResiduo.toFixed(2)} € residui`, class: 'payment-status-unpaid' };
+            } else if (totaleRichiesto === 0) { // Nessun pagamento previsto
+                return { text: 'Nessun Pagamento', class: 'payment-status-normal' };
+            } else { // Totale Richiesto > 0 e Incassato = 0 (Non Pagato)
+                return { text: `${saldoResiduo.toFixed(2)} € non saldati`, class: 'payment-status-unpaid' };
+            }
+        }
+
+        // NUOVA FUNZIONE PER CREARE LE CARD
+        function creaIncaricoCard(incarico, tableType) {
+            const card = document.createElement('div');
+            card.classList.add('incarico-card');
+            card.setAttribute('data-incarico-id', incarico.id);
+            // Aggiungi un attributo per il tipo di tabella per i filtri
+            card.setAttribute('data-table-type', tableType);
+
+
+            // Controlli per i campi che potrebbero essere undefined/null/non-array
+            const descrizione = Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '');
+            const parti = incarico.parti || '';
+            const rifProcedura = incarico['rif-procedura'] || '';
+            const giudice = incarico.giudice || '';
+            const statoGenerale = getStatoIncarico(incarico);
+            const paymentStatus = getPaymentStatus(incarico.pagamenti);
+            const scadenzaCorrente = getScadenzaCorrente(incarico);
+
+            // Costruisci il contenuto HTML della card
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 class="card-title">${incarico['tipo-incarico'] || 'Tipo Incarico Sconosciuto'} - ID: ${incarico.id}</h3>
+                    <span class="card-id"></span> </div>
+                <div class="card-body">
+                    <p><strong>Descrizione:</strong> <span data-field="Descrizione">${descrizione}</span></p>
+                    <p><strong>Parti:</strong> <span data-field="Parti">${parti}</span></p>
+                    <p><strong>Rif. Procedura:</strong> <span data-field="Rif. Procedura">${rifProcedura}</span></p>
+                    <p><strong>Giudice:</strong> <span data-field="Giudice">${giudice}</span></p>
+                    <p><strong>Pagamenti:</strong> <span data-field="Pagamenti" class="${paymentStatus.class}">${paymentStatus.text}</span></p>
+                    <p><strong>Stato:</strong> <span data-field="Stato" class="${statoGenerale.class}">${statoGenerale.text}</span></p>
+                    <p><strong>Scadenza:</strong> <span data-field="Scadenza" class="${scadenzaCorrente.class}">${scadenzaCorrente.display || ''}</span></p>
+                </div>
+                <div class="card-footer">
+                    <input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}">
+                    <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
+                    <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+
+        function renderTables() {
+            // Pulisci i contenitori delle card
+            incarichiInLavorazioneContainer.innerHTML = '';
+            incarichiArchiviatiContainer.innerHTML = '';
+
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+
+            // Ordina incarichi attivi (non scaduti e non chiusi)
+            incarichiAttivi.sort((a, b) => {
+                const scadenzaA = getScadenzaCorrente(a);
+                const scadenzaB = getScadenzaCorrente(b);
+
+                const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01');
+                const dateB = scadenzaB.value ? new Date(scadenzaB.value) : new Date('2999-01-01');
+
+                if (dateA < now && dateB < now) { // Entrambi scaduti
+                    return dateA.getTime() - dateB.getTime(); // Prima i più vecchi
+                }
+                if (dateA < now && dateB >= now) { // A scaduto, B non
+                    return -1; // A viene prima
+                }
+                if (dateA >= now && dateB < now) { // B scaduto, A non
+                    return 1; // B viene prima
+                }
+                return dateA.getTime() - dateB.getTime(); // Entrambi non scaduti, ordina per data
+            });
+
+
+            if (incarichiAttivi.length === 0) {
+                noActiveMessage.style.display = 'block';
+            } else {
+                noActiveMessage.style.display = 'none';
+                incarichiAttivi.forEach(incarico => {
+                    // Logica per determinare "In Lavorazione"
+                    const scadenza = new Date(incarico.dataScadenza); // Assumo dataScadenza come campo chiave per lo stato generale
+                    const stato = incarico.stato || 'in lavorazione'; // Default per i vecchi dati
+
+                    // La logica di filtro 'in lavorazione' è già gestita nell'onload di firebase
+                    // quindi qui aggiungo semplicemente tutte le card attive
+                    const card = creaIncaricoCard(incarico, 'active');
+                    incarichiInLavorazioneContainer.appendChild(card);
+                });
+            }
+
+            // Ordina incarichi archiviati
+            incarichiArchiviati.sort((a, b) => {
+                const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
+                const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
+                return dateB.getTime() - dateA.getTime(); // Dal più recente al più vecchio
+            });
+
+
+            if (incarichiArchiviati.length === 0) {
+                noArchivedMessage.style.display = 'block';
+            } else {
+                noArchivedMessage.style.display = 'none';
+                incarichiArchiviati.forEach(incarico => {
+                    const card = creaIncaricoCard(incarico, 'archived');
+                    incarichiArchiviatiContainer.appendChild(card);
+                });
+            }
+
+            // Applica i filtri dopo aver renderizzato tutte le card
+            applyFilters('active');
+            applyFilters('archived');
+
+            // Resetta lo stato delle checkbox "seleziona tutti"
+            selectAllActiveCheckbox.checked = false;
+            selectAllArchivedCheckbox.checked = false;
+        }
+
+        function getScadenzaCorrente(incarico) {
+            let scadenza = { value: '', class: 'date-normal', display: '' };
+
+            const sortedDateFields = [...dateFields].
+            // Sort by priority to find the first uncompleted task
+            sort((a, b) => a.priority - b.priority);
+
+            let firstUncompletedActivity = null;
+
+            for (const field of sortedDateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    firstUncompletedActivity = {
+                        name: field.name,
+                        date: new Date(dateInfo.value),
+                        done: dateInfo.done
+                    };
+                    break; // Found the first uncompleted, stop
+                }
+            }
+
+            if (firstUncompletedActivity) {
+                scadenza.value = firstUncompletedActivity.date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                scadenza.class = getDateClass(scadenza.value, false);
+
+                const dateObj = firstUncompletedActivity.date;
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                // Show full date if overdue or due soon (within 7 days)
+                if (dateObj < today || dateObj <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)) {
+                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
+                } else {
+                    scadenza.display = formatDateToDDMM(scadenza.value);
+                }
+            } else {
+                // If all tasks are completed, show the deposition date (if available)
+                if (incarico['data-deposito'] && incarico['data-deposito'].done) {
+                    scadenza.value = incarico['data-deposito'].value;
+                    scadenza.class = getDateClass(incarico['data-deposito'].value, true);
+                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
+                }
+                // If no deposition date, but there's a conferimento date, show that.
+                else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+                    scadenza.value = incarico['data-conferimento'].value;
+                    scadenza.class = getDateClass(incarico['data-conferimento'].value, incarico['data-conferimento'].done);
+                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
+                }
+            }
+
+            return scadenza;
+        }
+
+        // RIMOSSA VECCHIA FUNZIONE aggiungiRigaTabella
+
+
+        function addPaymentField(payment = { tipo: 'Fondo Spese', stato: 'Non Pagato', importo: '' }) {
+            const paymentItem = document.createElement('div');
+            paymentItem.className = 'payment-item';
+            paymentItem.innerHTML = `
+                <div class="form-group">
+                    <label>Tipo:</label>
+                    <select class="payment-type">
+                        <option value="Fondo Spese" ${payment.tipo === 'Fondo Spese' ? 'selected' : ''}>Fondo Spese</option>
+                        <option value="Saldo" ${payment.tipo === 'Saldo' ? 'selected' : ''}>Saldo</option>
+                        <option value="Acconto" ${payment.tipo === 'Acconto' ? 'selected' : ''}>Acconto</option>
+                        <option value="Rimborso Spese" ${payment.tipo === 'Rimborso Spese' ? 'selected' : ''}>Rimborso Spese</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stato:</label>
+                    <select class="payment-status">
+                        <option value="Non Pagato" ${payment.stato === 'Non Pagato' ? 'selected' : ''}>Non Pagato</option>
+                        <option value="Pagato" ${payment.stato === 'Pagato' ? 'selected' : ''}>Pagato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Importo (€):</label>
+                    <input type="number" class="payment-amount" step="0.01" min="0" value="${payment.importo}">
+                </div>
+                <button type="button" class="remove-payment-btn" title="Rimuovi Pagamento">&times;</button>
+            `;
+            paymentsList.appendChild(paymentItem);
+
+            paymentItem.querySelector('.remove-payment-btn').addEventListener('click', () => {
+                paymentsList.removeChild(paymentItem);
+            });
+        }
+
+        function populateForm(incarico) {
+            incaricoIdField.value = incarico.id || '';
+
+            descCheckboxes.forEach(checkboxInfo => {
+                const checkbox = document.getElementById(checkboxInfo.id);
+                checkbox.checked = incarico.descrizione && incarico.descrizione.includes(checkboxInfo.value);
+            });
+
+            document.getElementById('tipo-incarico').value = incarico['tipo-incarico'] || 'Civile';
+            document.getElementById('giudice').value = incarico.giudice || '';
+            document.getElementById('rif-procedura').value = incarico['rif-procedura'] || '';
+            document.getElementById('parti').value = incarico.parti || '';
+            document.getElementById('note').value = incarico.note || '';
+
+            dateFields.forEach(field => {
+                const dateInput = document.getElementById(field.id);
+                const doneCheckbox = document.getElementById(field.doneId);
+                if (incarico[field.id]) {
+                    dateInput.value = incarico[field.id].value || '';
+                    doneCheckbox.checked = incarico[field.id].done || false;
+                } else {
+                    dateInput.value = '';
+                    doneCheckbox.checked = false;
+                }
+            });
+
+            paymentsList.innerHTML = '';
+            if (incarico.pagamenti && incarico.pagamenti.length > 0) {
+                incarico.pagamenti.forEach(payment => addPaymentField(payment));
+            } else {
+                addPaymentField();
+            }
+
+            submitButton.textContent = incarico.id ? 'Salva Modifiche' : 'Aggiungi Incarico';
+        }
+
+        function modificaIncarico(id) {
+            const incaricoToEdit = incarichiAttivi.find(i => i.id === id) || incarichiArchiviati.find(i => i.id === id);
+            if (incaricoToEdit) {
+                populateForm(incaricoToEdit);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                toggleFormVisibility(true); // Espandi il form
+            }
+        }
+
+        function eliminaIncarico(id) {
+            if (confirm('Sei sicuro di voler eliminare questa pratica? L\'azione è irreversibile.')) {
+                const incaricoId = parseInt(id);
+
+                incarichiRef.child(incaricoId).remove()
+                    .then(() => console.log('Incarico rimosso dagli attivi (se esisteva):', incaricoId))
+                    .catch(error => console.error('Errore nella rimozione da attivi:', error));
+
+                archivedIncarichiRef.child(incaricoId).remove()
+                    .then(() => console.log('Incarico rimosso dagli archiviati (se esisteva):', incaricoId))
+                    .catch(error => console.error('Errore nella rimozione da archiviati:', error));
+
+                if (incaricoIdField.value == id) {
+                    form.reset();
+                    incaricoIdField.value = '';
+                    submitButton.textContent = 'Aggiungi Incarico';
+                    paymentsList.innerHTML = '';
+                    addPaymentField();
+                    descCheckboxes.forEach(checkboxInfo => {
+                        document.getElementById(checkboxInfo.id).checked = false;
+                    });
+                    jsonInput.value = '';
+                    // Non comprimere qui per default, l'utente potrebbe voler inserire un nuovo incarico
+                    // toggleFormVisibility(false); // Comprimi il form dopo l'eliminazione se era quello in modifica
+                }
+            }
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const idInModifica = incaricoIdField.value;
+
+            const selectedDescriptions = [];
+            descCheckboxes.forEach(checkboxInfo => {
+                if (document.getElementById(checkboxInfo.id).checked) {
+                    selectedDescriptions.push(checkboxInfo.value);
+                }
+            });
+
+            const currentPayments = [];
+            document.querySelectorAll('.payment-item').forEach(item => {
+                const type = item.querySelector('.payment-type').value;
+                const status = item.querySelector('.payment-status').value;
+                const amount = item.querySelector('.payment-amount').value;
+                currentPayments.push({ tipo: type, stato: status, importo: amount });
+            });
+
+            const dateData = {};
+            dateFields.forEach(field => {
+                const dateValue = document.getElementById(field.id).value;
+                const doneChecked = document.getElementById(field.doneId).checked;
+                if (dateValue) {
+                    dateData[field.id] = { value: dateValue, done: doneChecked };
+                } else {
+                    dateData[field.id] = null;
+                }
+            });
+
+            let incaricoData = {
+                descrizione: selectedDescriptions,
+                'tipo-incarico': document.getElementById('tipo-incarico').value,
+                giudice: document.getElementById('giudice').value,
+                'rif-procedura': document.getElementById('rif-procedura').value,
+                parti: document.getElementById('parti').value,
+                note: document.getElementById('note').value,
+                pagamenti: currentPayments,
+
+                'data-conferimento': dateData['data-conferimento'],
+                'data-inizio-operazioni': dateData['data-inizio-operazioni'],
+                'data-invio-bozza': dateData['data-invio-bozza'],
+                'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
+                'data-deposito': dateData['data-deposito'],
+                'data-udienza': dateData['data-udienza']
+            };
+
+            const statoGenerale = getStatoIncarico(incaricoData);
+            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text.includes('Udienza Svolta'));
+
+            let incaricoId;
+
+            if (idInModifica) {
+                incaricoId = parseInt(idInModifica);
+                incaricoData.id = incaricoId;
+
+                incarichiRef.child(incaricoId).remove();
+                archivedIncarichiRef.child(incaricoId).remove();
+
+                if (isCompleted) {
+                    archivedIncarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Incarico modificato e archiviato su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante la modifica incarico e archiviazione:', error));
+                } else {
+                    incarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Incarico modificato e mantenuto attivo su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante la modifica incarico e mantenimento attivo:', error));
+                }
+
+            } else {
+                const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+                incaricoId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
+                incaricoData.id = incaricoId;
+
+                if (isCompleted) {
+                    archivedIncarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Nuovo incarico aggiunto e archiviato su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante l\'aggiunta incarico e archiviazione:', error));
+                } else {
+                    incarichiRef.child(incaricoId).set(incaricoData)
+                        .then(() => console.log('Nuovo incarico aggiunto e mantenuto attivo su Firebase (ID: ' + incaricoId + ')'))
+                        .catch(error => console.error('Errore durante l\'aggiunta incarico e mantenimento attivo:', error));
+                }
+            }
+
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
+
+            descCheckboxes.forEach(checkboxInfo => {
+                document.getElementById(checkboxInfo.id).checked = false;
+            });
+            jsonInput.value = '';
+            toggleFormVisibility(false); // Comprimi il form dopo il submit
+        });
+
+        resetButton.addEventListener('click', () => {
+            form.reset();
+            incaricoIdField.value = '';
+            submitButton.textContent = 'Aggiungi Incarico';
+            paymentsList.innerHTML = '';
+            addPaymentField();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            descCheckboxes.forEach(checkboxInfo => {
+                document.getElementById(checkboxInfo.id).checked = false;
+            });
+            jsonInput.value = '';
+            toggleFormVisibility(true); // Espandi il form quando si clicca "Nuovo Incarico"
+        });
+
+        addPaymentBtn.addEventListener('click', () => addPaymentField());
+
+        loadJsonBtn.addEventListener('click', () => {
+            const jsonText = jsonInput.value.trim();
+            if (!jsonText) {
+                alert('Per favor, incolla un JSON valido nell\'area di testo.');
+                return;
+            }
+
+            try {
+                const incaricoFromJson = JSON.parse(jsonText);
+
+                form.reset();
+                incaricoIdField.value = '';
+                paymentsList.innerHTML = '';
+                addPaymentField();
+                descCheckboxes.forEach(checkboxInfo => {
+                    document.getElementById(checkboxInfo.id).checked = false;
+                });
+
+                populateForm(incaricoFromJson);
+
+                submitButton.textContent = 'Aggiungi Incarico (da JSON)';
+                alert('Dati JSON caricati nel form. Puoi modificarli e poi cliccare "Aggiungi Incarico" per salvarli su Firebase.');
+                toggleFormVisibility(true); // Espandi il form quando si carica da JSON
+            } catch (e) {
+                alert('Errore nel parsing del JSON. Assicurati che il formato sia corretto.\nErrore: ' + e.message);
+                console.error('ErroJSON:', e);
+            }
+        });
+
+        clearJsonBtn.addEventListener('click', () => {
+            jsonInput.value = '';
+        });
+
+        // --- Funzioni di Backup e Ripristino ---
+
+        backupDataBtn.addEventListener('click', () => {
+            const dataToBackup = {
+                incarichiAttivi: incarichiAttivi,
+                incarichiArchiviati: incarichiArchiviati
+            };
+            const jsonString = JSON.stringify(dataToBackup, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'backup_incarichi_CTU_' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Backup dei dati scaricato con successo!');
+        });
+
+        uploadBackupBtn.addEventListener('click', () => {
+            uploadBackupFile.click();
+        });
+
+        uploadBackupFile.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const loadedData = JSON.parse(e.target.result);
+                    if (loadedData.incarichiAttivi && loadedData.incarichiArchiviati) {
+                        if (confirm('Caricando il backup sovrascriverai i dati attuali nel database Firebase. Sei sicuro di voler continuare?')) {
+                            incarichiRef.remove()
+                                .then(() => {
+                                    console.log('Dati incarichi attivi precedenti eliminati.');
+                                    return archivedIncarichiRef.remove();
+                                })
+                                .then(() => {
+                                    console.log('Dati incarichi archiviati precedenti eliminati.');
+                                    const promises = [];
+                                    loadedData.incarichiAttivi.forEach(item => {
+                                        promises.push(incarichiRef.child(item.id).set(item));
+                                    });
+                                    loadedData.incarichiArchiviati.forEach(item => {
+                                        promises.push(archivedIncarichiRef.child(item.id).set(item));
+                                    });
+                                    return Promise.all(promises);
+                                })
+                                .then(() => {
+                                    alert('Backup caricato e dati ripristinati su Firebase con successo!');
+                                })
+                                .catch(error => {
+                                    alert('Errore durante il ripristino del backup su Firebase: ' + error.message);
+                                    console.error('Errore ripristino backup Firebase:', error);
+                                });
+                        }
+                    } else {
+                        alert('Il file JSON caricato non sembra essere un backup valido. Assicurati che contenga le chiavi "incarichiAttivi" e "incarichiArchiviati".');
+                    }
+                } catch (error) {
+                    alert('Errore durante la lettura del file di backup. Assicurati che sia un file JSON valido. Errore: ' + error.message);
+                    console.error('Errore caricamento backup:', error);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        });
+
+        // --- Funzionalità Filtri (ADATTATI PER LE CARD) ---
+
+        // Riferimenti ai nuovi input dei filtri
+        const filterInputsActive = activeFilterControlsContainer.querySelectorAll('.filter-input');
+        const filterInputsArchived = archivedFilterControlsContainer.querySelectorAll('.filter-input');
+
+        function applyFilters(tableType) {
+            // Seleziona il contenitore corretto delle card
+            const container = tableType === 'active' ? incarichiInLavorazioneContainer : incarichiArchiviatiContainer;
+            const cards = Array.from(container.querySelectorAll('.incarico-card')); // Tutte le card nel container
+            const filterInputs = tableType === 'active' ? filterInputsActive : filterInputsArchived;
+
+            const filters = {};
+            filterInputs.forEach(input => {
+                const colName = input.dataset.filterCol;
+                filters[colName] = input.value.toLowerCase();
+            });
+
+            cards.forEach(card => {
+                let cardVisible = true;
+
+                // Estrai i testi dai campi data-field all'interno della card
+                const id = card.getAttribute('data-incarico-id').toLowerCase();
+                const descrizione = card.querySelector('[data-field="Descrizione"]').textContent.toLowerCase();
+                const parti = card.querySelector('[data-field="Parti"]').textContent.toLowerCase();
+                const rifProcedura = card.querySelector('[data-field="Rif. Procedura"]').textContent.toLowerCase();
+                const giudice = card.querySelector('[data-field="Giudice"]').textContent.toLowerCase();
+                const pagamenti = card.querySelector('[data-field="Pagamenti"]').textContent.toLowerCase();
+                const stato = card.querySelector('[data-field="Stato"]').textContent.toLowerCase();
+                const scadenza = card.querySelector('[data-field="Scadenza"]').textContent.toLowerCase();
+
+
+                // Applica i filtri
+                if (filters['ID'] && !id.includes(filters['ID'])) {
+                    cardVisible = false;
+                }
+                if (filters['Descrizione'] && !descrizione.includes(filters['Descrizione'])) {
+                    cardVisible = false;
+                }
+                if (filters['Parti'] && !parti.includes(filters['Parti'])) {
+                    cardVisible = false;
+                }
+                if (filters['Rif. Procedura'] && !rifProcedura.includes(filters['Rif. Procedura'])) {
+                    cardVisible = false;
+                }
+                if (filters['Giudice'] && !giudice.includes(filters['Giudice'])) {
+                    cardVisible = false;
+                }
+                if (filters['Pagamenti'] && !pagamenti.includes(filters['Pagamenti'])) {
+                    cardVisible = false;
+                }
+                if (filters['Stato'] && !stato.includes(filters['Stato'])) {
+                    cardVisible = false;
+                }
+                if (filters['Scadenza'] && !scadenza.includes(filters['Scadenza'])) {
+                    cardVisible = false;
+                }
+
+                card.style.display = cardVisible ? 'flex' : 'none'; // Le card usano flex
+            });
+        }
+
+        filterInputsActive.forEach(input => {
+            input.addEventListener('keyup', () => applyFilters('active'));
+            input.addEventListener('change', () => applyFilters('active'));
+        });
+        filterInputsArchived.forEach(input => {
+            input.addEventListener('keyup', () => applyFilters('archived'));
+            input.addEventListener('change', () => applyFilters('archived'));
+        });
+
+        // --- Funzionalità Selezione Multipla (ADATTATI PER LE CARD) ---
+
+        function toggleSelectAll(masterCheckbox, tableType) {
+            const container = tableType === 'active' ? incarichiInLavorazioneContainer : incarichiArchiviatiContainer;
+            const checkboxes = container.querySelectorAll('.select-row-checkbox[data-table-type="' + tableType + '"]');
+            checkboxes.forEach(checkbox => {
+                // Seleziona solo le card visibili
+                if (checkbox.closest('.incarico-card').style.display !== 'none') {
+                    checkbox.checked = masterCheckbox.checked;
+                }
+            });
+        }
+
+        selectAllActiveCheckbox.addEventListener('change', (event) => {
+            toggleSelectAll(event.target, 'active');
+        });
+
+        selectAllArchivedCheckbox.addEventListener('change', (event) => {
+            toggleSelectAll(event.target, 'archived');
+        });
+
+        function deleteSelected(tableType) {
+            const container = tableType === 'active' ? incarichiInLavorazioneContainer : incarichiArchiviatiContainer;
+            const checkboxes = container.querySelectorAll('.select-row-checkbox:checked[data-table-type="' + tableType + '"]');
+
+            const visibleAndCheckedIds = Array.from(checkboxes)
+                .filter(cb => cb.closest('.incarico-card').style.display !== 'none') // Controlla la visibilità della card
+                .map(cb => parseInt(cb.dataset.incaricoId));
+
+            if (visibleAndCheckedIds.length === 0) {
+                alert('Nessuna pratica selezionata e visibile per l\'eliminazione.');
+                return;
+            }
+
+            if (!confirm(`Sei sicuro di voler eliminare ${visibleAndCheckedIds.length} pratica/he selezionata/e? L'azione è irreversibile.`)) {
+                return;
+            }
+
+            const targetBaseRef = tableType === 'active' ? incarichiRef : archivedIncarichiRef;
+            const promises = [];
+
+            visibleAndCheckedIds.forEach(id => {
+                promises.push(targetBaseRef.child(id).remove());
+            });
+
+            Promise.all(promises)
+                .then(() => {
+                    alert(`${visibleAndCheckedIds.length} pratica/he eliminata/e con successo.`);
+                })
+                .catch(error => {
+                    console.error('Errore durante l\'eliminazione multipla:', error);
+                    alert('Si è verificato un errore durante l\'eliminazione delle pratiche.');
+                });
+        }
+
+        deleteSelectedActiveBtn.addEventListener('click', () => {
+            deleteSelected('active');
+        });
+
+        deleteSelectedArchivedBtn.addEventListener('click', () => {
+            deleteSelected('archived');
+        });
+
+        // --- Funzionalità Toggle Filtri e Strumenti (ADATTATI PER LE CARD) ---
+
+        function toggleFilterVisibility(filterContainerElement, toggleButtonElement) {
+            if (filterContainerElement.style.display === 'none' || filterContainerElement.style.display === '') {
+                filterContainerElement.style.display = 'flex'; // Le card usano flex
+                toggleButtonElement.textContent = 'Nascondi Filtri e Strumenti';
+            } else {
+                filterContainerElement.style.display = 'none';
+                toggleButtonElement.textContent = 'Mostra Filtri e Strumenti';
+            }
+            // Applica i filtri immediatamente per riflettere lo stato visibilità
+            const tableType = filterContainerElement.id.includes('active') ? 'active' : 'archived';
+            applyFilters(tableType);
+        }
+
+        toggleFiltersActiveBtn.addEventListener('click', () => {
+            toggleFilterVisibility(activeFilterControlsContainer, toggleFiltersActiveBtn);
+        });
+
+        toggleFiltersArchivedBtn.addEventListener('click', () => {
+            toggleFilterVisibility(archivedFilterControlsContainer, toggleFiltersArchivedBtn);
+        });
+
+        // Funzione per espandere/comprimere la sezione del form
+        function toggleFormVisibility(expand = null) {
+            if (expand === true) {
+                incaricoFormContent.style.display = 'block';
+                toggleFormBtn.classList.add('expanded');
+            } else if (expand === false) {
+                incaricoFormContent.style.display = 'none';
+                toggleFormBtn.classList.remove('expanded');
+            } else { // Toggle normale (se non specificato expand = true/false)
+                if (incaricoFormContent.style.display === 'none' || incaricoFormContent.style.display === '') {
+                    incaricoFormContent.style.display = 'block';
+                    toggleFormBtn.classList.add('expanded');
+                } else {
+                    incaricoFormContent.style.display = 'none';
+                    toggleFormBtn.classList.remove('expanded');
+                }
+            }
+        }
+
+        // Listener per il click sull'intera area dell'header della sezione "Dettagli Incarico"
+        formSectionHeader.addEventListener('click', () => toggleFormVisibility());
+
+
+        // Inizializza la visibilità dei filtri all'avvio: tutto nascosto
+        activeFilterControlsContainer.style.display = 'none';
+        archivedFilterControlsContainer.style.display = 'none';
+
+
+        // Carica gli incarichi all'avvio della pagina e inizializza un campo pagamento
+        caricaIncarichi();
+        if (paymentsList.children.length === 0) {
+            addPaymentField();
+        }
+    </script>
+
+</body>
+</html>
