@@ -350,26 +350,51 @@
             cursor: pointer;
         }
 
-        /* Stile per i filtri */
+        /* Stile per i filtri e il toggle */
+        .filter-controls {
+            display: none; /* Nascosto per default */
+            flex-wrap: wrap; /* Permetti ai filtri di andare a capo su schermi più piccoli */
+            gap: 10px; /* Spazio tra i filtri */
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color); /* Separatore */
+        }
+        .filter-controls.visible {
+            display: flex;
+        }
+        .filter-input-row { /* Nuova riga per i filtri */
+            display: contents; /* Fa sì che i th con input si comportino come se fossero diretti figli di thead tr */
+        }
         .filter-input {
             width: calc(100% - 10px); /* Larghezza leggermente inferiore al 100% per il padding */
             padding: 5px;
-            margin-top: 5px;
+            margin-top: 5px; /* Spazio tra il titolo della colonna e l'input */
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 0.85em;
         }
         .filter-cell {
-            vertical-align: top; /* Allinea il filtro in alto nella cella */
+            vertical-align: top;
             padding-top: 0;
             padding-bottom: 0;
         }
-        /* Allineamento checkbox in thead */
-        th input[type="checkbox"] {
-            margin: 0 auto; /* Centra la checkbox se è l'unico contenuto */
-            display: block; /* La rende un blocco per centrarla con margin auto */
+        th.filter-cell .filter-input { /* Regola il margine superiore per non toccare il testo dell'header */
+            margin-top: 8px;
         }
 
+        th input[type="checkbox"] {
+            margin: 0 auto;
+            display: block;
+        }
+
+        .table-controls-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            margin-top: 15px; /* Spazio sopra il toggle e il bottone elimina */
+        }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -419,7 +444,7 @@
                 color: var(--primary-dark);
             }
             /* Specific column labels for mobile */
-            td:nth-of-type(1):before { content: "Seleziona:"; } /* Nuovo data-label per checkbox */
+            td:nth-of-type(1):before { content: "Seleziona:"; }
             td:nth-of-type(2):before { content: "ID:"; }
             td:nth-of-type(3):before { content: "Descrizione:"; }
             td:nth-of-type(4):before { content: "Parti:"; }
@@ -430,39 +455,21 @@
             td:nth-of-type(9):before { content: "Scadenza:"; } 
             td:nth-of-type(10):before { content: "Azioni:"; }
 
-            /* Adjust payment item layout for small screens */
-            .payment-item {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            .payment-item .form-group input,
-            .payment-item .form-group select {
-                width: 100%;
-            }
-
-            /* Adjust date input group for small screens */
-            .date-input-group {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-            .date-input-group label {
-                width: 100%;
-            }
-            .date-input-group input[type="date"],
-            .date-input-group input[type="checkbox"] {
-                width: auto;
-            }
-            .date-input-group input[type="checkbox"] {
-                align-self: flex-end;
-            }
-            .checkbox-group {
-                align-items: flex-start;
-            }
-
-            /* Responsive adjustment for filter inputs */
+            /* Responsive adjustments for filter inputs */
             .filter-input {
-                width: calc(100% - 20px); /* Adjust width for mobile padding */
+                width: calc(100% - 20px);
+            }
+            /* Nascondi i filtri su mobile, verranno gestiti diversamente se necessario */
+            .filter-input-row {
+                display: none;
+            }
+            .table-controls-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .table-controls-top .btn {
+                width: 100%;
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -602,20 +609,34 @@
 
         <div class="table-section">
             <h2>Incarichi in Lavorazione</h2>
+            <div class="table-controls-top">
+                <button type="button" id="toggle-filters-active" class="btn btn-secondary" style="margin-top: 0;">Mostra Filtri e Strumenti</button>
+                <button type="button" id="delete-selected-active-btn" class="btn btn-danger">Elimina Selezionati</button>
+            </div>
             <table id="tabella-incarichi-attivi">
                 <thead>
-                    <tr>
-                        <th class="filter-cell" style="width: 30px;">
+                    <tr class="filter-input-row" style="display: none;"> <th class="filter-cell" style="width: 30px;">
                             <input type="checkbox" id="select-all-active">
                         </th>
-                        <th>ID<input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
-                        <th>Descrizione<input type="text" class="filter-input" data-filter-col="1" placeholder="Filtra Desc."></th>
-                        <th style="width: 18%;">Parti<input type="text" class="filter-input" data-filter-col="2" placeholder="Filtra Parti"></th>
-                        <th style="width: 10%;">Rif. Procedura<input type="text" class="filter-input" data-filter-col="3" placeholder="Filtra Rif. Proc."></th>
-                        <th>Giudice<input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
-                        <th style="width: 120px;">Pagamenti<input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
-                        <th style="width: 120px;">Stato<input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
-                        <th style="width: 120px;">Scadenza<input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
+                        <th><input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
+                        <th><input type="text" class="filter-input" data-filter-col="1" placeholder="Filtra Desc."></th>
+                        <th style="width: 18%;"><input type="text" class="filter-input" data-filter-col="2" placeholder="Filtra Parti"></th>
+                        <th style="width: 10%;"><input type="text" class="filter-input" data-filter-col="3" placeholder="Filtra Rif. Proc."></th>
+                        <th><input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
+                        <th style="width: 80px;"></th> </tr>
+                    <tr>
+                        <th style="width: 30px;">Sel.</th>
+                        <th>ID</th>
+                        <th>Descrizione</th>
+                        <th style="width: 18%;">Parti</th>
+                        <th style="width: 10%;">Rif. Procedura</th>
+                        <th>Giudice</th>
+                        <th style="width: 120px;">Pagamenti</th>
+                        <th style="width: 120px;">Stato</th>
+                        <th style="width: 120px;">Scadenza</th> 
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -623,27 +644,38 @@
                     </tbody>
             </table>
             <div id="no-active-incarichi" class="no-data-message" style="display: none;">Nessun incarico in lavorazione.</div>
-            <div class="button-group" style="justify-content: flex-start; margin-top: 20px;">
-                <button type="button" id="delete-selected-active-btn" class="btn btn-danger">Elimina Selezionati (Attivi)</button>
             </div>
-        </div>
 
         <div class="archivio-section">
             <h2>Archivio Incarichi Completati</h2>
+            <div class="table-controls-top">
+                <button type="button" id="toggle-filters-archived" class="btn btn-secondary" style="margin-top: 0;">Mostra Filtri e Strumenti</button>
+                <button type="button" id="delete-selected-archived-btn" class="btn btn-danger">Elimina Selezionati</button>
+            </div>
             <table id="tabella-incarichi-archiviati">
                 <thead>
-                    <tr>
-                        <th class="filter-cell" style="width: 30px;">
+                    <tr class="filter-input-row" style="display: none;"> <th class="filter-cell" style="width: 30px;">
                             <input type="checkbox" id="select-all-archived">
                         </th>
-                        <th>ID<input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
-                        <th>Descrizione<input type="text" class="filter-input" data-filter-col="1" placeholder="Filtra Desc."></th>
-                        <th style="width: 18%;">Parti<input type="text" class="filter-input" data-filter-col="2" placeholder="Filtra Parti"></th>
-                        <th style="width: 10%;">Rif. Procedura<input type="text" class="filter-input" data-filter-col="3" placeholder="Filtra Rif. Proc."></th>
-                        <th>Giudice<input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
-                        <th style="width: 120px;">Pagamenti<input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
-                        <th style="width: 120px;">Stato<input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
-                        <th style="width: 120px;">Scadenza<input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
+                        <th><input type="text" class="filter-input" data-filter-col="0" placeholder="Filtra ID"></th>
+                        <th><input type="text" class="filter-input" data-filter-col="1" placeholder="Filtra Desc."></th>
+                        <th style="width: 18%;"><input type="text" class="filter-input" data-filter-col="2" placeholder="Filtra Parti"></th>
+                        <th style="width: 10%;"><input type="text" class="filter-input" data-filter-col="3" placeholder="Filtra Rif. Proc."></th>
+                        <th><input type="text" class="filter-input" data-filter-col="4" placeholder="Filtra Giudice"></th>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
+                        <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th> 
+                        <th style="width: 80px;"></th> </tr>
+                    <tr>
+                        <th style="width: 30px;">Sel.</th>
+                        <th>ID</th>
+                        <th>Descrizione</th>
+                        <th style="width: 18%;">Parti</th>
+                        <th style="width: 10%;">Rif. Procedura</th>
+                        <th>Giudice</th>
+                        <th style="width: 120px;">Pagamenti</th>
+                        <th style="width: 120px;">Stato</th>
+                        <th style="width: 120px;">Scadenza</th> 
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -651,10 +683,7 @@
                     </tbody>
             </table>
             <div id="no-archived-incarichi" class="no-data-message" style="display: none;">Nessun incarico archiviato.</div>
-            <div class="button-group" style="justify-content: flex-start; margin-top: 20px;">
-                <button type="button" id="delete-selected-archived-btn" class="btn btn-danger">Elimina Selezionati (Archiviati)</button>
             </div>
-        </div>
 
         <div class="form-section" style="margin-top: 40px;">
             <h2>Gestione Backup</h2>
@@ -686,6 +715,9 @@
         const selectAllArchivedCheckbox = document.getElementById('select-all-archived');
         const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
         const deleteSelectedArchivedBtn = document.getElementById('delete-selected-archived-btn');
+
+        const toggleFiltersActiveBtn = document.getElementById('toggle-filters-active');
+        const toggleFiltersArchivedBtn = document.getElementById('toggle-filters-archived');
 
 
         const descCheckboxes = [
@@ -880,6 +912,7 @@
                 incarichiArchiviati.forEach(incarico => aggiungiRigaTabella(incarico, tabellaArchiviatiBody, 'archived'));
             }
 
+            // Dopo aver renderizzato, applica i filtri e resetta le checkbox "seleziona tutto"
             applyFilters('active');
             applyFilters('archived');
             selectAllActiveCheckbox.checked = false;
@@ -1256,26 +1289,25 @@
         const filterInputsActive = document.querySelectorAll('#tabella-incarichi-attivi .filter-input');
         const filterInputsArchived = document.querySelectorAll('#tabella-incarichi-archiviati .filter-input');
 
+        // Referenze alle righe dei filtri
+        const activeFilterRow = document.querySelector('#tabella-incarichi-attivi .filter-input-row');
+        const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati .filter-input-row');
+
+
         function applyFilters(tableType) {
             const tableBody = tableType === 'active' ? tabellaAttiviBody : tabellaArchiviatiBody;
             const filterInputs = tableType === 'active' ? filterInputsActive : filterInputsArchived;
 
             const filters = {};
             filterInputs.forEach((input, index) => {
-                // L'indice del filtro deve corrispondere all'indice della cella nella riga HTML
-                // data-filter-col="0" (ID) corrisponde alla cella 1, data-filter-col="1" (Descrizione) alla cella 2 e così via.
-                // Quindi, filters[colonna_reale_nella_tabella] = valore_filtro
                 filters[input.dataset.filterCol] = input.value.toLowerCase(); 
             });
 
             Array.from(tableBody.rows).forEach(row => {
                 let rowVisible = true;
-                // Itera sulle celle dal secondo indice (indice 1) in poi per corrispondere ai filtri
-                // La colonna 0 è la checkbox, quindi il filtro per ID (data-filter-col="0") corrisponde a row.cells[1]
-                // row.cells.length - 1 esclude l'ultima colonna "Azioni"
                 for (let i = 1; i < row.cells.length -1; i++) { 
                     const cellContent = row.cells[i].textContent.toLowerCase();
-                    const filterValue = filters[i -1]; // Adatta l'indice del filtro all'indice della colonna data-filter-col
+                    const filterValue = filters[i -1]; 
 
                     if (filterValue && !cellContent.includes(filterValue)) {
                         rowVisible = false;
@@ -1288,7 +1320,6 @@
 
         filterInputsActive.forEach(input => {
             input.addEventListener('keyup', () => applyFilters('active'));
-            // Aggiungi anche un event listener per 'change' per catturare il paste con mouse o altri input non keyup
             input.addEventListener('change', () => applyFilters('active')); 
         });
         filterInputsArchived.forEach(input => {
@@ -1348,6 +1379,25 @@
         deleteSelectedArchivedBtn.addEventListener('click', () => {
             deleteSelected('archived');
         });
+
+
+        // --- Funzionalità Toggle Filtri e Strumenti ---
+        toggleFiltersActiveBtn.addEventListener('click', () => {
+            activeFilterRow.classList.toggle('visible');
+            selectAllActiveCheckbox.closest('th').style.display = activeFilterRow.classList.contains('visible') ? '' : 'none';
+            // Il pulsante delete è già visibile/nascosto con l'elemento padre table-controls-top
+            toggleFiltersActiveBtn.textContent = activeFilterRow.classList.contains('visible') ? 'Nascondi Filtri e Strumenti' : 'Mostra Filtri e Strumenti';
+        });
+
+        toggleFiltersArchivedBtn.addEventListener('click', () => {
+            archivedFilterRow.classList.toggle('visible');
+            selectAllArchivedCheckbox.closest('th').style.display = archivedFilterRow.classList.contains('visible') ? '' : 'none';
+            toggleFiltersArchivedBtn.textContent = archivedFilterRow.classList.contains('visible') ? 'Nascondi Filtri e Strumenti' : 'Mostra Filtri e Strumenti';
+        });
+
+        // Nascondi le righe dei filtri all'avvio (sono già nascoste dal CSS, ma per sicurezza)
+        activeFilterRow.classList.remove('visible');
+        archivedFilterRow.classList.remove('visible');
 
 
         // Carica gli incarichi all'avvio della pagina e inizializza un campo pagamento
