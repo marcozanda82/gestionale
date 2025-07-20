@@ -691,19 +691,17 @@
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebase/firestore.js"; // Modificato il percorso
 
         // Firebase Configuration (provided by the user)
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDFN8dAxH4cAYdrCNfcRchrIyvVN_uW5RU",
-  authDomain: "ctusync-9ec2b.firebaseapp.com",
-  projectId: "ctusync-9ec2b",
-  storageBucket: "ctusync-9ec2b.firebasestorage.app",
-  messagingSenderId: "509703086690",
-  appId: "1:509703086690:web:331e8fb6114da0ba2a273b"
-};
-
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFN8dAxH4cAYdrCNfcRchrIyvVN_uW5RU", // Nuova chiave API
+            authDomain: "ctusync-9ec2b.firebaseapp.com",
+            projectId: "ctusync-9ec2b",
+            storageBucket: "ctusync-9ec2b.firebasestorage.app",
+            messagingSenderId: "509703086690",
+            appId: "1:509703086690:web:331e8fb6114da0ba2a273b"
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -751,8 +749,8 @@ const firebaseConfig = {
         const activeFilterRow = document.querySelector('#tabella-incarichi-attivi thead .filter-input-row');
         const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati thead .filter-input-row');
 
-        let incarichiAttivi = []; // Popolato da Firestore
-        let incarichiArchiviati = []; // Popolato da Firestore
+        let incarichiAttivi = [];
+        let incarichiArchiviati = [];
 
         const dateFields = [
             { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1, name: 'Conferimento' },
@@ -775,7 +773,6 @@ const firebaseConfig = {
             return `${day}-${month}`;
         }
 
-        // Funzione per caricare gli incarichi da Firestore (usando onSnapshot per real-time)
         async function caricaIncarichiFromFirestore() {
             if (!userId) {
                 console.error("User not authenticated. Cannot load data from Firestore.");
@@ -784,10 +781,18 @@ const firebaseConfig = {
 
             const incarichiCollectionRef = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`);
 
-            // Ascolta i cambiamenti in tempo reale
             onSnapshot(incarichiCollectionRef, (snapshot) => {
-                const loadedIncarichi = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() })); // Salva anche docId
+                const loadedIncarichi = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+                console.log("Loaded incarichi from Firestore:", loadedIncarichi);
                 
+                // Assegna un ID numerico sequenziale per l'ordinamento e la visualizzazione locale
+                // Questo ID non è persistente su Firestore, ma serve per la logica di modifica/ordinamento locale
+                loadedIncarichi.forEach((inc, index) => {
+                    if (typeof inc.id === 'undefined') {
+                        inc.id = index + 1; // Assegna un ID temporaneo se manca
+                    }
+                });
+
                 incarichiAttivi = loadedIncarichi.filter(inc => {
                     const stato = getStatoIncarico(inc);
                     return stato.text !== 'Completato' && !stato.text.includes('Udienza Svolta');
@@ -797,7 +802,7 @@ const firebaseConfig = {
                     return stato.text === 'Completato' || stato.text.includes('Udienza Svolta');
                 });
                 
-                renderTables(); // Renderizza le tabelle ogni volta che i dati cambiano in Firestore
+                renderTables();
             }, (error) => {
                 console.error("Error listening to Firestore changes:", error);
                 alert("Errore durante il caricamento dei dati da Firestore: " + error.message);
@@ -853,8 +858,7 @@ const firebaseConfig = {
         }
 
         function getDateClass(dateStr, isDone) {
-            if (!dateStr) return 'date-normal';
-
+            if (!dateStr) return ''; // Ritorna stringa vuota per evitare classi css non necessarie
             if (isDone) return 'date-completed';
 
             const date = new Date(dateStr);
@@ -992,7 +996,7 @@ const firebaseConfig = {
         function aggiungiRigaTabella(incarico, targetTableBody, tableType) {
             const newRow = targetTableBody.insertRow();
             newRow.dataset.id = incarico.id;
-            newRow.dataset.docId = incarico.docId; // Salva l'ID del documento Firestore
+            newRow.dataset.docId = incarico.docId;
 
             const statoGenerale = getStatoIncarico(incarico);
             const paymentStatus = getPaymentStatus(incarico.pagamenti);
@@ -1210,7 +1214,7 @@ const firebaseConfig = {
                 } else {
                     const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
                     const newId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
-                    incaricoData.id = newId;
+                    incaricoData.id = newId; 
                     const docRef = await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/incarichi`), incaricoData);
                     alert('Incarico aggiunto con successo a Firestore! ID: ' + docRef.id);
                 }
@@ -1236,7 +1240,7 @@ const firebaseConfig = {
             form.reset();
             incaricoIdField.value = '';
             form.dataset.docId = '';
-            submitButton.textContent = 'Aggiungi Incarico';
+            submitButton.textContent = 'Aggiungo Incarico';
             paymentsList.innerHTML = '';
             addPaymentField();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1490,11 +1494,15 @@ const firebaseConfig = {
                 await caricaIncarichiFromFirestore();
             } else {
                 try {
+                    // This block is for Canvas environment where __initial_auth_token might be provided
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        console.log("Attempting sign-in with custom token...");
                         const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
                         userId = userCredential.user.uid;
                         console.log("Signed in with custom token. User ID:", userId);
                     } else {
+                        // Fallback to anonymous sign-in if no custom token is provided
+                        console.log("Attempting anonymous sign-in...");
                         const userCredential = await signInAnonymously(auth);
                         userId = userCredential.user.uid;
                         console.log("Signed in anonymously. User ID:", userId);
