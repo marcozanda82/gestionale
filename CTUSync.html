@@ -472,7 +472,8 @@
             td:nth-of-type(7):before { content: "Pagamenti:"; }
             td:nth-of-type(8):before { content: "Stato:"; }
             td:nth-of-type(9):before { content: "Scadenza:"; }
-            td:nth-of-type(10):before { content: "Azioni:"; }
+            td:nth-of-type(10):before { content: "Prossima Udienza:"; }
+            td:nth-of-type(11):before { content: "Azioni:"; }
 
             /* Nascondi i filtri su mobile, per ora non gestiti per display block delle righe */
             .filter-input-row {
@@ -646,6 +647,7 @@
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th>
+                        <th><input type="text" class="filter-input" data-filter-col="8" placeholder="Filtra Udienza"></th>
                         <th style="width: 80px;"></th> </tr>
                     <tr>
                         <th style="width: 30px;">Sel.</th>
@@ -657,6 +659,7 @@
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 120px;">Stato</th>
                         <th style="width: 120px;">Scadenza</th>
+                        <th style="width: 120px;">Prossima Udienza</th>
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -686,6 +689,7 @@
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="5" placeholder="Filtra Pagamenti"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="6" placeholder="Filtra Stato"></th>
                         <th style="width: 120px;"><input type="text" class="filter-input" data-filter-col="7" placeholder="Filtra Scadenza"></th>
+                        <th><input type="text" class="filter-input" data-filter-col="8" placeholder="Filtra Udienza"></th>
                         <th style="width: 80px;"></th> </tr>
                     <tr>
                         <th style="width: 30px;">Sel.</th>
@@ -697,6 +701,7 @@
                         <th style="width: 120px;">Pagamenti</th>
                         <th style="width: 120px;">Stato</th>
                         <th style="width: 120px;">Scadenza</th>
+                        <th style="width: 120px;">Prossima Udienza</th>
                         <th style="width: 80px;">Azioni</th>
                     </tr>
                 </thead>
@@ -1057,6 +1062,7 @@ const firebaseConfig = {
                 <td data-label="Scadenza:"><div class="${scadenzaCorrente.class}">
                     ${scadenzaCorrente.display || ''}
                 </div></td>
+                <td data-label="Prossima Udienza:">${formatDateToDDMMYYYY(incarico['data-udienza']?.value) || ''}</td>
                 <td data-label="Azioni:">
                     <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
                     <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
