@@ -335,15 +335,10 @@
         .date-overdue,
         .date-due-soon,
         .date-normal {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px 8px;
+            display: inline-block; /* Changed from flex */
+            padding: 3px 6px; /* Adjusted padding */
             border-radius: 4px;
             font-weight: bold;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
             text-align: center;
             margin: 0;
         }
@@ -857,6 +852,10 @@
                         <label for="filter-active-scadenza">Filtra Scadenza:</label>
                         <input type="text" class="filter-input" data-filter-col="Scadenza" id="filter-active-scadenza" placeholder="Filtra Scadenza">
                     </div>
+                    <div class="filter-group">
+                        <label for="filter-active-udienza">Filtra Prossima Udienza:</label>
+                        <input type="text" class="filter-input" data-filter-col="Prossima Udienza" id="filter-active-udienza" placeholder="Filtra Udienza">
+                    </div>
                 </div>
             </div>
 
@@ -909,6 +908,10 @@
                     <div class="filter-group">
                         <label for="filter-archived-scadenza">Filtra Scadenza:</label>
                         <input type="text" class="filter-input" data-filter-col="Scadenza" id="filter-archived-scadenza" placeholder="Filtra Scadenza">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-archived-udienza">Filtra Prossima Udienza:</label>
+                        <input type="text" class="filter-input" data-filter-col="Prossima Udienza" id="filter-archived-udienza" placeholder="Filtra Udienza">
                     </div>
                 </div>
             </div>
@@ -1153,44 +1156,50 @@ const firebaseConfig = {
             }
         }
 
-// NUOVA FUNZIONE PER CREARE LE CARD
-function creaIncaricoCard(incarico, tableType) {
-    const card = document.createElement('div');
-    card.classList.add('incarico-card');
-    card.setAttribute('data-incarico-id', incarico.id);
-    card.setAttribute('data-table-type', tableType);
+        // NUOVA FUNZIONE PER CREARE LE CARD
+        function creaIncaricoCard(incarico, tableType) {
+            const card = document.createElement('div');
+            card.classList.add('incarico-card');
+            card.setAttribute('data-incarico-id', incarico.id);
+            // Aggiungi un attributo per il tipo di tabella per i filtri
+            card.setAttribute('data-table-type', tableType);
 
-    // Controlli per i campi che potrebbero essere undefined/null/non-array
-    const descrizione = Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '');
-    // Recupera il campo 'parti' e assicurati che sia una stringa, anche se vuota
-    const partiHeader = incarico.parti || 'Nessuna Parte Specificata'; // Usiamo una variabile diversa per il campo parti nell'header
-    const rifProcedura = incarico['rif-procedura'] || '';
-    const giudice = incarico.giudice || '';
-    const statoGenerale = getStatoIncarico(incarico);
-    const paymentStatus = getPaymentStatus(incarico.pagamenti);
-    const scadenzaCorrente = getScadenzaCorrente(incarico);
 
-    // Costruisci il contenuto HTML della card
-    card.innerHTML = `
-        <div class="card-header">
-            <h3 class="card-title">${partiHeader}</h3> <span class="card-id">ID: ${incarico.id}</span> </div>
-        <div class="card-body">
-            <p><strong>Descrizione:</strong> <span data-field="Descrizione">${descrizione}</span></p>
-            <p><strong>Rif. Procedura:</strong> <span data-field="Rif. Procedura">${rifProcedura}</span></p>
-            <p><strong>Giudice:</strong> <span data-field="Giudice">${giudice}</span></p>
-            <p><strong>Pagamenti:</strong> <span data-field="Pagamenti" class="${paymentStatus.class}">${paymentStatus.text}</span></p>
-            <p><strong>Stato:</strong> <span data-field="Stato" class="${statoGenerale.class}">${statoGenerale.text}</span></p>
-            <p><strong>Scadenza:</strong> <span data-field="Scadenza" class="${scadenzaCorrente.class}">${scadenzaCorrente.display || ''}</span></p>
-        </div>
-        <div class="card-footer">
-            <input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}">
-            <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
-            <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
-        </div>
-    `;
+            // Controlli per i campi che potrebbero essere undefined/null/non-array
+            const descrizione = Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '');
+            const parti = incarico.parti || '';
+            const rifProcedura = incarico['rif-procedura'] || '';
+            const giudice = incarico.giudice || '';
+            const statoGenerale = getStatoIncarico(incarico);
+            const paymentStatus = getPaymentStatus(incarico.pagamenti);
+            const scadenzaCorrente = getScadenzaCorrente(incarico);
 
-    return card;
-}
+            // Costruisci il contenuto HTML della card
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 class="card-title">${incarico['tipo-incarico'] || 'Tipo Incarico'} - ID: ${incarico.id}</h3>
+                    <span class="card-id"></span> </div>
+                <div class="card-body">
+                    <p><strong>Descrizione:</strong> <span data-field="Descrizione">${descrizione}</span></p>
+                    <p><strong>Parti:</strong> <span data-field="Parti">${parti}</span></p>
+                    <p><strong>Rif. Procedura:</strong> <span data-field="Rif. Procedura">${rifProcedura}</span></p>
+                    <p><strong>Giudice:</strong> <span data-field="Giudice">${giudice}</span></p>
+                    <p><strong>Pagamenti:</strong> <span data-field="Pagamenti" class="${paymentStatus.class}">${paymentStatus.text}</span></p>
+                    <p><strong>Stato:</strong> <span data-field="Stato" class="${statoGenerale.class}">${statoGenerale.text}</span></p>
+                    <p><strong>Scadenza:</strong> <span data-field="Scadenza"><span class="${scadenzaCorrente.class}">${scadenzaCorrente.display || ''}</span></span></p>
+                    <p><strong>Prossima Udienza:</strong> <span data-field="Prossima Udienza">${formatDateToDDMMYYYY(incarico['data-udienza']?.value) || ''}</span></p>
+                </div>
+                <div class="card-footer">
+                    <input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}">
+                    <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
+                    <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+
         function renderTables() {
             // Pulisci i contenitori delle card
             incarichiInLavorazioneContainer.innerHTML = '';
@@ -1225,10 +1234,6 @@ function creaIncaricoCard(incarico, tableType) {
             } else {
                 noActiveMessage.style.display = 'none';
                 incarichiAttivi.forEach(incarico => {
-                    // Logica per determinare "In Lavorazione"
-                    const scadenza = new Date(incarico.dataScadenza); // Assumo dataScadenza come campo chiave per lo stato generale
-                    const stato = incarico.stato || 'in lavorazione'; // Default per i vecchi dati
-
                     // La logica di filtro 'in lavorazione' è già gestita nell'onload di firebase
                     // quindi qui aggiungo semplicemente tutte le card attive
                     const card = creaIncaricoCard(incarico, 'active');
@@ -1676,6 +1681,7 @@ function creaIncaricoCard(incarico, tableType) {
                 const pagamenti = card.querySelector('[data-field="Pagamenti"]').textContent.toLowerCase();
                 const stato = card.querySelector('[data-field="Stato"]').textContent.toLowerCase();
                 const scadenza = card.querySelector('[data-field="Scadenza"]').textContent.toLowerCase();
+                const udienza = card.querySelector('[data-field="Prossima Udienza"]').textContent.toLowerCase();
 
 
                 // Applica i filtri
@@ -1701,6 +1707,9 @@ function creaIncaricoCard(incarico, tableType) {
                     cardVisible = false;
                 }
                 if (filters['Scadenza'] && !scadenza.includes(filters['Scadenza'])) {
+                    cardVisible = false;
+                }
+                if (filters['Prossima Udienza'] && !udienza.includes(filters['Prossima Udienza'])) {
                     cardVisible = false;
                 }
 
