@@ -864,8 +864,8 @@ const firebaseConfig = {
 
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
-        let currentWorkId = null; // ID della pratica in lavorazione
-        let timerInterval = null; // Intervallo per l'aggiornamento del timer
+        let currentWorkId = null;
+        let timerInterval = null;
 
         const dateFields = [
             { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1, name: 'Conferimento' },
@@ -882,12 +882,6 @@ const firebaseConfig = {
             return `${day}-${month}-${year}`;
         }
 
-        function formatDateToDDMM(dateString) {
-            if (!dateString) return '';
-            const [year, month, day] = dateString.split('-');
-            return `${day}-${month}`;
-        }
-
         function caricaIncarichi() {
             incarichiRef.on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -898,9 +892,6 @@ const firebaseConfig = {
                     }
                 }
                 renderTables();
-                console.log('Incarichi attivi caricati da Firebase:', incarichiAttivi);
-            }, (error) => {
-                console.error("Errore nel caricamento degli incarichi attivi da Firebase:", error);
             });
 
             archivedIncarichiRef.on('value', (snapshot) => {
@@ -912,43 +903,27 @@ const firebaseConfig = {
                     }
                 }
                 renderTables();
-                console.log('Incarichi archiviati caricati da Firebase:', incarichiArchiviati);
-            }, (error) => {
-                console.error("Errore nel caricamento degli incarichi archiviati da Firebase:", error);
             });
         }
 
         function getStatoIncarico(incarico) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-
             let statoText = 'In attesa';
             let statoClass = '';
-
             const sortedDateFields = [...dateFields].sort((a, b) => a.priority - b.priority);
-
             let firstUncompletedActivity = null;
-
             for (const field of sortedDateFields) {
                 const dateInfo = incarico[field.id];
                 if (dateInfo && dateInfo.value && !dateInfo.done) {
-                    firstUncompletedActivity = {
-                        name: field.name,
-                        date: new Date(dateInfo.value),
-                        done: dateInfo.done
-                    };
+                    firstUncompletedActivity = { name: field.name, date: new Date(dateInfo.value) };
                     break;
                 }
             }
-
-            const allCompleted = sortedDateFields.every(field => {
-                const dateInfo = incarico[field.id];
-                return !dateInfo || (dateInfo.value && dateInfo.done);
-            });
-
+            const allCompleted = sortedDateFields.every(field => !incarico[field.id] || (incarico[field.id].value && incarico[field.id].done));
             if (allCompleted) {
-                 statoText = 'Completato';
-                 statoClass = 'stato-completato';
+                statoText = 'Completato';
+                statoClass = 'stato-completato';
             } else if (firstUncompletedActivity) {
                 if (firstUncompletedActivity.date < today) {
                     statoText = `${firstUncompletedActivity.name} Scaduta`;
@@ -957,88 +932,57 @@ const firebaseConfig = {
                     statoText = `${firstUncompletedActivity.name} in Corso`;
                     statoClass = 'stato-in-corso';
                 }
-            } else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
+            } else if (incarico['data-conferimento']?.value) {
                 statoText = 'Conferito (Da Iniziare)';
                 statoClass = 'stato-da-iniziare';
             }
             return { text: statoText, class: statoClass };
         }
 
-        function getDateClass(dateStr, isDone) {
-            if (!dateStr) return 'date-normal';
-
-            if (isDone) return 'date-completed';
-
-            const date = new Date(dateStr);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const sevenDaysFromNow = new Date();
-            sevenDaysFromNow.setDate(today.getDate() + 7);
-            sevenDaysFromNow.setHours(0, 0, 0, 0);
-
-            if (date < today) {
-                return 'date-overdue';
-            }
-            if (date <= sevenDaysFromNow) {
-                return 'date-due-soon';
-            }
-            return 'date-normal';
-        }
-
         function getPaymentStatus(pagamenti) {
             let totaleIncassato = 0;
             let totaleRichiesto = 0;
-
             if (pagamenti && Array.isArray(pagamenti) && pagamenti.length > 0) {
                 pagamenti.forEach(p => {
                     const importo = parseFloat(p.importo) || 0;
                     totaleRichiesto += importo;
-                    if (p.stato === 'Pagato') {
-                        totaleIncassato += importo;
-                    }
+                    if (p.stato === 'Pagato') totaleIncassato += importo;
                 });
             }
             const saldoResiduo = totaleRichiesto - totaleIncassato;
-
-            if (saldoResiduo <= 0 && totaleRichiesto > 0) {
-                return { text: 'Pagato', class: 'payment-status-paid' };
-            } else if (saldoResiduo > 0 && totaleIncassato > 0) {
-                return { text: `${saldoResiduo.toFixed(2)} € residui`, class: 'payment-status-unpaid' };
-            } else if (totaleRichiesto === 0) {
-                return { text: 'Nessun Pagamento', class: 'payment-status-normal' };
-            } else {
-                return { text: `${saldoResiduo.toFixed(2)} € non saldati`, class: 'payment-status-unpaid' };
-            }
+            if (saldoResiduo <= 0 && totaleRichiesto > 0) return { text: 'Pagato', class: 'payment-status-paid' };
+            if (saldoResiduo > 0) return { text: `${saldoResiduo.toFixed(2)} € non saldati`, class: 'payment-status-unpaid' };
+            return { text: 'N/D', class: '' };
         }
 
         function creaIncaricoCard(incarico, tableType) {
             const card = document.createElement('div');
-            card.classList.add('incarico-card');
+            card.className = 'incarico-card';
             card.dataset.incaricoId = incarico.id;
             card.dataset.tableType = tableType;
 
             const isInLavorazione = incarico.id === currentWorkId;
-            if (isInLavorazione) {
-                card.classList.add('in-lavorazione');
-            }
+            if (isInLavorazione) card.classList.add('in-lavorazione');
 
             const descrizione = Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '');
-            const parti = incarico.parti || '';
-            const rifProcedura = incarico['rif-procedura'] || '';
-            const giudice = incarico.giudice || '';
             const statoGenerale = getStatoIncarico(incarico);
             const paymentStatus = getPaymentStatus(incarico.pagamenti);
             const scadenzaCorrente = getScadenzaCorrente(incarico);
 
             let workButtonHtml = '';
-            if (tableType === 'active') { // Mostra bottoni solo per attivi
-                if (isInLavorazione) {
-                    workButtonHtml = `<button class="action-button stop-work" onclick="stopWork()" title="Termina Lavorazione">⏹️</button>`;
-                } else {
-                    workButtonHtml = `<button class="action-button start-work" onclick="startWork(${incarico.id})" title="Inizia Lavorazione">▶️</button>`;
-                }
+            if (tableType === 'active') {
+                workButtonHtml = isInLavorazione
+                    ? `<button class="action-button stop-work" onclick="stopWork()" title="Termina Lavorazione">⏹️</button>`
+                    : `<button class="action-button start-work" onclick="startWork(${incarico.id})" title="Inizia Lavorazione">▶️</button>`;
             }
-            const elapsedTimeHtml = isInLavorazione ? `<p id="timer-${incarico.id}"><strong>Tempo Lavorazione:</strong> <span class="elapsed-time-text"></span></p>` : `<p id="timer-${incarico.id}" style="display:none;"></p>`;
+
+            const tempoLavoratoStatico = (incarico.tempoLavoratoMs && !isInLavorazione)
+                ? `<p><strong>Tempo Lavorato:</strong> <span class="elapsed-time-text">${formatMilliseconds(incarico.tempoLavoratoMs)}</span></p>`
+                : '';
+
+            const liveTimerHtml = isInLavorazione
+                ? `<p id="timer-display-${incarico.id}"><strong>Tempo Lavorato:</strong> <span class="elapsed-time-text"></span></p>`
+                : '';
 
 
             card.innerHTML = `
@@ -1047,14 +991,12 @@ const firebaseConfig = {
                 </div>
                 <div class="card-body">
                     <p><strong>Descrizione:</strong> <span data-field="Descrizione">${descrizione}</span></p>
-                    <p><strong>Parti:</strong> <span data-field="Parti">${parti}</span></p>
-                    <p><strong>Rif. Procedura:</strong> <span data-field="Rif. Procedura">${rifProcedura}</span></p>
-                    <p><strong>Giudice:</strong> <span data-field="Giudice">${giudice}</span></p>
-                    <p><strong>Pagamenti:</strong> <span data-field="Pagamenti" class="${paymentStatus.class}">${paymentStatus.text}</span></p>
+                    <p><strong>Parti:</strong> <span data-field="Parti">${incarico.parti || ''}</span></p>
+                    <p><strong>Rif. Procedura:</strong> <span data-field="Rif. Procedura">${incarico['rif-procedura'] || ''}</span></p>
                     <p><strong>Stato:</strong> <span data-field="Stato" class="${statoGenerale.class}">${statoGenerale.text}</span></p>
                     <p><strong>Scadenza:</strong> <span data-field="Scadenza"><span class="${scadenzaCorrente.class}">${scadenzaCorrente.display || ''}</span></span></p>
                     <p><strong>Prossima Udienza:</strong> <span data-field="Prossima Udienza">${formatDateToDDMMYYYY(incarico['data-udienza']?.value) || ''}</span></p>
-                    ${elapsedTimeHtml}
+                    ${liveTimerHtml || tempoLavoratoStatico}
                 </div>
                 <div class="card-footer">
                     <input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}">
@@ -1063,120 +1005,57 @@ const firebaseConfig = {
                     <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
                 </div>
             `;
-
             return card;
         }
 
+        function getScadenzaCorrente(incarico) {
+            let scadenza = { value: '', class: 'date-normal', display: '' };
+            const sortedDateFields = [...dateFields].sort((a, b) => a.priority - b.priority);
+            for (const field of sortedDateFields) {
+                const dateInfo = incarico[field.id];
+                if (dateInfo && dateInfo.value && !dateInfo.done) {
+                    scadenza.value = dateInfo.value;
+                    scadenza.class = getDateClass(scadenza.value, false);
+                    const dateObj = new Date(dateInfo.value);
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    scadenza.display = (dateObj < today || dateObj <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000))
+                        ? formatDateToDDMMYYYY(scadenza.value)
+                        : formatDateToDDMM(scadenza.value);
+                    return scadenza;
+                }
+            }
+            if (incarico['data-deposito']?.done) {
+                 scadenza.value = incarico['data-deposito'].value;
+                 scadenza.class = getDateClass(scadenza.value, true);
+                 scadenza.display = formatDateToDDMMYYYY(scadenza.value);
+            }
+            return scadenza;
+        }
 
         function renderTables() {
             incarichiInLavorazioneContainer.innerHTML = '';
             incarichiArchiviatiContainer.innerHTML = '';
 
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-
             incarichiAttivi.sort((a, b) => {
-                const scadenzaA = getScadenzaCorrente(a);
-                const scadenzaB = getScadenzaCorrente(b);
-                const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01');
-                const dateB = scadenzaB.value ? new Date(scadenzaB.value) : new Date('2999-01-01');
-
-                if (dateA < now && dateB < now) {
-                    return dateA.getTime() - dateB.getTime();
-                }
-                if (dateA < now && dateB >= now) {
-                    return -1;
-                }
-                if (dateA >= now && dateB < now) {
-                    return 1;
-                }
-                return dateA.getTime() - dateB.getTime();
+                const scadA = getScadenzaCorrente(a).value ? new Date(getScadenzaCorrente(a).value) : new Date('2999-12-31');
+                const scadB = getScadenzaCorrente(b).value ? new Date(getScadenzaCorrente(b).value) : new Date('2999-12-31');
+                return scadA - scadB;
             });
+            incarichiArchiviati.sort((a, b) => new Date(b['data-deposito']?.value || 0) - new Date(a['data-deposito']?.value || 0));
 
+            noActiveMessage.style.display = incarichiAttivi.length === 0 ? 'block' : 'none';
+            incarichiAttivi.forEach(i => incarichiInLavorazioneContainer.appendChild(creaIncaricoCard(i, 'active')));
 
-            if (incarichiAttivi.length === 0) {
-                noActiveMessage.style.display = 'block';
-            } else {
-                noActiveMessage.style.display = 'none';
-                incarichiAttivi.forEach(incarico => {
-                    const card = creaIncaricoCard(incarico, 'active');
-                    incarichiInLavorazioneContainer.appendChild(card);
-                });
-            }
-
-            incarichiArchiviati.sort((a, b) => {
-                const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
-                const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
-                return dateB.getTime() - dateA.getTime();
-            });
-
-
-            if (incarichiArchiviati.length === 0) {
-                noArchivedMessage.style.display = 'block';
-            } else {
-                noArchivedMessage.style.display = 'none';
-                incarichiArchiviati.forEach(incarico => {
-                    const card = creaIncaricoCard(incarico, 'archived');
-                    incarichiArchiviatiContainer.appendChild(card);
-                });
-            }
+            noArchivedMessage.style.display = incarichiArchiviati.length === 0 ? 'block' : 'none';
+            incarichiArchiviati.forEach(i => incarichiArchiviatiContainer.appendChild(creaIncaricoCard(i, 'archived')));
 
             applyFilters('active');
             applyFilters('archived');
-
-            selectAllActiveCheckbox.checked = false;
-            selectAllArchivedCheckbox.checked = false;
-            updateTimerDisplay(); // Aggiorna il timer
+            updateTimerDisplay();
         }
 
-        function getScadenzaCorrente(incarico) {
-            let scadenza = { value: '', class: 'date-normal', display: '' };
-
-            const sortedDateFields = [...dateFields].
-            sort((a, b) => a.priority - b.priority);
-
-            let firstUncompletedActivity = null;
-
-            for (const field of sortedDateFields) {
-                const dateInfo = incarico[field.id];
-                if (dateInfo && dateInfo.value && !dateInfo.done) {
-                    firstUncompletedActivity = {
-                        name: field.name,
-                        date: new Date(dateInfo.value),
-                        done: dateInfo.done
-                    };
-                    break;
-                }
-            }
-
-            if (firstUncompletedActivity) {
-                scadenza.value = firstUncompletedActivity.date.toISOString().split('T')[0];
-                scadenza.class = getDateClass(scadenza.value, false);
-
-                const dateObj = firstUncompletedActivity.date;
-                const today = new Date();
-                today.setHours(0,0,0,0);
-
-                if (dateObj < today || dateObj <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)) {
-                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
-                } else {
-                    scadenza.display = formatDateToDDMM(scadenza.value);
-                }
-            } else {
-                if (incarico['data-deposito'] && incarico['data-deposito'].done) {
-                    scadenza.value = incarico['data-deposito'].value;
-                    scadenza.class = getDateClass(incarico['data-deposito'].value, true);
-                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
-                }
-                else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
-                    scadenza.value = incarico['data-conferimento'].value;
-                    scadenza.class = getDateClass(incarico['data-conferimento'].value, incarico['data-conferimento'].done);
-                    scadenza.display = formatDateToDDMMYYYY(scadenza.value);
-                }
-            }
-            return scadenza;
-        }
-
+        // ... (resto del codice da `addPaymentField` a `form.addEventListener`)
         function addPaymentField(payment = { tipo: 'Fondo Spese', stato: 'Non Pagato', importo: '' }) {
             const paymentItem = document.createElement('div');
             paymentItem.className = 'payment-item';
@@ -1282,7 +1161,7 @@ const firebaseConfig = {
 
         async function saveIncarico(incaricoData) {
             const statoGenerale = getStatoIncarico(incaricoData);
-            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text.includes('Udienza Svolta'));
+            const isCompleted = (statoGenerale.text === 'Completato');
             const incaricoId = incaricoData.id;
 
             await incarichiRef.child(incaricoId).remove();
@@ -1345,31 +1224,26 @@ const firebaseConfig = {
             submitButton.textContent = 'Aggiungi Incarico';
             paymentsList.innerHTML = '';
             addPaymentField();
-
-            descCheckboxes.forEach(checkboxInfo => {
-                document.getElementById(checkboxInfo.id).checked = false;
-            });
+            descCheckboxes.forEach(c => c.checked = false);
             jsonInput.value = '';
             toggleFormVisibility(false);
         });
 
         // --- NUOVE FUNZIONI PER GESTIONE LAVORAZIONE ---
 
-        function formatElapsedTime(isoDateString) {
-            if (!isoDateString) return '';
-            const startDate = new Date(isoDateString);
-            const now = new Date();
-            const diffMs = now - startDate;
-
-            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
+        function formatMilliseconds(ms) {
+            if (!ms || ms < 0) return '';
+            let seconds = Math.floor(ms / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            hours %= 24;
+            minutes %= 60;
             let result = '';
             if (days > 0) result += `${days}g `;
             if (hours > 0) result += `${hours}h `;
-            result += `${minutes}m`;
-            return result;
+            if (minutes > 0) result += `${minutes}m`;
+            return result.trim() || '0m';
         }
 
         function updateTimerDisplay() {
@@ -1378,45 +1252,51 @@ const firebaseConfig = {
             if (currentWorkId) {
                 const incarico = incarichiAttivi.find(i => i.id === currentWorkId);
                 if (incarico && incarico.dataInizioLavorazione) {
-                    const timerContainer = document.getElementById(`timer-${currentWorkId}`);
-                    const timerSpan = timerContainer?.querySelector('span');
-
+                    const timerSpan = document.querySelector(`#timer-display-${currentWorkId} .elapsed-time-text`);
                     if (timerSpan) {
-                         const update = () => {
-                            timerSpan.textContent = formatElapsedTime(incarico.dataInizioLavorazione);
-                         };
-                         update();
-                         timerInterval = setInterval(update, 60000);
+                        const baseTimeMs = incarico.tempoLavoratoMs || 0;
+                        const update = () => {
+                            const sessionMs = new Date() - new Date(incarico.dataInizioLavorazione);
+                            timerSpan.textContent = `Live: ${formatMilliseconds(baseTimeMs + sessionMs)}`;
+                        };
+                        update();
+                        timerInterval = setInterval(update, 1000);
                     }
                 }
             }
         }
 
-
         async function startWork(id) {
-            if(currentWorkId && currentWorkId !== id) {
-                if(!confirm('Un\'altra pratica è già in lavorazione. Vuoi interromperla e iniziare questa?')) {
-                    return;
-                }
+            if (currentWorkId && currentWorkId !== id) {
+                if (!confirm('Un\'altra pratica è già in lavorazione. Vuoi interromperla e iniziare questa?')) return;
+                await stopWork();
             }
-
             const incarico = incarichiAttivi.find(i => i.id === id);
-            if(incarico) {
+            if (incarico) {
                 incarico.dataInizioLavorazione = new Date().toISOString();
                 await saveIncarico(incarico);
-                localStorage.setItem('currentWorkId', id);
                 currentWorkId = id;
+                localStorage.setItem('currentWorkId', id);
                 renderTables();
             }
         }
 
-        function stopWork() {
-            localStorage.removeItem('currentWorkId');
+        async function stopWork() {
+            if (!currentWorkId) return;
+            const incarico = incarichiAttivi.find(i => i.id === currentWorkId);
+            if (incarico && incarico.dataInizioLavorazione) {
+                const sessionMs = new Date() - new Date(incarico.dataInizioLavorazione);
+                incarico.tempoLavoratoMs = (incarico.tempoLavoratoMs || 0) + sessionMs;
+                incarico.dataInizioLavorazione = null;
+                await saveIncarico(incarico);
+            }
             currentWorkId = null;
+            localStorage.removeItem('currentWorkId');
             if (timerInterval) clearInterval(timerInterval);
             renderTables();
         }
 
+        // ... (resto del codice da `resetButton.addEventListener` alla fine)
         resetButton.addEventListener('click', () => {
             form.reset();
             incaricoIdField.value = '';
@@ -1549,8 +1429,8 @@ const firebaseConfig = {
                 const descrizione = card.querySelector('[data-field="Descrizione"]').textContent.toLowerCase();
                 const parti = card.querySelector('[data-field="Parti"]').textContent.toLowerCase();
                 const rifProcedura = card.querySelector('[data-field="Rif. Procedura"]').textContent.toLowerCase();
-                const giudice = card.querySelector('[data-field="Giudice"]').textContent.toLowerCase();
-                const pagamenti = card.querySelector('[data-field="Pagamenti"]').textContent.toLowerCase();
+                //const giudice = card.querySelector('[data-field="Giudice"]').textContent.toLowerCase();
+                const pagamenti = card.querySelector('[data-field="Pagamenti"]')?.textContent.toLowerCase() || '';
                 const stato = card.querySelector('[data-field="Stato"]').textContent.toLowerCase();
                 const scadenza = card.querySelector('[data-field="Scadenza"]').textContent.toLowerCase();
                 const udienza = card.querySelector('[data-field="Prossima Udienza"]').textContent.toLowerCase();
@@ -1560,7 +1440,7 @@ const firebaseConfig = {
                 if (filters['Descrizione'] && !descrizione.includes(filters['Descrizione'])) cardVisible = false;
                 if (filters['Parti'] && !parti.includes(filters['Parti'])) cardVisible = false;
                 if (filters['Rif. Procedura'] && !rifProcedura.includes(filters['Rif. Procedura'])) cardVisible = false;
-                if (filters['Giudice'] && !giudice.includes(filters['Giudice'])) cardVisible = false;
+               // if (filters['Giudice'] && !giudice.includes(filters['Giudice'])) cardVisible = false;
                 if (filters['Pagamenti'] && !pagamenti.includes(filters['Pagamenti'])) cardVisible = false;
                 if (filters['Stato'] && !stato.includes(filters['Stato'])) cardVisible = false;
                 if (filters['Scadenza'] && !scadenza.includes(filters['Scadenza'])) cardVisible = false;
