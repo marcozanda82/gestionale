@@ -62,7 +62,6 @@
             width: auto;
         }
 
-        /* Il titolo della sezione principale, come "Incarichi in Lavorazione" */
         h2 {
             font-size: 1.8em;
             margin-top: 40px;
@@ -78,35 +77,32 @@
             margin-bottom: 40px;
         }
 
-        /* Nuovo stile per l'header della sezione collassabile */
         .form-section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer; /* Indica che è cliccabile */
-            padding-bottom: 10px; /* Spazio sotto il titolo */
-            border-bottom: 1px solid var(--border-color); /* Linea sotto il titolo */
-            margin-bottom: 25px; /* Spazio tra header e contenuto collassabile */
+            cursor: pointer;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
         }
         .form-section-header h2 {
-            margin-bottom: 0; /* Rimuovi il margine inferiore predefinito per h2 */
-            border-bottom: none; /* Rimuovi il bordo inferiore predefinito per h2 */
-            text-align: left; /* Allinea il testo a sinistra */
-            flex-grow: 1; /* Permette al titolo di occupare lo spazio disponibile */
+            margin-bottom: 0;
+            border-bottom: none;
+            text-align: left;
+            flex-grow: 1;
         }
 
-        /* Stile per la freccia */
         .toggle-arrow {
-            font-size: 1.5em; /* Dimensione della freccia */
-            color: var(--primary-dark); /* Colore della freccia */
-            transition: transform 0.2s ease-in-out; /* Animazione per la rotazione */
-            margin-left: 10px; /* Spazio a sinistra della freccia */
-            user-select: none; /* Impedisce la selezione del testo della freccia */
+            font-size: 1.5em;
+            color: var(--primary-dark);
+            transition: transform 0.2s ease-in-out;
+            margin-left: 10px;
+            user-select: none;
         }
 
-        /* Rotazione della freccia quando il contenuto è espanso */
         .toggle-arrow.expanded {
-            transform: rotate(90deg); /* Ruota di 90 gradi per puntare in basso */
+            transform: rotate(90deg);
         }
 
         .form-grid {
@@ -194,44 +190,6 @@
             transform: translateY(-2px);
         }
 
-        /* Rimuovo gli stili di tabella obsoleti */
-        /*
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 25px;
-            background-color: var(--text-light);
-            box-shadow: 0 4px 15px var(--shadow-light);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            text-align: left;
-            vertical-align: middle;
-            font-size: 0.9em;
-            color: var(--text-dark);
-        }
-
-        th {
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        tr:nth-child(even) {
-            background-color: var(--bg-light);
-        }
-
-        tr:hover {
-            background-color: var(--bg-dark);
-            transition: background-color 0.2s ease;
-        }
-        */
-
         .stato-completato { color: var(--success-color); font-weight: bold; }
         .stato-in-corso { color: var(--warning-color); font-weight: bold; }
         .stato-in-scadenza { color: var(--danger-color); font-weight: bold; }
@@ -282,7 +240,6 @@
             margin-top: 20px;
         }
 
-        /* Pagamenti Section Styling */
         .payments-section-container {
             grid-column: 1 / -1;
             margin-top: 20px;
@@ -330,13 +287,12 @@
             color: #a71d2a;
         }
 
-        /* Date Field Specific Styles */
         .date-completed,
         .date-overdue,
         .date-due-soon,
         .date-normal {
-            display: inline-block; /* Changed from flex */
-            padding: 3px 6px; /* Adjusted padding */
+            display: inline-block;
+            padding: 3px 6px;
             border-radius: 4px;
             font-weight: bold;
             text-align: center;
@@ -347,18 +303,6 @@
         .date-due-soon { background-color: var(--date-due-soon-color); color: var(--text-dark); }
         .date-normal { color: var(--text-dark); }
 
-        /* Rimossi stili specifici per td/th con data-label scadenza */
-        /*
-        td[data-label="Scadenza:"] {
-            text-align: initial;
-            padding: 0;
-        }
-        th:has( + td[data-label="Scadenza:"]) {
-            text-align: center;
-        }
-        */
-
-        /* Checkbox Group for Description */
         .checkbox-group {
             display: flex;
             flex-direction: column;
@@ -381,14 +325,13 @@
             cursor: pointer;
         }
 
-        /* Stile per i filtri e il toggle (Adattati per le card) */
         .filter-controls-container {
             background-color: var(--bg-dark);
             padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 8px var(--shadow-light);
             margin-bottom: 20px;
-            display: none; /* Inizialmente nascosto */
+            display: none;
             flex-direction: column;
             gap: 15px;
         }
@@ -420,12 +363,11 @@
             box-sizing: border-box;
         }
 
-        /* Stile per la checkbox "seleziona tutti" nella sezione filtri */
         .select-all-checkbox-container {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 0px; /* Rimuove il margin-bottom di .form-group */
+            margin-bottom: 0px;
             padding-left: 5px;
         }
 
@@ -448,58 +390,60 @@
             margin-top: 15px;
         }
 
-        /* Responsive adjustments (specifici per le card) */
-
-        /* Contenitore principale delle card */
         .incarichi-cards-container {
             display: flex;
-            flex-wrap: wrap; /* Le card andranno a capo su schermi piccoli */
-            gap: 20px; /* Spazio tra le card */
-            padding: 0px; /* Rimuovi padding generale, è sul container esterno */
-            justify-content: flex-start; /* Allinea le card all'inizio */
-            align-items: flex-start; /* Allinea le card in alto */
-            margin-top: 25px; /* Spazio sopra il blocco di card */
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
+            align-items: flex-start;
+            margin-top: 25px;
         }
 
-        /* Stile di ogni singola card */
         .incarico-card {
             background-color: #ffffff;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             padding: 20px;
-            margin-bottom: 0px; /* Non necessario con gap sul container */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-width: 280px; /* Larghezza minima per le card su schermi piccoli */
-            flex: 1 1 calc(33.333% - 20px); /* Desktop: 3 colonne (33.333% meno il gap) */
-            box-sizing: border-box; /* Include padding e border nella larghezza */
+            min-width: 280px;
+            flex: 1 1 calc(33.333% - 20px);
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Adattamento per schermi medi (es. tablet) */
+        /* Stile per la card in lavorazione */
+        .incarico-card.in-lavorazione {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+        }
+
+        .elapsed-time-text {
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
         @media (max-width: 1024px) {
             .incarico-card {
-                flex: 1 1 calc(50% - 20px); /* Tablet: 2 colonne */
+                flex: 1 1 calc(50% - 20px);
             }
         }
 
-        /* Adattamento per schermi piccoli (smartphone) */
         @media (max-width: 600px) {
             .incarico-card {
-                flex: 1 1 100%; /* Smartphone: 1 colonna */
-                max-width: 100%; /* Assicurati che non ecceda la larghezza */
+                flex: 1 1 100%;
+                max-width: 100%;
             }
             .incarichi-cards-container {
-                padding: 0px; /* Meno padding sui bordi su mobile */
                 gap: 15px;
             }
             .filter-grid {
-                grid-template-columns: 1fr; /* Una colonna per i filtri su mobile */
+                grid-template-columns: 1fr;
             }
         }
 
-        /* Header della card */
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -513,8 +457,8 @@
             margin: 0;
             font-size: 1.2em;
             color: #333;
-            flex-grow: 1; /* Permette al titolo di espandersi */
-            margin-right: 10px; /* Spazio tra titolo e ID */
+            flex-grow: 1;
+            margin-right: 10px;
         }
 
         .card-header .card-id {
@@ -523,10 +467,9 @@
             background-color: #f0f0f0;
             padding: 3px 8px;
             border-radius: 4px;
-            white-space: nowrap; /* Non far andare a capo l'ID */
+            white-space: nowrap;
         }
 
-        /* Corpo della card (dettagli) */
         .card-body p {
             margin: 5px 0;
             font-size: 0.9em;
@@ -537,138 +480,58 @@
             color: #555;
         }
 
-        /* Footer della card (bottoni) */
         .card-footer {
             display: flex;
-            justify-content: flex-end; /* Allinea i bottoni a destra */
-            gap: 10px; /* Spazio tra i bottoni */
+            justify-content: flex-end;
+            gap: 10px;
             margin-top: 15px;
             padding-top: 10px;
             border-top: 1px solid #f0f0f0;
-            align-items: center; /* Allinea verticalmente la checkbox con i bottoni */
+            align-items: center;
         }
 
-        .action-button {
-            /* Mantieni gli stili action-button globali, sono già buoni */
-            font-size: 1em; /* Un po' più piccoli per stare nelle card */
-            width: auto; /* Adatta la larghezza al contenuto */
+        .card-footer .action-button {
+            font-size: 1em;
+            width: auto;
             height: auto;
-            padding: 6px 10px; /* Padding per rendere il bottone cliccabile */
+            padding: 6px 10px;
             border-radius: 4px;
-            background-color: var(--primary-color);
             color: var(--text-light);
+            background-color: var(--secondary-color);
         }
-
-        .action-button.delete {
-            background-color: var(--danger-color);
+        .card-footer .action-button.edit {
+             background-color: var(--primary-color);
         }
-        .action-button.delete:hover {
-            background-color: #a71d2a;
-        }
-        .action-button:hover {
+        .card-footer .action-button.edit:hover {
             background-color: var(--primary-dark);
         }
+        .card-footer .action-button.delete {
+            background-color: var(--danger-color);
+        }
+        .card-footer .action-button.delete:hover {
+            background-color: #a71d2a;
+        }
+         .card-footer .action-button.start-work {
+            background-color: var(--success-color);
+        }
+         .card-footer .action-button.start-work:hover {
+            background-color: #218838;
+        }
+        .card-footer .action-button.stop-work {
+            background-color: var(--warning-color);
+            color: var(--text-dark);
+        }
+        .card-footer .action-button.stop-work:hover {
+             background-color: #e0a800;
+        }
 
-
-        /* Stile per la checkbox all'interno della card */
         .select-row-checkbox {
-            margin-right: auto; /* Spinge la checkbox a sinistra */
+            margin-right: auto;
             width: 18px;
             height: 18px;
             cursor: pointer;
         }
 
-        /* Se hai classi per i pagamenti, es: 'pagato', 'da-pagare', 'in-ritardo' */
-        .payment-status-paid {
-            color: var(--success-color);
-            font-weight: bold;
-        }
-        .payment-status-unpaid {
-            color: var(--danger-color);
-            font-weight: bold;
-        }
-        /* Non presente nel CSS originale, aggiunto per completezza */
-        .payment-status-partially-paid {
-            color: var(--warning-color);
-            font-weight: bold;
-        }
-
-
-        /* Rimossi responsive adjustments per tabelle */
-        /*
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .button-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .btn {
-                width: 100%;
-            }
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-            thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
-            tr {
-                border: 1px solid var(--border-color);
-                margin-bottom: 10px;
-                border-radius: 8px;
-                overflow: hidden;
-            }
-            td {
-                border: none;
-                border-bottom: 1px solid var(--border-color);
-                position: relative;
-                padding-left: 50%;
-                text-align: right;
-            }
-            td:last-child {
-                border-bottom: none;
-            }
-            td::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 10px;
-                width: calc(50% - 20px);
-                padding-right: 10px;
-                white-space: nowrap;
-                text-align: left;
-                font-weight: bold;
-                color: var(--primary-dark);
-            }
-            // Specific column labels for mobile - NON PIÙ NECESSARI CON LE CARD
-            td:nth-of-type(1):before { content: "Seleziona:"; }
-            td:nth-of-type(2):before { content: "ID:"; }
-            td:nth-of-type(3):before { content: "Descrizione:"; }
-            td:nth-of-type(4):before { content: "Parti:"; }
-            td:nth-of-type(5):before { content: "Rif. Procedura:"; }
-            td:nth-of-type(6):before { content: "Giudice:"; }
-            td:nth-of-type(7):before { content: "Pagamenti:"; }
-            td:nth-of-type(8):before { content: "Stato:"; }
-            td:nth-of-type(9):before { content: "Scadenza:"; }
-            td:nth-of-type(10):before { content: "Azioni:"; }
-
-            // Nascondi i filtri su mobile, per ora non gestiti per display block delle righe - NON PIÙ NECESSARI CON LE CARD
-            .filter-input-row {
-                display: none !important;
-            }
-
-            .table-controls-top {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .table-controls-top .btn {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-        }
-        */
     </style>
 </head>
 <body>
@@ -852,7 +715,7 @@
                         <label for="filter-active-scadenza">Filtra Scadenza:</label>
                         <input type="text" class="filter-input" data-filter-col="Scadenza" id="filter-active-scadenza" placeholder="Filtra Scadenza">
                     </div>
-                    <div class="filter-group">
+                     <div class="filter-group">
                         <label for="filter-active-udienza">Filtra Prossima Udienza:</label>
                         <input type="text" class="filter-input" data-filter-col="Prossima Udienza" id="filter-active-udienza" placeholder="Filtra Udienza">
                     </div>
@@ -944,13 +807,12 @@ const firebaseConfig = {
   storageBucket: "ctusync2.firebasestorage.app",
   messagingSenderId: "741014889524",
   appId: "1:741014889524:web:3a59f599b93ab414c85661",
-    databaseURL: "https://ctusync2-default-rtdb.europe-west1.firebasedatabase.app/", // <--- AGGIUNGI QUESTA RIGA CON IL TUO URL
+    databaseURL: "https://ctusync2-default-rtdb.europe-west1.firebasedatabase.app/",
 };
 
         // Inizializza Firebase
         firebase.initializeApp(firebaseConfig);
 
-        // Ottieni un riferimento al Realtime Database
         const database = firebase.database();
         const incarichiRef = database.ref('incarichi');
         const archivedIncarichiRef = database.ref('incarichi_archiviati');
@@ -970,7 +832,6 @@ const firebaseConfig = {
         const uploadBackupBtn = document.getElementById('upload-backup-btn');
         const uploadBackupFile = document.getElementById('upload-backup-file');
 
-        // Modificati per puntare ai nuovi id delle checkbox e dei contenitori dei filtri
         const selectAllActiveCheckbox = document.getElementById('select-all-active');
         const selectAllArchivedCheckbox = document.getElementById('select-all-archived');
         const deleteSelectedActiveBtn = document.getElementById('delete-selected-active-btn');
@@ -979,15 +840,13 @@ const firebaseConfig = {
         const toggleFiltersActiveBtn = document.getElementById('toggle-filters-active');
         const toggleFiltersArchivedBtn = document.getElementById('toggle-filters-archived');
 
-        // Nuovi elementi per i contenitori dei filtri
         const activeFilterControlsContainer = document.getElementById('active-filter-controls-container');
         const archivedFilterControlsContainer = document.getElementById('archived-filter-controls-container');
 
 
-        // Aggiornati per riferirsi alla freccia e all'header cliccabile
-        const toggleFormBtn = document.getElementById('toggle-form-btn'); // Questo è ora lo <span> della freccia
+        const toggleFormBtn = document.getElementById('toggle-form-btn');
         const incaricoFormContent = document.getElementById('incarico-form-content');
-        const formSectionHeader = document.querySelector('.form-section-header'); // Il div che gestisce il click per il toggle
+        const formSectionHeader = document.querySelector('.form-section-header');
 
 
         const descCheckboxes = [
@@ -997,20 +856,16 @@ const firebaseConfig = {
             { id: 'desc-ricostruzione-sinistro', value: 'Ricostruzione Sinistro' }
         ];
 
-        // Nuovi riferimenti ai contenitori delle card
         const incarichiInLavorazioneContainer = document.getElementById('incarichi_in_lavorazione_container');
         const incarichiArchiviatiContainer = document.getElementById('incarichi_archiviati_container');
 
         const noActiveMessage = document.getElementById('no-active-incarichi');
         const noArchivedMessage = document.getElementById('no-archived-incarichi');
 
-        // Vecchi riferimenti alle righe dei filtri, non più usati come table-row
-        // const activeFilterRow = document.querySelector('#tabella-incarichi-attivi thead .filter-input-row');
-        // const archivedFilterRow = document.querySelector('#tabella-incarichi-archiviati thead .filter-input-row');
-
-
         let incarichiAttivi = [];
         let incarichiArchiviati = [];
+        let currentWorkId = null; // ID della pratica in lavorazione
+        let timerInterval = null; // Intervallo per l'aggiornamento del timer
 
         const dateFields = [
             { id: 'data-conferimento', doneId: 'data-conferimento-done', priority: 1, name: 'Conferimento' },
@@ -1145,27 +1000,28 @@ const firebaseConfig = {
             }
             const saldoResiduo = totaleRichiesto - totaleIncassato;
 
-            if (saldoResiduo <= 0 && totaleRichiesto > 0) { // Pagato solo se c'era qualcosa da pagare
+            if (saldoResiduo <= 0 && totaleRichiesto > 0) {
                 return { text: 'Pagato', class: 'payment-status-paid' };
-            } else if (saldoResiduo > 0 && totaleIncassato > 0) { // Parzialmente pagato
+            } else if (saldoResiduo > 0 && totaleIncassato > 0) {
                 return { text: `${saldoResiduo.toFixed(2)} € residui`, class: 'payment-status-unpaid' };
-            } else if (totaleRichiesto === 0) { // Nessun pagamento previsto
+            } else if (totaleRichiesto === 0) {
                 return { text: 'Nessun Pagamento', class: 'payment-status-normal' };
-            } else { // Totale Richiesto > 0 e Incassato = 0 (Non Pagato)
+            } else {
                 return { text: `${saldoResiduo.toFixed(2)} € non saldati`, class: 'payment-status-unpaid' };
             }
         }
 
-        // NUOVA FUNZIONE PER CREARE LE CARD
         function creaIncaricoCard(incarico, tableType) {
             const card = document.createElement('div');
             card.classList.add('incarico-card');
-            card.setAttribute('data-incarico-id', incarico.id);
-            // Aggiungi un attributo per il tipo di tabella per i filtri
-            card.setAttribute('data-table-type', tableType);
+            card.dataset.incaricoId = incarico.id;
+            card.dataset.tableType = tableType;
 
+            const isInLavorazione = incarico.id === currentWorkId;
+            if (isInLavorazione) {
+                card.classList.add('in-lavorazione');
+            }
 
-            // Controlli per i campi che potrebbero essere undefined/null/non-array
             const descrizione = Array.isArray(incarico.descrizione) ? incarico.descrizione.join(', ') : (incarico.descrizione || '');
             const parti = incarico.parti || '';
             const rifProcedura = incarico['rif-procedura'] || '';
@@ -1174,11 +1030,21 @@ const firebaseConfig = {
             const paymentStatus = getPaymentStatus(incarico.pagamenti);
             const scadenzaCorrente = getScadenzaCorrente(incarico);
 
-            // Costruisci il contenuto HTML della card
+            let workButtonHtml = '';
+            if (tableType === 'active') { // Mostra bottoni solo per attivi
+                if (isInLavorazione) {
+                    workButtonHtml = `<button class="action-button stop-work" onclick="stopWork()" title="Termina Lavorazione">⏹️</button>`;
+                } else {
+                    workButtonHtml = `<button class="action-button start-work" onclick="startWork(${incarico.id})" title="Inizia Lavorazione">▶️</button>`;
+                }
+            }
+            const elapsedTimeHtml = isInLavorazione ? `<p id="timer-${incarico.id}"><strong>Tempo Lavorazione:</strong> <span class="elapsed-time-text"></span></p>` : `<p id="timer-${incarico.id}" style="display:none;"></p>`;
+
+
             card.innerHTML = `
                 <div class="card-header">
                     <h3 class="card-title">${incarico['tipo-incarico'] || 'Tipo Incarico'} - ID: ${incarico.id}</h3>
-                    <span class="card-id"></span> </div>
+                </div>
                 <div class="card-body">
                     <p><strong>Descrizione:</strong> <span data-field="Descrizione">${descrizione}</span></p>
                     <p><strong>Parti:</strong> <span data-field="Parti">${parti}</span></p>
@@ -1188,10 +1054,12 @@ const firebaseConfig = {
                     <p><strong>Stato:</strong> <span data-field="Stato" class="${statoGenerale.class}">${statoGenerale.text}</span></p>
                     <p><strong>Scadenza:</strong> <span data-field="Scadenza"><span class="${scadenzaCorrente.class}">${scadenzaCorrente.display || ''}</span></span></p>
                     <p><strong>Prossima Udienza:</strong> <span data-field="Prossima Udienza">${formatDateToDDMMYYYY(incarico['data-udienza']?.value) || ''}</span></p>
+                    ${elapsedTimeHtml}
                 </div>
                 <div class="card-footer">
                     <input type="checkbox" class="select-row-checkbox" data-incarico-id="${incarico.id}" data-table-type="${tableType}">
-                    <button class="action-button" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
+                    ${workButtonHtml}
+                    <button class="action-button edit" onclick="modificaIncarico(${incarico.id})" title="Modifica Incarico">✏️</button>
                     <button class="action-button delete" onclick="eliminaIncarico(${incarico.id})" title="Elimina Incarico">🗑️</button>
                 </div>
             `;
@@ -1201,31 +1069,28 @@ const firebaseConfig = {
 
 
         function renderTables() {
-            // Pulisci i contenitori delle card
             incarichiInLavorazioneContainer.innerHTML = '';
             incarichiArchiviatiContainer.innerHTML = '';
 
             const now = new Date();
             now.setHours(0, 0, 0, 0);
 
-            // Ordina incarichi attivi (non scaduti e non chiusi)
             incarichiAttivi.sort((a, b) => {
                 const scadenzaA = getScadenzaCorrente(a);
                 const scadenzaB = getScadenzaCorrente(b);
-
                 const dateA = scadenzaA.value ? new Date(scadenzaA.value) : new Date('2999-01-01');
                 const dateB = scadenzaB.value ? new Date(scadenzaB.value) : new Date('2999-01-01');
 
-                if (dateA < now && dateB < now) { // Entrambi scaduti
-                    return dateA.getTime() - dateB.getTime(); // Prima i più vecchi
+                if (dateA < now && dateB < now) {
+                    return dateA.getTime() - dateB.getTime();
                 }
-                if (dateA < now && dateB >= now) { // A scaduto, B non
-                    return -1; // A viene prima
+                if (dateA < now && dateB >= now) {
+                    return -1;
                 }
-                if (dateA >= now && dateB < now) { // B scaduto, A non
-                    return 1; // B viene prima
+                if (dateA >= now && dateB < now) {
+                    return 1;
                 }
-                return dateA.getTime() - dateB.getTime(); // Entrambi non scaduti, ordina per data
+                return dateA.getTime() - dateB.getTime();
             });
 
 
@@ -1234,18 +1099,15 @@ const firebaseConfig = {
             } else {
                 noActiveMessage.style.display = 'none';
                 incarichiAttivi.forEach(incarico => {
-                    // La logica di filtro 'in lavorazione' è già gestita nell'onload di firebase
-                    // quindi qui aggiungo semplicemente tutte le card attive
                     const card = creaIncaricoCard(incarico, 'active');
                     incarichiInLavorazioneContainer.appendChild(card);
                 });
             }
 
-            // Ordina incarichi archiviati
             incarichiArchiviati.sort((a, b) => {
                 const dateA = a['data-deposito']?.value ? new Date(a['data-deposito'].value) : new Date(0);
                 const dateB = b['data-deposito']?.value ? new Date(b['data-deposito'].value) : new Date(0);
-                return dateB.getTime() - dateA.getTime(); // Dal più recente al più vecchio
+                return dateB.getTime() - dateA.getTime();
             });
 
 
@@ -1259,20 +1121,18 @@ const firebaseConfig = {
                 });
             }
 
-            // Applica i filtri dopo aver renderizzato tutte le card
             applyFilters('active');
             applyFilters('archived');
 
-            // Resetta lo stato delle checkbox "seleziona tutti"
             selectAllActiveCheckbox.checked = false;
             selectAllArchivedCheckbox.checked = false;
+            updateTimerDisplay(); // Aggiorna il timer
         }
 
         function getScadenzaCorrente(incarico) {
             let scadenza = { value: '', class: 'date-normal', display: '' };
 
             const sortedDateFields = [...dateFields].
-            // Sort by priority to find the first uncompleted task
             sort((a, b) => a.priority - b.priority);
 
             let firstUncompletedActivity = null;
@@ -1285,44 +1145,37 @@ const firebaseConfig = {
                         date: new Date(dateInfo.value),
                         done: dateInfo.done
                     };
-                    break; // Found the first uncompleted, stop
+                    break;
                 }
             }
 
             if (firstUncompletedActivity) {
-                scadenza.value = firstUncompletedActivity.date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                scadenza.value = firstUncompletedActivity.date.toISOString().split('T')[0];
                 scadenza.class = getDateClass(scadenza.value, false);
 
                 const dateObj = firstUncompletedActivity.date;
                 const today = new Date();
                 today.setHours(0,0,0,0);
 
-                // Show full date if overdue or due soon (within 7 days)
                 if (dateObj < today || dateObj <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)) {
                     scadenza.display = formatDateToDDMMYYYY(scadenza.value);
                 } else {
                     scadenza.display = formatDateToDDMM(scadenza.value);
                 }
             } else {
-                // If all tasks are completed, show the deposition date (if available)
                 if (incarico['data-deposito'] && incarico['data-deposito'].done) {
                     scadenza.value = incarico['data-deposito'].value;
                     scadenza.class = getDateClass(incarico['data-deposito'].value, true);
                     scadenza.display = formatDateToDDMMYYYY(scadenza.value);
                 }
-                // If no deposition date, but there's a conferimento date, show that.
                 else if (incarico['data-conferimento'] && incarico['data-conferimento'].value) {
                     scadenza.value = incarico['data-conferimento'].value;
                     scadenza.class = getDateClass(incarico['data-conferimento'].value, incarico['data-conferimento'].done);
                     scadenza.display = formatDateToDDMMYYYY(scadenza.value);
                 }
             }
-
             return scadenza;
         }
-
-        // RIMOSSA VECCHIA FUNZIONE aggiungiRigaTabella
-
 
         function addPaymentField(payment = { tipo: 'Fondo Spese', stato: 'Non Pagato', importo: '' }) {
             const paymentItem = document.createElement('div');
@@ -1398,7 +1251,7 @@ const firebaseConfig = {
             if (incaricoToEdit) {
                 populateForm(incaricoToEdit);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                toggleFormVisibility(true); // Espandi il form
+                toggleFormVisibility(true);
             }
         }
 
@@ -1406,13 +1259,12 @@ const firebaseConfig = {
             if (confirm('Sei sicuro di voler eliminare questa pratica? L\'azione è irreversibile.')) {
                 const incaricoId = parseInt(id);
 
-                incarichiRef.child(incaricoId).remove()
-                    .then(() => console.log('Incarico rimosso dagli attivi (se esisteva):', incaricoId))
-                    .catch(error => console.error('Errore nella rimozione da attivi:', error));
+                if(incaricoId === currentWorkId) {
+                    stopWork();
+                }
 
-                archivedIncarichiRef.child(incaricoId).remove()
-                    .then(() => console.log('Incarico rimosso dagli archiviati (se esisteva):', incaricoId))
-                    .catch(error => console.error('Errore nella rimozione da archiviati:', error));
+                incarichiRef.child(incaricoId).remove();
+                archivedIncarichiRef.child(incaricoId).remove();
 
                 if (incaricoIdField.value == id) {
                     form.reset();
@@ -1424,16 +1276,38 @@ const firebaseConfig = {
                         document.getElementById(checkboxInfo.id).checked = false;
                     });
                     jsonInput.value = '';
-                    // Non comprimere qui per default, l'utente potrebbe voler inserire un nuovo incarico
-                    // toggleFormVisibility(false); // Comprimi il form dopo l'eliminazione se era quello in modifica
                 }
             }
         }
 
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
+        async function saveIncarico(incaricoData) {
+            const statoGenerale = getStatoIncarico(incaricoData);
+            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text.includes('Udienza Svolta'));
+            const incaricoId = incaricoData.id;
 
+            await incarichiRef.child(incaricoId).remove();
+            await archivedIncarichiRef.child(incaricoId).remove();
+
+            if (isCompleted) {
+                await archivedIncarichiRef.child(incaricoId).set(incaricoData);
+            } else {
+                await incarichiRef.child(incaricoId).set(incaricoData);
+            }
+        }
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
             const idInModifica = incaricoIdField.value;
+            let incaricoData;
+
+            if (idInModifica) {
+                const existingIncarico = incarichiAttivi.find(i => i.id == idInModifica) || incarichiArchiviati.find(i => i.id == idInModifica);
+                incaricoData = { ...existingIncarico };
+            } else {
+                const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
+                const newId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
+                incaricoData = { id: newId };
+            }
 
             const selectedDescriptions = [];
             descCheckboxes.forEach(checkboxInfo => {
@@ -1441,80 +1315,30 @@ const firebaseConfig = {
                     selectedDescriptions.push(checkboxInfo.value);
                 }
             });
+            incaricoData.descrizione = selectedDescriptions;
+            incaricoData['tipo-incarico'] = document.getElementById('tipo-incarico').value;
+            incaricoData.giudice = document.getElementById('giudice').value;
+            incaricoData['rif-procedura'] = document.getElementById('rif-procedura').value;
+            incaricoData.parti = document.getElementById('parti').value;
+            incaricoData.note = document.getElementById('note').value;
 
             const currentPayments = [];
             document.querySelectorAll('.payment-item').forEach(item => {
-                const type = item.querySelector('.payment-type').value;
-                const status = item.querySelector('.payment-status').value;
-                const amount = item.querySelector('.payment-amount').value;
-                currentPayments.push({ tipo: type, stato: status, importo: amount });
+                currentPayments.push({
+                    tipo: item.querySelector('.payment-type').value,
+                    stato: item.querySelector('.payment-status').value,
+                    importo: item.querySelector('.payment-amount').value
+                });
             });
+            incaricoData.pagamenti = currentPayments;
 
-            const dateData = {};
             dateFields.forEach(field => {
                 const dateValue = document.getElementById(field.id).value;
                 const doneChecked = document.getElementById(field.doneId).checked;
-                if (dateValue) {
-                    dateData[field.id] = { value: dateValue, done: doneChecked };
-                } else {
-                    dateData[field.id] = null;
-                }
+                incaricoData[field.id] = dateValue ? { value: dateValue, done: doneChecked } : null;
             });
 
-            let incaricoData = {
-                descrizione: selectedDescriptions,
-                'tipo-incarico': document.getElementById('tipo-incarico').value,
-                giudice: document.getElementById('giudice').value,
-                'rif-procedura': document.getElementById('rif-procedura').value,
-                parti: document.getElementById('parti').value,
-                note: document.getElementById('note').value,
-                pagamenti: currentPayments,
-
-                'data-conferimento': dateData['data-conferimento'],
-                'data-inizio-operazioni': dateData['data-inizio-operazioni'],
-                'data-invio-bozza': dateData['data-invio-bozza'],
-                'data-ricezione-osservazioni': dateData['data-ricezione-osservazioni'],
-                'data-deposito': dateData['data-deposito'],
-                'data-udienza': dateData['data-udienza']
-            };
-
-            const statoGenerale = getStatoIncarico(incaricoData);
-            const isCompleted = (statoGenerale.text === 'Completato' || statoGenerale.text.includes('Udienza Svolta'));
-
-            let incaricoId;
-
-            if (idInModifica) {
-                incaricoId = parseInt(idInModifica);
-                incaricoData.id = incaricoId;
-
-                incarichiRef.child(incaricoId).remove();
-                archivedIncarichiRef.child(incaricoId).remove();
-
-                if (isCompleted) {
-                    archivedIncarichiRef.child(incaricoId).set(incaricoData)
-                        .then(() => console.log('Incarico modificato e archiviato su Firebase (ID: ' + incaricoId + ')'))
-                        .catch(error => console.error('Errore durante la modifica incarico e archiviazione:', error));
-                } else {
-                    incarichiRef.child(incaricoId).set(incaricoData)
-                        .then(() => console.log('Incarico modificato e mantenuto attivo su Firebase (ID: ' + incaricoId + ')'))
-                        .catch(error => console.error('Errore durante la modifica incarico e mantenimento attivo:', error));
-                }
-
-            } else {
-                const allIncarichi = [...incarichiAttivi, ...incarichiArchiviati];
-                incaricoId = allIncarichi.length > 0 ? Math.max(...allIncarichi.map(i => i.id)) + 1 : 1;
-                incaricoData.id = incaricoId;
-
-                if (isCompleted) {
-                    archivedIncarichiRef.child(incaricoId).set(incaricoData)
-                        .then(() => console.log('Nuovo incarico aggiunto e archiviato su Firebase (ID: ' + incaricoId + ')'))
-                        .catch(error => console.error('Errore durante l\'aggiunta incarico e archiviazione:', error));
-                } else {
-                    incarichiRef.child(incaricoId).set(incaricoData)
-                        .then(() => console.log('Nuovo incarico aggiunto e mantenuto attivo su Firebase (ID: ' + incaricoId + ')'))
-                        .catch(error => console.error('Errore durante l\'aggiunta incarico e mantenimento attivo:', error));
-                }
-            }
+            await saveIncarico(incaricoData);
 
             form.reset();
             incaricoIdField.value = '';
@@ -1526,8 +1350,72 @@ const firebaseConfig = {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
             jsonInput.value = '';
-            toggleFormVisibility(false); // Comprimi il form dopo il submit
+            toggleFormVisibility(false);
         });
+
+        // --- NUOVE FUNZIONI PER GESTIONE LAVORAZIONE ---
+
+        function formatElapsedTime(isoDateString) {
+            if (!isoDateString) return '';
+            const startDate = new Date(isoDateString);
+            const now = new Date();
+            const diffMs = now - startDate;
+
+            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+            let result = '';
+            if (days > 0) result += `${days}g `;
+            if (hours > 0) result += `${hours}h `;
+            result += `${minutes}m`;
+            return result;
+        }
+
+        function updateTimerDisplay() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            if (currentWorkId) {
+                const incarico = incarichiAttivi.find(i => i.id === currentWorkId);
+                if (incarico && incarico.dataInizioLavorazione) {
+                    const timerContainer = document.getElementById(`timer-${currentWorkId}`);
+                    const timerSpan = timerContainer?.querySelector('span');
+
+                    if (timerSpan) {
+                         const update = () => {
+                            timerSpan.textContent = formatElapsedTime(incarico.dataInizioLavorazione);
+                         };
+                         update();
+                         timerInterval = setInterval(update, 60000);
+                    }
+                }
+            }
+        }
+
+
+        async function startWork(id) {
+            if(currentWorkId && currentWorkId !== id) {
+                if(!confirm('Un\'altra pratica è già in lavorazione. Vuoi interromperla e iniziare questa?')) {
+                    return;
+                }
+            }
+
+            const incarico = incarichiAttivi.find(i => i.id === id);
+            if(incarico) {
+                incarico.dataInizioLavorazione = new Date().toISOString();
+                await saveIncarico(incarico);
+                localStorage.setItem('currentWorkId', id);
+                currentWorkId = id;
+                renderTables();
+            }
+        }
+
+        function stopWork() {
+            localStorage.removeItem('currentWorkId');
+            currentWorkId = null;
+            if (timerInterval) clearInterval(timerInterval);
+            renderTables();
+        }
 
         resetButton.addEventListener('click', () => {
             form.reset();
@@ -1541,7 +1429,7 @@ const firebaseConfig = {
                 document.getElementById(checkboxInfo.id).checked = false;
             });
             jsonInput.value = '';
-            toggleFormVisibility(true); // Espandi il form quando si clicca "Nuovo Incarico"
+            toggleFormVisibility(true);
         });
 
         addPaymentBtn.addEventListener('click', () => addPaymentField());
@@ -1568,7 +1456,7 @@ const firebaseConfig = {
 
                 submitButton.textContent = 'Aggiungi Incarico (da JSON)';
                 alert('Dati JSON caricati nel form. Puoi modificarli e poi cliccare "Aggiungi Incarico" per salvarli su Firebase.');
-                toggleFormVisibility(true); // Espandi il form quando si carica da JSON
+                toggleFormVisibility(true);
             } catch (e) {
                 alert('Errore nel parsing del JSON. Assicurati che il formato sia corretto.\nErrore: ' + e.message);
                 console.error('ErroJSON:', e);
@@ -1578,8 +1466,6 @@ const firebaseConfig = {
         clearJsonBtn.addEventListener('click', () => {
             jsonInput.value = '';
         });
-
-        // --- Funzioni di Backup e Ripristino ---
 
         backupDataBtn.addEventListener('click', () => {
             const dataToBackup = {
@@ -1605,9 +1491,7 @@ const firebaseConfig = {
 
         uploadBackupFile.addEventListener('change', (event) => {
             const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
+            if (!file) return;
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1615,52 +1499,41 @@ const firebaseConfig = {
                     const loadedData = JSON.parse(e.target.result);
                     if (loadedData.incarichiAttivi && loadedData.incarichiArchiviati) {
                         if (confirm('Caricando il backup sovrascriverai i dati attuali nel database Firebase. Sei sicuro di voler continuare?')) {
-                            incarichiRef.remove()
-                                .then(() => {
-                                    console.log('Dati incarichi attivi precedenti eliminati.');
-                                    return archivedIncarichiRef.remove();
-                                })
-                                .then(() => {
-                                    console.log('Dati incarichi archiviati precedenti eliminati.');
-                                    const promises = [];
-                                    loadedData.incarichiAttivi.forEach(item => {
-                                        promises.push(incarichiRef.child(item.id).set(item));
-                                    });
-                                    loadedData.incarichiArchiviati.forEach(item => {
-                                        promises.push(archivedIncarichiRef.child(item.id).set(item));
-                                    });
-                                    return Promise.all(promises);
-                                })
-                                .then(() => {
-                                    alert('Backup caricato e dati ripristinati su Firebase con successo!');
-                                })
-                                .catch(error => {
-                                    alert('Errore durante il ripristino del backup su Firebase: ' + error.message);
-                                    console.error('Errore ripristino backup Firebase:', error);
-                                });
+                             const activeUpdates = {};
+                            loadedData.incarichiAttivi.forEach(item => {
+                                activeUpdates[item.id] = item;
+                            });
+                            const archivedUpdates = {};
+                             loadedData.incarichiArchiviati.forEach(item => {
+                                archivedUpdates[item.id] = item;
+                            });
+
+                            incarichiRef.set(activeUpdates);
+                            archivedIncarichiRef.set(archivedUpdates)
+                            .then(() => {
+                                alert('Backup caricato e dati ripristinati su Firebase con successo!');
+                            })
+                            .catch(error => {
+                                alert('Errore durante il ripristino del backup su Firebase: ' + error.message);
+                            });
                         }
                     } else {
-                        alert('Il file JSON caricato non sembra essere un backup valido. Assicurati che contenga le chiavi "incarichiAttivi" e "incarichiArchiviati".');
+                        alert('Il file JSON caricato non sembra essere un backup valido.');
                     }
                 } catch (error) {
-                    alert('Errore durante la lettura del file di backup. Assicurati che sia un file JSON valido. Errore: ' + error.message);
-                    console.error('Errore caricamento backup:', error);
+                    alert('Errore durante la lettura del file di backup. ' + error.message);
                 }
             };
             reader.readAsText(file);
             event.target.value = '';
         });
 
-        // --- Funzionalità Filtri (ADATTATI PER LE CARD) ---
-
-        // Riferimenti ai nuovi input dei filtri
         const filterInputsActive = activeFilterControlsContainer.querySelectorAll('.filter-input');
         const filterInputsArchived = archivedFilterControlsContainer.querySelectorAll('.filter-input');
 
         function applyFilters(tableType) {
-            // Seleziona il contenitore corretto delle card
             const container = tableType === 'active' ? incarichiInLavorazioneContainer : incarichiArchiviatiContainer;
-            const cards = Array.from(container.querySelectorAll('.incarico-card')); // Tutte le card nel container
+            const cards = Array.from(container.querySelectorAll('.incarico-card'));
             const filterInputs = tableType === 'active' ? filterInputsActive : filterInputsArchived;
 
             const filters = {};
@@ -1672,8 +1545,7 @@ const firebaseConfig = {
             cards.forEach(card => {
                 let cardVisible = true;
 
-                // Estrai i testi dai campi data-field all'interno della card
-                const id = card.getAttribute('data-incarico-id').toLowerCase();
+                const id = card.dataset.incaricoId.toLowerCase();
                 const descrizione = card.querySelector('[data-field="Descrizione"]').textContent.toLowerCase();
                 const parti = card.querySelector('[data-field="Parti"]').textContent.toLowerCase();
                 const rifProcedura = card.querySelector('[data-field="Rif. Procedura"]').textContent.toLowerCase();
@@ -1684,36 +1556,17 @@ const firebaseConfig = {
                 const udienza = card.querySelector('[data-field="Prossima Udienza"]').textContent.toLowerCase();
 
 
-                // Applica i filtri
-                if (filters['ID'] && !id.includes(filters['ID'])) {
-                    cardVisible = false;
-                }
-                if (filters['Descrizione'] && !descrizione.includes(filters['Descrizione'])) {
-                    cardVisible = false;
-                }
-                if (filters['Parti'] && !parti.includes(filters['Parti'])) {
-                    cardVisible = false;
-                }
-                if (filters['Rif. Procedura'] && !rifProcedura.includes(filters['Rif. Procedura'])) {
-                    cardVisible = false;
-                }
-                if (filters['Giudice'] && !giudice.includes(filters['Giudice'])) {
-                    cardVisible = false;
-                }
-                if (filters['Pagamenti'] && !pagamenti.includes(filters['Pagamenti'])) {
-                    cardVisible = false;
-                }
-                if (filters['Stato'] && !stato.includes(filters['Stato'])) {
-                    cardVisible = false;
-                }
-                if (filters['Scadenza'] && !scadenza.includes(filters['Scadenza'])) {
-                    cardVisible = false;
-                }
-                if (filters['Prossima Udienza'] && !udienza.includes(filters['Prossima Udienza'])) {
-                    cardVisible = false;
-                }
+                if (filters['ID'] && !id.includes(filters['ID'])) cardVisible = false;
+                if (filters['Descrizione'] && !descrizione.includes(filters['Descrizione'])) cardVisible = false;
+                if (filters['Parti'] && !parti.includes(filters['Parti'])) cardVisible = false;
+                if (filters['Rif. Procedura'] && !rifProcedura.includes(filters['Rif. Procedura'])) cardVisible = false;
+                if (filters['Giudice'] && !giudice.includes(filters['Giudice'])) cardVisible = false;
+                if (filters['Pagamenti'] && !pagamenti.includes(filters['Pagamenti'])) cardVisible = false;
+                if (filters['Stato'] && !stato.includes(filters['Stato'])) cardVisible = false;
+                if (filters['Scadenza'] && !scadenza.includes(filters['Scadenza'])) cardVisible = false;
+                if (filters['Prossima Udienza'] && !udienza.includes(filters['Prossima Udienza'])) cardVisible = false;
 
-                card.style.display = cardVisible ? 'flex' : 'none'; // Le card usano flex
+                card.style.display = cardVisible ? 'flex' : 'none';
             });
         }
 
@@ -1726,13 +1579,10 @@ const firebaseConfig = {
             input.addEventListener('change', () => applyFilters('archived'));
         });
 
-        // --- Funzionalità Selezione Multipla (ADATTATI PER LE CARD) ---
-
         function toggleSelectAll(masterCheckbox, tableType) {
             const container = tableType === 'active' ? incarichiInLavorazioneContainer : incarichiArchiviatiContainer;
             const checkboxes = container.querySelectorAll('.select-row-checkbox[data-table-type="' + tableType + '"]');
             checkboxes.forEach(checkbox => {
-                // Seleziona solo le card visibili
                 if (checkbox.closest('.incarico-card').style.display !== 'none') {
                     checkbox.checked = masterCheckbox.checked;
                 }
@@ -1752,7 +1602,7 @@ const firebaseConfig = {
             const checkboxes = container.querySelectorAll('.select-row-checkbox:checked[data-table-type="' + tableType + '"]');
 
             const visibleAndCheckedIds = Array.from(checkboxes)
-                .filter(cb => cb.closest('.incarico-card').style.display !== 'none') // Controlla la visibilità della card
+                .filter(cb => cb.closest('.incarico-card').style.display !== 'none')
                 .map(cb => parseInt(cb.dataset.incaricoId));
 
             if (visibleAndCheckedIds.length === 0) {
@@ -1764,20 +1614,18 @@ const firebaseConfig = {
                 return;
             }
 
-            const targetBaseRef = tableType === 'active' ? incarichiRef : archivedIncarichiRef;
             const promises = [];
-
-            visibleAndCheckedIds.forEach(id => {
-                promises.push(targetBaseRef.child(id).remove());
+             visibleAndCheckedIds.forEach(id => {
+                 if (tableType === 'active') {
+                    promises.push(incarichiRef.child(id).remove());
+                 } else {
+                    promises.push(archivedIncarichiRef.child(id).remove());
+                 }
             });
 
             Promise.all(promises)
                 .then(() => {
                     alert(`${visibleAndCheckedIds.length} pratica/he eliminata/e con successo.`);
-                })
-                .catch(error => {
-                    console.error('Errore durante l\'eliminazione multipla:', error);
-                    alert('Si è verificato un errore durante l\'eliminazione delle pratiche.');
                 });
         }
 
@@ -1789,19 +1637,15 @@ const firebaseConfig = {
             deleteSelected('archived');
         });
 
-        // --- Funzionalità Toggle Filtri e Strumenti (ADATTATI PER LE CARD) ---
-
         function toggleFilterVisibility(filterContainerElement, toggleButtonElement) {
-            if (filterContainerElement.style.display === 'none' || filterContainerElement.style.display === '') {
-                filterContainerElement.style.display = 'flex'; // Le card usano flex
-                toggleButtonElement.textContent = 'Nascondi Filtri e Strumenti';
-            } else {
+            const isVisible = filterContainerElement.style.display === 'flex';
+            if (isVisible) {
                 filterContainerElement.style.display = 'none';
                 toggleButtonElement.textContent = 'Mostra Filtri e Strumenti';
+            } else {
+                filterContainerElement.style.display = 'flex';
+                toggleButtonElement.textContent = 'Nascondi Filtri e Strumenti';
             }
-            // Applica i filtri immediatamente per riflettere lo stato visibilità
-            const tableType = filterContainerElement.id.includes('active') ? 'active' : 'archived';
-            applyFilters(tableType);
         }
 
         toggleFiltersActiveBtn.addEventListener('click', () => {
@@ -1812,39 +1656,34 @@ const firebaseConfig = {
             toggleFilterVisibility(archivedFilterControlsContainer, toggleFiltersArchivedBtn);
         });
 
-        // Funzione per espandere/comprimere la sezione del form
         function toggleFormVisibility(expand = null) {
-            if (expand === true) {
+            const isVisible = incaricoFormContent.style.display === 'block';
+            if (expand === true || (expand === null && !isVisible)) {
                 incaricoFormContent.style.display = 'block';
                 toggleFormBtn.classList.add('expanded');
-            } else if (expand === false) {
+            } else if (expand === false || (expand === null && isVisible)) {
                 incaricoFormContent.style.display = 'none';
                 toggleFormBtn.classList.remove('expanded');
-            } else { // Toggle normale (se non specificato expand = true/false)
-                if (incaricoFormContent.style.display === 'none' || incaricoFormContent.style.display === '') {
-                    incaricoFormContent.style.display = 'block';
-                    toggleFormBtn.classList.add('expanded');
-                } else {
-                    incaricoFormContent.style.display = 'none';
-                    toggleFormBtn.classList.remove('expanded');
-                }
             }
         }
 
-        // Listener per il click sull'intera area dell'header della sezione "Dettagli Incarico"
         formSectionHeader.addEventListener('click', () => toggleFormVisibility());
 
 
-        // Inizializza la visibilità dei filtri all'avvio: tutto nascosto
-        activeFilterControlsContainer.style.display = 'none';
-        archivedFilterControlsContainer.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedWorkId = localStorage.getItem('currentWorkId');
+            if (savedWorkId) {
+                currentWorkId = parseInt(savedWorkId);
+            }
 
+            activeFilterControlsContainer.style.display = 'none';
+            archivedFilterControlsContainer.style.display = 'none';
 
-        // Carica gli incarichi all'avvio della pagina e inizializza un campo pagamento
-        caricaIncarichi();
-        if (paymentsList.children.length === 0) {
-            addPaymentField();
-        }
+            caricaIncarichi();
+            if (paymentsList.children.length === 0) {
+                addPaymentField();
+            }
+        });
     </script>
 
 </body>
